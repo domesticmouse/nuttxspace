@@ -1,81 +1,71 @@
-# Goldfish Review Report — Stage 7: Critic Review
+# Goldfish Review Report: Critic Review (Stage 7)
 
-**Target:** `/home/brett/Documents/GitHub/nuttxspace/docs/designs/xiao-rp2350-bargraph.md` (`FeatureRange: Lines 1-253`)
+**Target:** `/home/brett/Documents/GitHub/nuttxspace/docs/designs/xiao-rp2350-bargraph.md` (`FeatureRange: 1..280`)
+**Standard:** `/home/brett/.gemini/config/plugins/egm/resources/document_standards/feature-spec-standard.md`
 
 ## Reviewer Status
 
 | Reviewer | Status |
-| --- | --- |
+| :--- | :--- |
 | `egm-design` | completed |
 | `egm-structural` | completed |
 | `egm-style` | completed |
 
-## Prioritized Findings (Blockers -> Major -> Nits)
+## Prioritized Findings (Blockers -> Majors -> Nits)
 
-### [S7-1] Critical-Section Race, Preemption ISR Storm, and Blocking-Read Hang in Per-Tick `/dev/adc0` `open`/`read`/`close` - Severity: Major
+### 1. Fatal `remove_device()` / ADC FIFO ISR Race in 20 Hz `open()`/`close()` Loop - Severity: Blocker
 * **Reviewer Lens:** `egm-design`
-* **Affected Scope:** `Lines 20-29, 51, 151-157, 175, 220, 228` (`rp23xx_adc.c`, `adc.c`)
-* **Discrepancy Description**:
-  1. In `rp23xx_adc.c`, `add_device()` (`L329`) and `remove_device()` (`L387`) assume callers hold a critical section, yet `adc_open()` and `adc_close()` in `nuttx/drivers/analog/adc.c` only hold `nxmutex_lock(&dev->ad_lock)`. Furthermore, `remove_device()` leaves `RP23XX_ADC_IRQ_FIFO` enabled until the trailing `interrupt_handler()` sees `g_active_count == 0`, creating a race window on rapid `SIGTERM` restarts or mid-mutation ISR arrivals.
-  2. Line 220 claims per-tick `open`/`read`/`close` restricts ADC interrupts to *"one sample per tick plus at most one trailing completion interrupt"*. In `rp23xx_adc.c`, `interrupt_handler()` calls `get_next_channel()` immediately after `au_receive()`, starting another 48 MHz (~500 kS/s) conversion before `read()` returns and `close()` invokes `remove_device()`. Under task preemption (USB CDC/ACM, `nsh>`, `syslog`), the ADC ISR keeps firing until `bargraph_daemon` executes `close()`.
-  3. `read()` blocks unconditionally in `nxsem_wait(&fifo->af_sem)` (`adc.c:293`). If the ADC FIFO IRQ stalls after `open()` succeeds, `read()` hangs indefinitely rather than hitting CUJ 3's `>= 5` read-error threshold.
-* **Rationale & Recommendation**:
-  - Calibrate line 220 (`CALIBRATE`): narrow the NFR to what the code guarantees (conversions run only during the `open`-`close` window and halt on the next FIFO interrupt after `g_active_count == 0`) and state an explicit CPU/IRQ budget under preemption.
-  - Document the rapid-restart race window and set `CONFIG_BARGRAPH_PRIORITY` above `nsh` (or add a brief restart guard).
-  - Use `poll()` with a bounded timeout (e.g., 20–40 ms) before `read()` so an ADC IRQ stall triggers CUJ 3's fault loop instead of hanging, validate `nbytes == sizeof(struct adc_msg_s)`, and close `adc_fd` on every error/`EINTR` path.
+* **Affected Scope:** `Goals` (line 29), `System Data Flow` (lines 151–158), `ADC Sampling` (line 176), `Alternative G` (lines 219–222), `Risks & Limits` (lines 234–235); `nuttx/arch/arm/src/rp23xx/rp23xx_adc.c` (lines 169–237, 250–320, 381–430, 520–539); `nuttx/drivers/analog/adc.c` (lines 181–214)
+* **Discrepancy Description**: The design relies on per-tick `open("/dev/adc0")` -> `read()` -> `close()` at 20 Hz to halt ADC conversions between ticks, and `Risks & Limits` characterizes the missing critical section in `adc_open()`/`adc_close()` as only a "Rapid-Restart Race". In `nuttx/drivers/analog/adc.c` (`adc_close()`, lines 187–210), the upper-half holds only `nxmutex_lock(&dev->ad_lock)` (not a critical section) when calling `dev->ad_ops->ao_shutdown(dev)` -> `my_shutdown()` -> `remove_device()`. Inside `rp23xx_adc.c` (`remove_device()`, lines 395–407), removing the sole device sets `g_first_device = NULL` (line 399) **before** decrementing `g_active_count -= 1` (line 406), with neither variable declared `volatile`. Because `RP23XX_ADC_IRQ_FIFO` is enabled and firing every ~2 µs (~500 kHz at `BOARD_ADC_FREQ = 48 MHz`), any ADC FIFO interrupt preempting `remove_device()` between lines 399 and 406 enters `interrupt_handler()`, sees `g_active_count != 0` (`1`) and `g_first_device == NULL`, calls `get_next_channel()`, and hits `ASSERT(next != g_current_channel)` (line 314) — causing a fatal kernel assertion panic (or an infinite ISR hang if `ASSERT` is compiled out) during normal single-opener 20 Hz operation. Furthermore, `Alternative G` rejects a board-local single-shot ADC lower-half by mischaracterizing its size as reimplementing ~660 lines of `rp23xx_adc.c` and `rp23xx_common_bringup.c`.
+* **Rationale & Recommendation**: Do not run 20 Hz `open()`/`close()` cycles against unmodified `rp23xx_adc.c`. Adopt `Alternative G` with a minimal board-local single-shot `adc_ops_s` lower-half driver in `board/src/` (disabling `CONFIG_RP23XX_ADC` and registering `/dev/adc0` directly in `rp23xx_bringup.c`), and update `Alternative G` and `Risks & Limits` accordingly.
 
-### [S7-2] Daemon Singleton Check-Then-Act Race, Silent Startup Failure, and `/dev/null` FD Leak - Severity: Major
+### 2. Unsubstantiated 500 kHz ADC Interrupt Load During Active Sampling Window - Severity: Major
 * **Reviewer Lens:** `egm-design`
-* **Affected Scope:** `Lines 57, 143, 181-182, 221` (`bargraph_main.c`, `nsh_usbconsole.c`)
-* **Discrepancy Description**:
-  1. Line 181 does not specify synchronization (`sched_lock()` or atomic CAS) around checking and setting `g_bargraph_running` before `task_create()`, leaving a check-then-act window for duplicate spawns, and `main()` returns `0` before `bargraph_daemon` opens `/dev/userleds` (so `/dev/userleds` open failure exits silently relative to the NSH caller).
-  2. Line 182 specifies `dup2()` onto FDs `0, 1, 2` without closing the temporary `/dev/null` descriptor when `fd > 2` (unlike `apps/nshlib/nsh_usbconsole.c:98-101`), leaking 1 descriptor against `CONFIG_NFILE_DESCRIPTORS_PER_BLOCK=6`.
-  3. Line 221 states `"add ~6 KB, verified against memmap_default.ld memory usage during build"` as if already executed, even though `Status` is `Draft` and no build output exists; `CONFIG_BARGRAPH_STACKSIZE=2048` also lacks peak stack verification for `syslog(LOG_ERR, ...)` formatting.
-* **Rationale & Recommendation**: Require `sched_lock()` around the check-and-set of `g_bargraph_running` (resetting on `task_create() < 0`), require `if (fd > 2) close(fd);`, forbid `syslog()` inside the `SIGTERM` handler, and calibrate line 221 (`CALIBRATE`) to a planned build-time linker/stack check (`memmap_default.ld` + `ps` / `CONFIG_STACK_COLORATION`).
+* **Affected Scope:** `The Problem` (line 20), `ADC Sampling` (line 176), `Non-Functional Requirements` (line 226); `rp23xx_adc.c` (lines 169–379); `adc.c` (lines 354, 475–510, 573–591); `board.h` (lines 53–56)
+* **Discrepancy Description**: With `BOARD_SYS_FREQ = 150 MHz` and `BOARD_ADC_FREQ = 48 MHz` (96 cycles/conversion = 2 µs, no clock divider), `RP23XX_ADC_IRQ_FIFO` fires every 300 CPU clock cycles while `/dev/adc0` is open. Each ISR executes NuttX IRQ dispatch, `interrupt_handler()`, `adc_receive()`, and `get_next_channel()`, while `adc_read()` calls `add_sensor_randomness()` under `spin_lock_irqsave`. Line 226 asserts "typically a few interrupts per 50 ms tick when unpreempted" without substantiating that `open` + `read` + `close` completes within a few 300-cycle windows rather than experiencing tail-chained ISR saturation.
+* **Rationale & Recommendation**: Switching to a single-shot board lower-half driver (Finding 1) eliminates the 500 kHz burst (reducing it to 20 IRQs/s or polled single-shot). If `rp23xx_adc.c` were kept, substantiate the CPU cycle budget with measured ISR duration and IRQ delta metrics.
 
-### [S7-3] `rp23xx_bringup()` Early-Return Pattern Breaks CUJ 3 Headless Fault Blink - Severity: Major
+### 3. Unmitigated Blocking `adc_read()` Stall in `Risks & Limits` - Severity: Major
 * **Reviewer Lens:** `egm-design`
-* **Affected Scope:** `Lines 61-63, 131-135` (`rp23xx_bringup.c`, `rp23xx_common_bringup.c`)
-* **Discrepancy Description**: Upstream `xiao-rp2350/src/rp23xx_bringup.c:56-60` returns early if `rp23xx_common_bringup()` returns `< 0`, skipping `userled_lower_initialize("/dev/userleds")`. Because `rp23xx_common_bringup()` returns the status of `rp23xx_adc_setup()` when timers/WDT/ROMFS are disabled, a boot-time `/dev/adc0` failure prevents `/dev/userleds` from being registered, making CUJ 3's fault blink unreachable.
-* **Rationale & Recommendation**: Explicitly specify in `Detailed Subsystem Mechanisms -> Board Bringup` that `board/src/rp23xx_bringup.c` logs negative returns from `rp23xx_common_bringup()` and still executes the `GPIO 26-29` `IE` clear and `userled_lower_initialize("/dev/userleds")`.
+* **Affected Scope:** `CUJ 3` (lines 61–63), `Risks & Limits` (line 236); `nuttx/drivers/analog/adc.c` (lines 268–300, 597–671)
+* **Discrepancy Description**: Line 236 identifies that `adc_read()` blocks indefinitely in `nxsem_wait(&fifo->af_sem)` if the ADC hardware clock or FIFO IRQ stalls after `open()` succeeds, preventing `bargraph_daemon` from entering CUJ 3's fault blink, but provides no mitigation (failing the `Risks & Limits` requirement in `feature-spec-standard.md`).
+* **Rationale & Recommendation**: Use `poll(&pfd, 1, timeout_ms)` (supported by `adc_poll()` in `adc.c`) with `O_NONBLOCK` or a bounded timeout before `read()`, treating `poll()` timeouts as sampling failures that increment `consecutive_errors` toward CUJ 3's 5-tick threshold.
 
-### [S7-4] Incomplete Kconfig Contract, `Board.mk`/`Directory.mk` Build Rules, and Host Tool Prerequisites - Severity: Major
-* **Reviewer Lens:** `egm-design`
-* **Affected Scope:** `Lines 56, 84-98, 102-106, 170, 183-184, 215`
-* **Discrepancy Description**: `FeatureRange` omits required configuration dependencies for CUJ 2 (`CONFIG_RAMLOG=y`, `CONFIG_SYSLOG_DEVPATH="/dev/kmsg"`, `!CONFIG_NSH_DISABLE_{DMESG,PS,FREE,KILL}`, `CONFIG_FS_PROCFS=y`, `!CONFIG_DISABLE_ALL_SIGNALS`, `!CONFIG_EXAMPLES_ADC`), ROMFS startup (`CONFIG_ETC_ROMFS=y`, `CONFIG_ETC_ROMFSMOUNTPT="/etc"`, `!CONFIG_NSH_DISABLESCRIPT`), custom board identity (`CONFIG_ARCH_BOARD_CUSTOM_NAME`), and `Make.defs`/`Directory.mk` wiring (`DEPPATH`, `VPATH`, `RCSRCS = etc/init.d/rc.sysinit etc/init.d/rcS`, `MENUDESC`), plus `genromfs`/`xxd`/`sed` host dependencies.
-* **Rationale & Recommendation**: Add a concise "Required Kconfig & Build Wiring" subsection summarizing the full configuration contract, build-system hooks, and host tool prerequisites.
-
-### [S7-5] Missing Out-of-Tree Single-Shot ADC Driver Alternative and Hardware/Log Limits - Severity: Major
-* **Reviewer Lens:** `egm-design`
-* **Affected Scope:** `Lines 186-228` (`## Alternatives Considered`, `## Risks & Limits`)
-* **Discrepancy Description**:
-  1. `Alternatives Considered` omits evaluating a small board-local single-shot ADC driver in `board/src/` (keeping `nuttx/` untouched while eliminating the 500 kHz free-running burst and trailing-ISR race) and software multi-sample averaging vs `±24` hysteresis. Also, Alternative C (`L201`) states continuous-open reads *"overflow[] the 8-entry upper-half FIFO"*, whereas `adc_receive()` (`adc.c:493-509`) drops new samples silently without setting `ad_isovr`.
-  2. `Risks & Limits` omits open-wiper floating input behavior on `D0` (with `IE=0` and pulls off), 3.3 V reference ripple exceeding the ~19 mV hysteresis band, and RAMLOG circular wrap-around (`4096` bytes) overwriting boot logs before USB attaches.
-* **Rationale & Recommendation**: Add the board-local single-shot ADC driver alternative, refine Alternative C's FIFO drop description, and document open-wiper behavior, 3.3 V reference noise, and RAMLOG overwrite limits.
-
-### [S7-6] Uncalibrated Draft Claims, Subjective Modifiers, and Cross-Section Redundancy - Severity: Major
+### 4. Inaccurate `adc_main.c` CLI Flag Comparison (`bargraph [adc_devpath]`) - Severity: Major
 * **Reviewer Lens:** `egm-style`
-* **Affected Scope:** `Lines 13, 69, 226-227` (`Overview`, `Out-of-Tree Project Layout`, `Risks & Limits`)
-* **Discrepancy Description**:
-  1. **Present-tense artifact claims & duplication (`CALIBRATE`)**: Lines 13 and 69 state in present indicative that `xiao-rp2350-bargraph/` and its files already *"live inside"* / *"reside inside"* the workspace, even though the document is a `Draft` and the folder does not exist yet. Line 69 also duplicates line 13.
-  2. **Subjective modifiers & misplaced hardware step (`CALIBRATE` / `RELOCATE` / `DROP`)**: Line 226 uses *"safely"* without citing RP2350 per-pin/total IOVDD datasheet limits alongside the `~24-36 mA` load. Line 227 uses filler/subjective terms *"intentionally"* and *"reliably"*, ends with editorial self-praise (*"without software multi-sample complexity"* -> `DROP`), and embeds an optional `100 nF` capacitor hardware action inside `Risks & Limits` (`RELOCATE` to hardware setup/troubleshooting guidance).
-* **Rationale & Recommendation**: Frame the directory layout in future/proposed tense once in `Out-of-Tree Project Layout`, cite numeric RP2350 IOVDD current limits, drop editorial self-praise, and relocate the `100 nF` capacitor step to hardware setup instructions.
+* **Affected Scope:** `Daemon Lifecycle, ROMFS Startup, and Headless Diagnostics` (line 182)
+* **Discrepancy Description**: Line 182 states `bargraph [adc_devpath], matching apps/examples/adc/adc_main.c`. In `apps/examples/adc/adc_main.c` (lines 156–184), `parse_args()` requires `-p <devpath>` and rejects non-`-` positional arguments (`Invalid options format`).
+* **Rationale & Recommendation**: **CALIBRATE** — either change `bargraph` to use `-p <devpath>` or state accurately that `bargraph [adc_devpath]` provides a configurable-path override using a positional argument instead of `-p`.
 
-### [S7-7] Incorrect `clrbits_reg32()` Header Attribution and ROMFS Mount Sequence - Severity: Nit
+### 5. Misstated `nsh_nullstdio()` Boot Order - Severity: Major
+* **Reviewer Lens:** `egm-style`
+* **Affected Scope:** `Daemon Lifecycle, ROMFS Startup, and Headless Diagnostics` (line 183)
+* **Discrepancy Description**: The clause *"While `apps/nshlib/nsh_usbconsole.c` already invokes `nsh_nullstdio()` during boot before USB readiness..."* misstates the boot order. In `nsh_main.c` (lines 71–76) and `nsh_usbconsole.c` (lines 288–290), `nsh_initialize()` executes `/etc/init.d/rcS` (while FDs `0–2` are `/dev/null` from `group_setupidlefiles.c` lines 79–86) *before* `nsh_consolemain()` calls `nsh_nullstdio()`.
+* **Rationale & Recommendation**: **DROP / CALIBRATE** — remove the inaccurate `While ...` clause (or reference `group_setupidlefiles()` accurately) and state directly that `bargraph_daemon` redirects FDs `0, 1, 2` to `/dev/null` so interactive restarts from `nsh>` do not hold `/dev/ttyACM0` open.
+
+### 6. Uncalibrated Line Count and Unverified Flicker Claim in `Alternative G` - Severity: Major
+* **Reviewer Lens:** `egm-style`
+* **Affected Scope:** `Alternatives Considered` -> `Alternative G` (line 222)
+* **Discrepancy Description**: Line 222 claims *"Reimplementing ~660 lines of `rp23xx_adc.c` and `rp23xx_common_bringup.c`"*, conflating two files (`rp23xx_adc.c` is 663 lines on its own, while `rp23xx_common_bringup.c` has ~39 lines of ADC registration). It also states that hysteresis *"already prevents boundary flicker"*, asserting runtime behavior as verified fact in a `Draft` design.
+* **Rationale & Recommendation**: **CALIBRATE** — attribute the ~660-line count strictly to `rp23xx_adc.c` (plus ADC setup wiring), and frame flicker suppression as a design target (`is intended to prevent boundary flicker for noise within ±24 counts`).
+
+### 7. Non-Actionable "Mitigation" Label on `0`-Sample `FIFO_ERR` Limitation - Severity: Major
+* **Reviewer Lens:** `egm-style`
+* **Affected Scope:** `Risks & Limits` -> `0`-Sample `FIFO_ERR` Sign Limitation (line 237)
+* **Discrepancy Description**: The sentence *"Mitigation: sustained conversion faults at non-zero wiper voltages produce negative values across 5 consecutive ticks and enter `fault_blink_loop()`."* is not a mitigation and names no operator or design action; it merely restates when `FIFO_ERR` is detectable.
+* **Rationale & Recommendation**: **DROP / CALIBRATE** — remove the `Mitigation:` label and state the boundary concisely (`Limitation: FIFO_ERR is detectable only when the raw sample is non-zero; errors coinciding with a 0 sample are indistinguishable from 0 V.`).
+
+### 8. Diagram `task_create()` Return Value and Unsynchronized Daemon Exit Cleanup - Severity: Nit
 * **Reviewer Lens:** `egm-design`
-* **Affected Scope:** `Lines 140-145, 166, 177`
-* **Discrepancy Description**:
-  1. Line 166 attributes `clrbits_reg32()` to `arm_internal.h`; it is defined in `rp23xx_memorymap.h` (`L132`, pulled in via `rp23xx_gpio.h` and `hardware/rp23xx_pads_bank0.h`).
-  2. Line 142 attributes `mounts ROMFS (/etc)` to `nsh_main() -> nsh_initialize()`. In NuttX, `nx_romfsetc()` (`nuttx/sched/init/nx_bringup.c:316-318`) mounts `/etc` before `board_late_initialize()` and `nsh_main()`.
-  3. Line 177 does not specify whether large potentiometer jumps in one 50 ms tick step by 1 level or converge in one tick via `while` loops.
-* **Rationale & Recommendation**: Fix the header reference to `rp23xx_memorymap.h` (via `rp23xx_gpio.h`), move ROMFS mounting to Step 1 in the boot diagram, and specify `while`-loop convergence in `quantize_level()`.
+* **Affected Scope:** `System Data Flow` (line 142), `Daemon Lifecycle` (lines 182–183)
+* **Discrepancy Description**: Line 142 says `task_create("bargraph_daemon", ...) returns 0`; in NuttX, `task_create()` returns the positive `pid_t` on success (or `-1` on failure), while `bargraph`'s `main()` returns `0` to NSH. Additionally, lines 182–183 specify `sched_lock()`/`sched_unlock()` in `main()` but not during `bargraph_daemon` exit cleanup (`if (g_bargraph_pid == getpid())`).
+* **Rationale & Recommendation**: Clarify the diagram text and guard `bargraph_daemon` exit cleanup under `sched_lock()` with a PID check so a dying daemon cannot clear a newly spawned daemon's singleton state.
 
-### [S7-8] Structural Formatting, Link Consistency, and Copy-Edit Nits - Severity: Nit
-* **Reviewer Lens:** `egm-structural`, `egm-style`
-* **Affected Scope:** `Lines 19, 26, 30, 37-38, 51, 134, 145, 165, 182, 215, 222, 224-245`
+### 9. Filler Modifiers, Non-Actionable Mitigations, and Inactive-Failure Caveats - Severity: Nit
+* **Reviewer Lens:** `egm-style`
+* **Affected Scope:** `Detailed Subsystem Mechanisms` (lines 166, 176), `Risks & Limits` (lines 233, 235, 236)
 * **Discrepancy Description**:
-  1. **ASCII diagram border overflow**: Lines 134 (`82` chars) and 145 (`80` chars) overflow the 79-char box width and omit the closing right `|` border.
-  2. **Risks & Limits completeness**: Line 228 states exclusive `/dev/adc0` ownership and `0`-sample `FIFO_ERR` limitations without explicit mitigations, and security implications (even if N/A for an offline breadboard device) are not explicitly noted.
-  3. **Link text uniformity**: Lines 232-245 mix board-prefixed labels, bare filenames, and repo-relative paths.
-  4. **Redundancy and word choice**: Line 165 repeats `my_reset()` details from line 19 (where `g_gpio_map` actually has 5 entries `{26, 27, 28, 29, -1}`, 4 GPIO pins + `-1`); lines 26 and 37 duplicate the zero-modification constraint; line 38 repeats the `CMakeLists.txt` `# TODO` from line 22; line 30 says *"Filter"* instead of *"Discard"* for FIFO errors; line 51 says *"step monotonically from 0 lit (0x00) to 6 lit (0x3f)"* for a round-trip (`"to 3.3 V and back"`) and embeds an internal ISR detail (`RELOCATE` to `Detailed Subsystem Mechanisms`); lines 182 and 222 use filler `"cleanly"`; line 215 uses informal `"plumbing"`.
-* **Rationale & Recommendation**: Align the ASCII box borders, standardize `Additional Resources` link labels, add mitigations/security N/A to `Risks & Limits`, and tighten the redundant/imprecise prose.
+  * Lines 166 and 176 use redundant `"Constraint-Driven"` headings before sentences starting with `"Because nuttx/ remains unmodified..."`, and line 176 contains `"note that"` filler.
+  * Line 233 includes `"keep the wiper connected"` as a mitigation for an open-wiper circuit (**DROP**; keep only the optional `100 nF` capacitor decision).
+  * Line 235 warns to `"avoid sub-millisecond kill -15 + bargraph restart loops"` (**DROP**; unreachable interactively over `nsh>`).
+  * Line 236 speculates about runtime ADC clock stalling when the 48 MHz ADC clock in `board.h` (line 56) is static (**CALIBRATE**; state plainly that `adc_read()` uses blocking `nxsem_wait()` with no timeout, so CUJ 3 covers `open()` failures and `RP23XX_ADC_FIFO_ERR` unless non-blocking/poll timeout handling is added).
