@@ -1,6 +1,6 @@
-# Goldfish Review Report — Stage 5: Initial Zoom Out Review
+# Goldfish Review Report — Stage 5: Initial Zoom Out
 
-**Target:** `docs/designs/xiao-rp2350-bargraph.md` (Lines 1–440, Full File)
+**Target:** `/home/brett/Documents/GitHub/nuttxspace/docs/designs/xiao-rp2350-bargraph.md` (`Lines 1-460`)
 
 ## Reviewer Status
 
@@ -11,48 +11,53 @@
 
 ## Prioritized Findings (Blockers -> Major -> Nits)
 
-### 1. Premature Implementation Details (Altitude Drops) Across High-Level Sections and Plan - Severity: Major
+### [S5-1] Local Workarounds Around Upstream `rp23xx_adc.c` Without Evaluating Simpler Sampling Mechanics - Severity: Major
 * **Reviewer Lens:** `egm-zoom-out`
-* **Affected Scope:** `Goals` (lines 28–35), `Critical User Journeys` (lines 53, 65), `System Data Flow and Boot Sequence` (lines 134–159), and `Detailed Implementation Plan` items 8, 9, and 16 (lines 331–346, 398–420).
-* **Discrepancy Description**: High-level sections specify C function calls, register macros (`clrbits_reg32(RP23XX_PADS_BANK0_GPIO_IE)`), struct sizes (`sizeof(struct adc_msg_s)`), bit-shift counts (`>> 19`), and hex fault masks (`0x15` / `0x2A`) instead of system outcomes and component boundaries. Item 16 (`bargraph_main.c`, lines 403–420) prescribes private static variable names (`g_bargraph_running`), internal helper decomposition (`sigterm_handler`, `read_adc_sample`, `quantize_level`, `fault_blink_loop`), loop expressions, and literal tuning constants (`{ 585, 1170, 1755, 2340, 2925, 3510 }`, `5` consecutive errors, `250000` us). Items 8–9 list C statements line-by-line rather than component responsibilities.
-* **Rationale & Recommendation**: Per the Zoom-Out Standard (Section 3: *Anti-Weeds*), high-level sections should focus on objectives, architectural boundaries, and data flows, leaving low-level helper internals and literal expressions out of the architecture and plan overview.
+* **Affected Scope:** `Lines 19-20, 29, 134, 151-158, 163-167, 175, 200-202, 228, 349-354`
+* **Discrepancy Description**: Both the post-bringup `RP23XX_PADS_BANK0_GPIO_IE` clear in `rp23xx_bringup.c` and the 20 Hz `open("/dev/adc0") -> read() -> close()` cycle are local workarounds around upstream defects in `nuttx/arch/arm/src/rp23xx/rp23xx_adc.c` (`my_reset()` resets `GPIO 26-29` and sets `IE=1`; `rp23xx_adc.c` runs free-running without `RP23XX_ADC_DIV` and returns `-ENOTTY` for `my_ioctl()`). Any later driver reset re-enables `IE`, and 20 Hz `open`/`close` forces exclusive ownership and relies on a trailing ISR checking `g_active_count == 0`.
+* **Rationale & Recommendation**: Frame these explicitly as constraint-driven workarounds required to leave `nuttx/` unmodified, and verify whether keeping `/dev/adc0` open with `ANIOC_RESET_FIFO` (`nuttx/drivers/analog/adc.c`) or using the 4-byte `adc_read()` message length (`buflen == 4`) is simpler than 20 Hz `open`/`close` churn plus 5-byte channel-prefix unpacking (noting that `ANIOC_RESET_FIFO` alone still leaves free-running ADC interrupts active unless gated or replaced).
 
-### 2. YAGNI Violation: Speculative Fault-Blink Sub-Loop and Consecutive-Error State Machine - Severity: Major
-* **Reviewer Lens:** `egm-zoom-out`
-* **Affected Scope:** `Goals` (line 34), `CUJ 3` (lines 61–65), `Daemon Lifecycle` (line 184), `bargraph_main.c` (`fault_blink_loop` and consecutive-error counter, lines 411–416), and `Verification Plan` item 4 (line 436).
-* **Discrepancy Description**: `/dev/adc0` is an on-chip RP2350 peripheral registered at boot by `rp23xx_common_bringup()` in a single flat firmware image and cannot hot-unplug at runtime. Building a multi-state consecutive-error counter (`>= 5` failures, filtering transient `-EAGAIN`) and a dedicated 250 ms alternating `0x15` / `0x2A` blink loop (`fault_blink_loop`) solely to surface a build/configuration mistake adds speculative complexity.
-* **Rationale & Recommendation**: Logging the error via `syslog(LOG_ERR, ...)` and exiting (or retrying on the regular 50 ms tick) is simpler than maintaining a separate fault-blink state machine.
-
-### 3. Cargo-Culted and Unused Board / Kconfig Boilerplate - Severity: Major
-* **Reviewer Lens:** `egm-zoom-out`
-* **Affected Scope:** `board/include/board.h` (lines 283–286), `board/src/rp23xx_boardinitialize.c` (line 323), `board/scripts/Make.defs` (lines 295, 297), and `external/bargraph/Kconfig` (lines 382–389).
-* **Discrepancy Description**: Several upstream `xiao-rp2350` and `apps/examples/leds` artifacts are carried over without being used:
-  * `board/include/board.h` includes `"rp23xx_i2cdev.h"`, `"rp23xx_spidev.h"`, `"rp23xx_i2sdev.h"`, and `"rp23xx_spisd.h"`, claiming `rp23xx_common_bringup.c` requires them. Those headers live in `nuttx/boards/arm/rp23xx/xiao-rp2350/include/` (not `common/`) and are only used when `CONFIG_RP23XX_I2C_DRIVER`, `SPI_DRIVER`, `I2S`, or `SPISD` are enabled, none of which are enabled in `bargraph/defconfig`. Including them out-of-tree breaks the build unless 4 unused headers are copied.
-  * `board/include/board.h` defines 12 unused LED macros (`BOARD_LED1`..`BOARD_LED6`, `BOARD_LED1_BIT`..`BOARD_LED6_BIT`), while `rp23xx_userleds.c` uses `BOARD_NLEDS` + `g_ledcfg[]` and `rp23xx_pico.h` defines `GPIO_LED1`..`GPIO_LED6`.
-  * `rp23xx_boardinitialize.c` includes `CONFIG_RP23XX_PSRAM` (`rp23xx_psramconfig()`) and `board/scripts/Make.defs` includes `CONFIG_BOOT_COPYTORAM`, `memmap_no_flash.ld`, and `NXFLATLDFLAGS*`, none of which are used.
-  * `external/bargraph/Kconfig` exposes 7 Kconfig knobs (`BARGRAPH_PROGNAME`, `PRIORITY`, `STACKSIZE`, `ADC_DEVPATH`, `LED_DEVPATH`, `INTERVAL_US`, `HYSTERESIS`) modeled on multi-board `apps/examples/leds/Kconfig`, even though `Non-Goals` restricts the project to XIAO RP2350 and board bringup hardcodes `/dev/adc0` and `/dev/userleds`.
-* **Rationale & Recommendation**: Remove the unused includes, macros, PSRAM/NXFLAT boilerplate, and speculative Kconfig symbols; use a single `config BARGRAPH` (`bool`) with compile-time constants in `bargraph_main.c`.
-
-### 4. Redundant `ULEDIOC_SUPPORTED` Query in `bargraph_main.c` - Severity: Major
-* **Reviewer Lens:** `egm-zoom-out`
-* **Affected Scope:** `Detailed Implementation Plan` Item 16 (`bargraph_main.c`, line 415).
-* **Discrepancy Description**: Querying `ioctl(led_fd, ULEDIOC_SUPPORTED, ...)` and masking to `0x3f` is copied from `apps/examples/leds/leds_main.c` (lines 123–138). The custom board defines `BOARD_NLEDS = 6` (`userled_lower.c` returns `(1 << 6) - 1 = 0x3f`), and line 416 writes `(1U << level) - 1U` directly without consuming the queried mask.
-* **Rationale & Recommendation**: Drop the unused `ULEDIOC_SUPPORTED` query rather than duplicating multi-board probing logic from `apps/examples/leds`.
-
-### 5. Conflicting `apps/external` Kconfig Plumbing and Custom Timestamp Cleanup - Severity: Major
-* **Reviewer Lens:** `egm-zoom-out`
-* **Affected Scope:** `Detailed Implementation Plan` Item 1 (`Makefile`, line 266) and Item 13 (`external/Makefile`, `external/Make.defs`, `external/Kconfig`, lines 373–381).
-* **Discrepancy Description**: Item 13 combines two conflicting NuttX `apps/` mechanisms: `external/Makefile` sets `MENUDESC = "External"` and includes `$(APPDIR)/Directory.mk` (which auto-generates `external/Kconfig` via `apps/tools/mkkconfig.sh` during `preconfig` and deletes it on `distclean`, per `apps/Directory.mk` lines 50–63), while simultaneously proposing a hand-written `external/Kconfig`. Per `apps/Make.defs` line 35, a pre-existing `external/Kconfig` causes `external/` to be filtered out of `CONFIGDIRS` during `preconfig`, yet `Directory.mk`'s `distclean` still deletes it.
-* **Rationale & Recommendation**: Omit the hand-written `external/Kconfig` so `Directory.mk` generates and cleans it automatically, and remove the custom `Kconfig` timestamp-deletion logic from `xiao-rp2350-bargraph/Makefile`.
-
-### 6. One-Way Fault Latch Contradicts Autonomous Availability (False Compromise) - Severity: Nit
+### [S5-2] Coupled Early-Return in `rp23xx_bringup()` Blocks CUJ 3 Fault Indication - Severity: Major
 * **Reviewer Lens:** `egm-inventive-catalyst`
-* **Affected Scope:** `CUJ 3: Headless Hardware or Driver Fault Indication` (lines 61–66), `Daemon Lifecycle, ROMFS Startup, and Headless Diagnostics` (line 184), and `16. xiao-rp2350-bargraph/external/bargraph/bargraph_main.c` (`fault_blink_loop` / `bargraph_daemon`, lines 411–417).
-* **Discrepancy Description**: After 5 consecutive `/dev/adc0` `open()`/`read()` failures, `bargraph_daemon` exits its sampling loop and enters a one-way `fault_blink_loop(led_fd)` until `SIGTERM`. On a standalone board with no USB host attached, a transient failure leaves the device latched in the fault blink state until a user connects NSH or power-cycles the board.
-* **Rationale & Recommendation**: If fault blinking is retained, apply **Self-Service** and **Blessing in Disguise** by re-probing `read_adc_sample()` periodically from the fault-blink cadence and resuming 20 Hz tracking on recovery. *Secondary Liabilities*: Rate-limit or edge-trigger `syslog(LOG_ERR, ...)` so probes do not wrap the 4 KB `CONFIG_RAMLOG_BUFSIZE=4096` buffer, require consecutive valid samples before exiting fault state to prevent oscillation, and accept added state-transition logic in `bargraph_daemon`.
+* **Affected Scope:** `Lines 59-63, 349-353` (`board/src/rp23xx_bringup.c`, `CUJ 3`)
+* **Discrepancy Description**: `rp23xx_bringup()` couples `rp23xx_common_bringup()` (`/dev/adc0` setup) with `/dev/userleds` registration: if `rp23xx_common_bringup()` returns `< 0`, `rp23xx_bringup()` returns early before clearing `RP23XX_PADS_BANK0_GPIO_IE` on `GPIO 26-29` and before calling `userled_lower_initialize("/dev/userleds")`. A boot-time ADC setup failure therefore leaves `/dev/userleds` unregistered, causing `bargraph_daemon` to fail opening `/dev/userleds` and exit instead of blinking the CUJ 3 `0x15` / `0x2A` fault pattern.
+* **Rationale & Recommendation**: Apply **Segmentation** and **Beforehand Cushioning**: log any negative return from `rp23xx_common_bringup()` while still executing the `GPIO 26-29` `IE` clear loop and `userled_lower_initialize("/dev/userleds")` unconditionally so diagnostic LED output remains available in degraded boot states. *(Secondary liability: `rp23xx_bringup()` must aggregate errors across independent steps rather than short-circuiting on the first failure.)*
 
-### 7. Unnecessary NSH Backgrounding Config / `task_create()` Duplication - Severity: Nit
+### [S5-3] Persistent `RP23XX_ADC_FIFO_ERR` (`am_data < 0`) Silently Freezes LEDs Instead of Entering Fault Mode - Severity: Major
+* **Reviewer Lens:** `egm-inventive-catalyst`
+* **Affected Scope:** `Lines 153, 176, 421, 432` (`System Data Flow`, `ADC Sampling`, `bargraph_main.c`)
+* **Discrepancy Description**: To avoid false-tripping CUJ 3 on single transient `RP23XX_ADC_FIFO_ERR` samples (`am_data < 0`), `read_adc_sample()` returns `-EAGAIN` and `bargraph_daemon` skips incrementing `consecutive_errors`, logs nothing, and sleeps 50 ms. If `RP23XX_ADC_FIFO_ERR` persists on every tick, the daemon freezes on the last displayed LED level indefinitely without logging to RAMLOG or entering `fault_blink_loop()`.
+* **Rationale & Recommendation**: Apply **Beforehand Cushioning** and **Dynamics**: separate transient single-sample glitches from sustained conversion loss via one immediate intra-tick re-sample on `-EAGAIN` and/or a bounded consecutive `-EAGAIN` tick counter (for example, tripping after 5-10 consecutive ticks where every sample returned `am_data < 0`) so sustained FIFO errors log to `syslog(LOG_ERR, ...)` and enter `fault_blink_loop()`. *(Secondary liability: adds an extra error counter/threshold to tune, and sustained noise exceeding the consecutive threshold latches the daemon into fault blink until restarted.)*
+
+### [S5-4] Altitude Drop into Code-Level Weeds in `Detailed Implementation Plan` - Severity: Major
 * **Reviewer Lens:** `egm-zoom-out`
-* **Affected Scope:** `etc/init.d/rcS` (line 360), `board/configs/bargraph/defconfig` (line 369), and `bargraph_main.c` (lines 418–420).
-* **Discrepancy Description**: `defconfig` sets `# CONFIG_NSH_DISABLEBG is not set` to allow `&` backgrounding, yet `rcS` invokes `bargraph` without `&` because `bargraph` spawns `bargraph_daemon` internally via `task_create()` (copied from `apps/examples/leds/leds_main.c`).
-* **Rationale & Recommendation**: If the singleton CLI check in CUJ 2 is required, `# CONFIG_NSH_DISABLEBG is not set` is unused; without the singleton check, `rcS` could run `bargraph &` and remove `task_create()` boilerplate from `bargraph_main.c`.
+* **Affected Scope:** `Lines 254-438` (`## Detailed Implementation Plan`)
+* **Discrepancy Description**: Roughly 40% of the document (~185 lines) drops from architectural interfaces and data flows into low-level implementation details: exact `#include` lists, exact helper function breakdowns (`redirect_stdio_null`, `read_adc_sample`, `quantize_level`, `fault_blink_loop`), local variable names (`raw_out`, `consecutive_errors`, `nbytes`, `siginfo`), `UNUSED(argc); UNUSED(argv);`, `SA_SIGINFO` flags, and ~40 unchanged `defconfig` symbols.
+* **Rationale & Recommendation**: Keep high-level sections focused on component boundaries, contracts, and Kconfig/board deltas without pre-writing C helper internals, or separate low-level implementation recipes cleanly from the architectural spec.
+
+### [S5-5] Over-Parameterized `external/bargraph/Kconfig` and Rebuild-Based Test Hook - Severity: Major
+* **Reviewer Lens:** `egm-zoom-out`
+* **Affected Scope:** `Lines 393-400, 456` (`external/bargraph/Kconfig`, `Verification Plan`)
+* **Discrepancy Description**: Proposing 7 sub-options under `BARGRAPH` (`BARGRAPH_PROGNAME`, `BARGRAPH_PRIORITY`, `BARGRAPH_STACKSIZE`, `BARGRAPH_ADC_DEVPATH`, `BARGRAPH_LED_DEVPATH`, `BARGRAPH_INTERVAL_US`, `BARGRAPH_HYSTERESIS`) over-parameterizes a fixed-hardware app compared to `apps/examples/leds/Kconfig` and `apps/examples/adc/Kconfig`. Exposing `CONFIG_BARGRAPH_ADC_DEVPATH` specifically to edit `.config`, rebuild, and reflash for CUJ 3 fault testing adds Kconfig surface for a test hook.
+* **Rationale & Recommendation**: Drop speculative Kconfig knobs and accept an optional CLI device path argument (e.g., `bargraph /dev/missing`) to exercise the CUJ 3 fault path directly from NSH without editing `.config` or reflashing.
+
+### [S5-6] Unnecessary Boilerplate Files and Unused `CONFIG_LIBM=y` - Severity: Major
+* **Reviewer Lens:** `egm-zoom-out`
+* **Affected Scope:** `Lines 69-100, 273-279, 306, 366-372` (`board/Kconfig`, `rc.sysinit`, `defconfig`)
+* **Discrepancy Description**: Three proposed items duplicate unnecessary boilerplate:
+  1. `board/Kconfig` is an empty `if ARCH_BOARD_CUSTOM` / `endif` file; `nuttx/tools/Config.mk` (`L176-180`) falls back to `boards/dummy/dummy_kconfig` automatically when omitted.
+  2. `board/src/etc/init.d/rc.sysinit` is an empty stub; `nsh_sysinitscript()` in `apps/nshlib/nsh_script.c` (`L218-222`) passes `log = false` to ignore a missing `rc.sysinit`.
+  3. `defconfig` retains `CONFIG_LIBM=y` (absent from `xiao-rp2350/configs/usbnsh/defconfig`) despite integer-only math.
+* **Rationale & Recommendation**: Omit `board/Kconfig`, omit `rc.sysinit` (and remove it from `RCSRCS`), and drop `CONFIG_LIBM=y` from `defconfig`.
+
+### [S5-7] Unsynchronized `SIGTERM` Shutdown / Restart Race on `g_bargraph_running` - Severity: Nit
+* **Reviewer Lens:** `egm-inventive-catalyst`
+* **Affected Scope:** `Lines 181-182, 434-437` (`Daemon Lifecycle`, `bargraph_main.c`)
+* **Discrepancy Description**: Singleton enforcement relies on a single `g_bargraph_running` flag cleared at the end of `bargraph_daemon` cleanup. Because `kill -15 <pid>` is asynchronous, running `bargraph` immediately after `kill -15 <pid>` (CUJ 2) can race with `ULEDIOC_SETALL(0UL)` and `close(led_fd)`, causing `bargraph` to print `"bargraph: daemon already running"` and fail to restart.
+* **Rationale & Recommendation**: Apply **Intermediary** (explicit lifecycle state `STOPPED` / `RUNNING` / `STOPPING` plus an exit semaphore or `waitpid` via `CONFIG_SCHED_WAITPID=y`) so invoking `bargraph` while stopping waits briefly for cleanup before respawning. *(Secondary liability: adds minimal state/synchronization logic and a bounded wait in `main()`.)*
+
+### [S5-8] Daemon Boilerplate Alignment with Upstream `leds_main.c` and `nsh_nullstdio()` - Severity: Nit
+* **Reviewer Lens:** `egm-zoom-out`
+* **Affected Scope:** `Lines 140-146, 181-183, 409-438` (`bargraph_main.c`)
+* **Discrepancy Description**: `apps/examples/leds/leds_main.c` (`L230-254`) already demonstrates the concise `task_create` + `ULEDIOC_SETALL` + `SIGTERM` daemon pattern, and `apps/nshlib/nsh_usbconsole.c` (`L288-290`) already runs `nsh_nullstdio()` during boot before USB console readiness (making FD redirection relevant only for interactive NSH restarts).
+* **Rationale & Recommendation**: Align `bargraph_main.c` with the minimal `leds_main.c` structure and clarify that stdio redirection to `/dev/null` is specifically for interactive NSH restarts rather than boot.

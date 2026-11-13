@@ -1,6 +1,6 @@
 # Goldfish Review Report — Stage 9: Implementation Readiness Test
 
-**Target:** `docs/designs/xiao-rp2350-bargraph.md` (`DetailedRange`: Lines 255–440)
+**Target:** `/home/brett/Documents/GitHub/nuttxspace/docs/designs/xiao-rp2350-bargraph.md` (`DetailedRange: Lines 254-460`)
 
 ## Reviewer Status
 
@@ -12,88 +12,88 @@
 
 ## Prioritized Findings (Blockers -> Major -> Nits)
 
-### 1. Broken and Unresolved `external/Kconfig` / `Makefile` Plumbing - Severity: Blocker
-* **Reviewer Lens:** `egm-implementation-readiness`, `egm-codebase-details`, `egm-style`
-* **Affected Scope:** Item 1 (`Makefile`, lines 266, 269), Item 13 (`external/Makefile`, `Make.defs`, `Kconfig`, lines 373–380); `nuttx/Kconfig`, `nuttx/tools/Unix.mk`, `apps/Makefile`, `apps/Make.defs` (line 35), `apps/Directory.mk` (lines 50–63), `apps/tools/mkkconfig.sh`, `apps/examples/Makefile`
-* **Discrepancy Description**: Line 380 leaves the `external/Kconfig` mechanism undecided (`source "$(APPDIR)/external/bargraph/Kconfig" (or generated via $(DIR) / Directory.mk rules — verify exact apps/examples/Kconfig pattern during implementation)`), violating the Zero-Decision Rule, and both referenced forms break as written:
-  * `$(APPDIR)` is a GNU Make variable, not an exported Kconfig environment variable (`nuttx/Kconfig` and `nuttx/tools/Unix.mk:706-707` export `APPSDIR`, `EXTERNALDIR`, `APPSBINDIR`, and `BINDIR`).
-  * `apps/examples/Kconfig` does not exist in the repository; `apps/examples/Makefile` uses `MENUDESC = "Examples"` + `$(APPDIR)/Directory.mk`, which generates `Kconfig` during `preconfig` via `apps/tools/mkkconfig.sh` and deletes it on `distclean`.
-  * When `external/Kconfig` exists statically, `apps/Make.defs:35` filters `external/` out of `CONFIGDIRS` (blocking `Directory.mk` regeneration), while `apps/Directory.mk:59-62` still runs `$(call DELFILE, Kconfig)` on `distclean` if `MENUDESC` is non-empty—deleting `xiao-rp2350-bargraph/external/Kconfig` through the `apps/external` symlink if `nuttx distclean` runs before unlinking `apps/external` (line 269).
-* **Rationale & Recommendation**: Choose one deterministic mechanism. Either omit `external/Kconfig` as a source file so `Directory.mk` generates and removes it automatically (and check only `external/bargraph/Kconfig` in `Makefile`), or define a static `external/Kconfig` using `$APPSDIR/external/bargraph/Kconfig` while omitting `MENUDESC` (or overriding `distclean`) in `external/Makefile`.
+### [S9-1] Impossible Phase 1 Checkpoint and Cross-Phase `defconfig` / `Makefile` Contradiction - Severity: Blocker
+* **Reviewer Lens:** `egm-implementation-readiness`
+* **Affected Scope:** `Lines 260-312, 381, 383-408` (`Phase 1`, `Phase 1 Checkpoint`, `Phase 2 Checkpoint`, `Phase 3`)
+* **Discrepancy Description**: Phase 1 creates `Makefile` (`L267`, referencing `external/bargraph/Kconfig`) and `board/configs/bargraph/defconfig` (`L309`, enabling `CONFIG_BARGRAPH=y`), and the Phase 1 Checkpoint (`L312`) requires `make -C xiao-rp2350-bargraph configure` to verify `CONFIG_BARGRAPH=y`. However, `xiao-rp2350-bargraph/external/` and `external/bargraph/Kconfig` are not created until Phase 3 (`L383-399`), and `board/src/Make.defs` is not created until Phase 2 (`L316`). At Phase 1, `../apps/external` would be a dangling symlink and `olddefconfig` strips `CONFIG_BARGRAPH=y` because `BARGRAPH` is not yet in `apps/Kconfig`. Additionally, Phase 2 Checkpoint (`L381`) assumes building *"without `bargraph` enabled (or before Phase 3 app code)"*, contradicting Phase 1 `defconfig`.
+* **Rationale & Recommendation**: Defer enabling `CONFIG_BARGRAPH=y` in `defconfig` (and guard `external/bargraph/Kconfig` in `Makefile`) until Phase 3 and remove `CONFIG_BARGRAPH=y` from the Phase 1 Checkpoint, or move `external/Makefile`, `external/Make.defs`, and `external/bargraph/Kconfig` setup so every phase leaves the tree configure/buildable.
 
-### 2. Non-Existent Peripheral Headers Included in `board/include/board.h` - Severity: Blocker
+### [S9-2] Inaccurate `defconfig` Baseline, Non-Existent Kconfig Symbols, and Omitted Upstream Options - Severity: Blocker
+* **Reviewer Lens:** `egm-codebase-details`, `egm-implementation-readiness`, `egm-style`
+* **Affected Scope:** `Lines 300-311` (`Item 5: defconfig`) vs `nuttx/boards/arm/rp23xx/xiao-rp2350/configs/usbnsh/defconfig`, `nuttx/arch/arm/Kconfig`, `nuttx/arch/arm/src/rp23xx/Kconfig`, `apps/nshlib/Kconfig`
+* **Discrepancy Description**:
+  1. **False removal**: Line 305 directs removing `CONFIG_DEV_GPIO=y` from `usbnsh/defconfig`, but `usbnsh/defconfig` does not contain `CONFIG_DEV_GPIO=y`.
+  2. **Non-existent symbols**: `CONFIG_ARCH_CHIP_RP2350=y` (does not exist in `nuttx/arch/arm/Kconfig` or `rp23xx/Kconfig`; MCU selection is `CONFIG_ARCH_CHIP_RP23XX=y`) and `CONFIG_NSH_ARCHINIT=y` (does not exist in `apps/nshlib/Kconfig`, `apps/system/nsh/Kconfig`, `nsh_main.c`, or `nsh_init.c`) are listed as retained from `usbnsh/defconfig`.
+  3. **Misattributed baseline (`CALIBRATE`)**: Line 306 lists `CONFIG_START_DAY=29`, `CONFIG_START_MONTH=1`, `CONFIG_START_YEAR=2024` (whereas `usbnsh/defconfig:43-45` has `9`, `2`, `2021`), plus `CONFIG_ARCH_CORTEXM33=y`, `CONFIG_ARCH_FAMILY="armv8-m"`, `CONFIG_BOARDCTL_USBDEVCTRL=y`, `CONFIG_BOOT_RUNFROMFLASH=y`, `CONFIG_DEV_NULL=y`, `CONFIG_LIBM=y`, `CONFIG_NSH_FILEIOSIZE=512`, `CONFIG_RAW_BINARY=y`, and `CONFIG_SYMTAB_ORDEREDBYNAME=y` as *"Retained baseline symbols from `usbnsh/defconfig`"*, none of which appear in `usbnsh/defconfig`.
+  4. **Eight omitted `usbnsh/defconfig` symbols**: `# CONFIG_NSH_ARGCAT is not set`, `# CONFIG_NSH_CMDOPT_HEXDUMP is not set`, `# CONFIG_NSH_DISABLE_DATE is not set`, `# CONFIG_NSH_DISABLE_LOSMART is not set`, `CONFIG_DEBUG_FULLOPT=y`, `CONFIG_DEBUG_SYMBOLS=y`, `CONFIG_DISABLE_POSIX_TIMERS=y`, and `CONFIG_READLINE_CMD_HISTORY=y` appear in neither Removals (`L305`) nor Retained (`L306`), forcing the implementer to guess.
+* **Rationale & Recommendation**: Remove `CONFIG_DEV_GPIO=y` from Removals, remove `CONFIG_ARCH_CHIP_RP2350=y` and `CONFIG_NSH_ARCHINIT=y`, separate true `usbnsh/defconfig` symbols from new/Kconfig-selected symbols (or provide the exact verified `defconfig` content), and state the disposition of the 8 omitted `usbnsh/defconfig` lines.
+
+### [S9-3] `board/scripts/Make.defs` Lists Variables Absent from `xiao-rp2350/scripts/Make.defs` - Severity: Blocker
+* **Reviewer Lens:** `egm-codebase-details`, `egm-implementation-readiness`
+* **Affected Scope:** `Lines 291-298` (`Item 4: board/scripts/Make.defs`) vs `nuttx/boards/arm/rp23xx/xiao-rp2350/scripts/Make.defs#L21-44`, `nuttx/tools/Config.mk#L842-878`, `nuttx/arch/arm/src/common/Toolchain.defs`
+* **Discrepancy Description**: Line 298 instructs setting `ARCHCCVERSION`, `ARCHINCLUDES`, `ARCHXXINCLUDES`, `ARCHPICFLAGS`, and `LDELFFLAGS` *"matching `nuttx/boards/arm/rp23xx/xiao-rp2350/scripts/Make.defs`"*. None of those five variables are defined in `xiao-rp2350/scripts/Make.defs` (which defines `LDSCRIPT`, `ARCHSCRIPT`, `CFLAGS`, `CXXFLAGS`, `CPPFLAGS`, `AFLAGS`, and `NXFLATLDFLAGS*`); `ARCHINCLUDES`/`ARCHXXINCLUDES` come from `Config.mk`, `ARCHPICFLAGS`/`LDELFFLAGS` come from `common/Toolchain.defs`, and `ARCHCCVERSION` is absent from both.
+* **Rationale & Recommendation**: Restrict line 298 to setting `CFLAGS`, `CXXFLAGS`, `CPPFLAGS`, and `AFLAGS` (alongside `LDSCRIPT` and `ARCHSCRIPT` from line 297).
+
+### [S9-4] `clrbits_reg32()` Attributed to Wrong Header (`arm_internal.h`) - Severity: Blocker
 * **Reviewer Lens:** `egm-codebase-details`
-* **Affected Scope:** Item 3 (`board/include/board.h`, line 284); `nuttx/boards/arm/rp23xx/xiao-rp2350/include/`, `nuttx/boards/arm/rp23xx/common/include/`, `nuttx/boards/arm/rp23xx/common/src/rp23xx_common_bringup.c` (lines 34, 95–129)
-* **Discrepancy Description**: Line 284 instructs `board.h` to include `"rp23xx_i2cdev.h"`, `"rp23xx_spidev.h"`, `"rp23xx_i2sdev.h"`, and `"rp23xx_spisd.h"`, claiming `rp23xx_common_bringup.c` requires them. Those headers do not exist in `nuttx/boards/arm/rp23xx/common/include/` or `nuttx/arch/arm/src/rp23xx/`—they live only inside `nuttx/boards/arm/rp23xx/xiao-rp2350/include/`, which is not on the include path under `CONFIG_ARCH_BOARD_CUSTOM=y`. Adding those `#include` directives without creating the headers will fail compilation (`No such file or directory`), and `rp23xx_common_bringup.c` guards those driver calls behind `CONFIG_RP23XX_{I2C_DRIVER,SPI_DRIVER,I2S,SPISD}`, none of which are enabled.
-* **Rationale & Recommendation**: Omit those four `#include` directives from `xiao-rp2350-bargraph/board/include/board.h`.
+* **Affected Scope:** `Lines 166, 348` (`Item 9: rp23xx_bringup.c`) vs `nuttx/arch/arm/src/common/arm_internal.h`, `nuttx/arch/arm/src/rp23xx/hardware/rp23xx_memorymap.h#L130-133`, `rp23xx_gpio.h#L38`
+* **Discrepancy Description**: Line 348 includes `"arm_internal.h"` for `clrbits_reg32()` (cited at line 166), but `arm_internal.h` only defines `modreg*` / `modifyreg*`. `clrbits_reg32(v, a)` is defined in `nuttx/arch/arm/src/rp23xx/hardware/rp23xx_memorymap.h` line 132, included transitively via `"rp23xx_gpio.h"` -> `"hardware/rp23xx_pads_bank0.h"`.
+* **Rationale & Recommendation**: Drop `"arm_internal.h"` (unless otherwise needed) and document `"rp23xx_gpio.h"` / `rp23xx_memorymap.h` as the header providing `clrbits_reg32()`.
 
-### 3. Incomplete `defconfig` Specification and Undecided Cleanup Options - Severity: Blocker
-* **Reviewer Lens:** `egm-implementation-readiness`, `egm-codebase-details`, `egm-style`
-* **Affected Scope:** Item 12 (`board/configs/bargraph/defconfig`, lines 362–371); `nuttx/boards/arm/rp23xx/xiao-rp2350/configs/usbnsh/defconfig`
-* **Discrepancy Description**: Line 364 says *"derived from `xiao-rp2350/configs/usbnsh/defconfig`"* and lists partial deltas without enumerating required baseline non-board symbols (`CONFIG_ARCH="arm"`, `CONFIG_ARCH_CHIP="rp23xx"`, `CONFIG_ARCH_CHIP_RP23XX=y`, `CONFIG_ARCH_RAMVECTORS=y`, `CONFIG_ARCH_STACKDUMP=y`, `CONFIG_BOARDCTL_RESET=y`, `CONFIG_BOARD_LOOPSPERMSEC=10450`, `CONFIG_BUILTIN=y`, `CONFIG_FS_PROCFS=y`, `CONFIG_FS_PROCFS_REGISTER=y`, `CONFIG_INIT_ENTRYPOINT="nsh_main"`, `CONFIG_NFILE_DESCRIPTORS_PER_BLOCK=6`, `CONFIG_NSH_READLINE=y`, `CONFIG_RAM_SIZE=532480`, `CONFIG_RAM_START=0x20000000`, `CONFIG_RR_INTERVAL=200`, `CONFIG_SCHED_WAITPID=y`) and without explicitly instructing removal of `CONFIG_ARCH_BOARD="xiao-rp2350"` and `CONFIG_ARCH_BOARD_XIAO_RP2350=y`. Line 371 also hedges with `"remove unnecessary CONFIG_EXAMPLES_HELLO, CONFIG_TESTING_GETPRIME, CONFIG_TESTING_OSTEST from usbnsh if unused"`.
-* **Rationale & Recommendation**: Enumerate the full `defconfig` contents (or exact line-by-line additions and removals relative to `usbnsh/defconfig`) and remove the three unused sample/test apps unconditionally.
-
-### 4. `bargraph_main.c` Lockout on LED Error, Short-Read Bug, and `ULEDIOC_*` / Signal Gaps - Severity: Blocker
+### [S9-5] `bargraph_main.c` Ambiguities, `errno` Clobbering, Uninitialized `sigaction`, and `SIGKILL` Lockup - Severity: Major
 * **Reviewer Lens:** `egm-implementation-readiness`, `egm-codebase-details`
-* **Affected Scope:** Item 16 (`external/bargraph/bargraph_main.c`, lines 403–420); `apps/examples/leds/leds_main.c` (lines 123–124, 194, 212–219), `nuttx/drivers/analog/adc.c` (lines 266–415), `nuttx/include/nuttx/leds/userled.h` (lines 43–67, 108)
+* **Affected Scope:** `Lines 409-438` (`Item 16: bargraph_main.c`) vs `apps/examples/leds/leds_main.c#L87-118`
 * **Discrepancy Description**:
-  * **Permanent lockout on LED failure**: `main()` sets `g_bargraph_running = true` before `task_create()`, but line 415 exits `EXIT_FAILURE` on `/dev/userleds` failure without clearing `g_bargraph_running = false` (or closing `led_fd` if opened), permanently blocking future `bargraph` starts.
-  * **Short / zero-byte `read()` in `read_adc_sample()`**: `adc_read()` can return `0` or a short count without setting `errno`. Checking only `nbytes < 0` and `am_data < 0` allows `0 <= nbytes < sizeof(struct adc_msg_s)` to return `0` (false success) with an uninitialized `sample`.
-  * **`ULEDIOC_*` and loop error handling**: Line 415 does not state what action to take if `(supported & 0x3f) != 0x3f`, nor the exact `ioctl` cast (`(unsigned long)((uintptr_t)&supported)` for `ULEDIOC_SUPPORTED`, `(unsigned long)mask` for `ULEDIOC_SETALL`), nor error handling if `ULEDIOC_SETALL` fails inside the loop or `fault_blink_loop()`.
-  * **Signal, `task_create()`, and compiler warning details**: Needs `act.sa_flags = SA_SIGINFO` (without `SA_RESTART`), checking `g_bargraph_running` before counting `-EINTR` from `read()` toward the 5-error threshold, `fault_blink_loop()` returning into the line 417 cleanup (`ULEDIOC_SETALL(0)`, `close(led_fd)`, `g_bargraph_running = false`), explicit `task_create() < 0` failure logging/exit in `main()`, and `UNUSED(argc); UNUSED(argv);` to satisfy line 427's zero-warning check.
-* **Rationale & Recommendation**: Specify every branch, cleanup path, `errno`/`EINTR` check, and `ioctl` contract explicitly in Item 16.
+  1. **Ambiguous error logging & missing retry sleep (`L432`)**: `"logs once on error"` is ambiguous (first error vs every error vs threshold 5, and whether the flag resets after `ret == 0`), and the `ret < 0` branch omits whether to call `usleep(CONFIG_BARGRAPH_INTERVAL_US)` during retries `1..4`.
+  2. **`errno` clobbering (`L418-419`)**: `read_adc_sample()` closes `fd` immediately after `read()` before checking `errno == EINTR` / `-errno`; `close(fd)` can overwrite `errno`.
+  3. **Incomplete `sigaction` (`L430`)**: Omits `memset(&act, 0, sizeof(act))`, `sigemptyset(&act.sa_mask)`, setting `act.sa_sigaction = sigterm_handler`, and handling `sigaction() != 0` failure.
+  4. **Missing `current_level`/`consecutive_errors` initializers & `mask` formula (`L432`)**: Both variables lack explicit `= 0` initialization in `DetailedRange`, the `mask` bitmask formula (`(current_level == 0) ? 0U : ((1U << current_level) - 1U)`) is omitted from `DetailedRange`, and `quantize_level()` signed vs unsigned arithmetic (`thresholds[level - 1] - hyst`) is unstated.
+  5. **Singleton lockup on `SIGKILL`**: Terminating `bargraph_daemon` with `kill -9` leaves `g_bargraph_running == 1` permanently until reboot because no `kill(pid, 0)` liveness check resets it.
+* **Rationale & Recommendation**: Capture `int err = errno;` before `close(fd)`, specify `memset(&act, 0, sizeof(act))` + `sigemptyset(&act.sa_mask)` + `sigaction()` error handling, state `current_level = 0`, `consecutive_errors = 0`, the exact `mask` formula, exact `ret < 0` logging/sleep rules, and store `g_bargraph_pid` with a `kill(g_bargraph_pid, 0)` liveness check (or document `SIGKILL` recovery).
 
-### 5. Missing Phasing and Incremental Checkpoints - Severity: Major
+### [S9-6] `picotool` Marked Optional Despite Mandatory `CONFIG_RP23XX_UF2_BINARY=y` Postbuild - Severity: Major
 * **Reviewer Lens:** `egm-implementation-readiness`
-* **Affected Scope:** `## Detailed Implementation Plan` (lines 255–421)
-* **Discrepancy Description**: Items 1–16 are presented as one monolithic list with verification deferred until the end, violating the Implementation Readiness Standard's Phasing & Checkpoints rule.
-* **Rationale & Recommendation**: Split Items 1–16 into incremental buildable/testable phases (e.g., Phase 1: `Makefile` + minimal custom `board/` `nsh>` boot; Phase 2: 6-LED `rp23xx_userleds.c` + `rp23xx_bringup.c` ADC0/`IE` fix verified via `/dev/adc0` and `/dev/userleds`; Phase 3: `external/bargraph` + `rcS` autonomous launch and fault verification).
+* **Affected Scope:** `Lines 269, 442-449` (`Verification Plan`) vs `nuttx/boards/arm/rp23xx/common/Kconfig#L10-14`, `nuttx/tools/rp23xx/Config.mk#L40-63`
+* **Discrepancy Description**: Line 443 marks `picotool` as *"optional if flashing via UF2 drag-and-drop in `BOOTSEL` mode"*. However, `RP23XX_UF2_BINARY` defaults to `y`, and `nuttx/tools/rp23xx/Config.mk` (`L40-63`) aborts the build with a hard `$(error ...)` when generating `nuttx.uf2` unless `picotool` is in `$PATH` or `$PICO_SDK_PATH` is set.
+* **Rationale & Recommendation**: Move `picotool` (or `$PICO_SDK_PATH`) into the mandatory Host Prerequisite Check (`L442`) for building `nuttx.uf2`, and clarify that only `picotool load` vs UF2 drag-and-drop is optional at flash time.
 
-### 6. `Makefile`, `board/Kconfig`, `rp23xx_bringup.c`, and `rp23xx_userleds.c` Actionability & Accuracy Gaps - Severity: Major
-* **Reviewer Lens:** `egm-implementation-readiness`, `egm-style`
-* **Affected Scope:** Item 1 (`Makefile`, lines 266–269), Item 2 (`board/Kconfig`, lines 271–276), Item 8 (`rp23xx_bringup.c`, lines 331–335), Item 9 (`rp23xx_userleds.c`, lines 342–345); `nuttx/tools/Config.mk` (lines 172–180), `nuttx/tools/Unix.mk` (line 906), `nuttx/boards/arm/rp23xx/common/src/rp23xx_common_bringup.c` (lines 541–627)
+### [S9-7] `external/bargraph/Kconfig` Missing `USERLED_LOWER` / `BUILTIN` Dependencies and Numeric `range` Bounds - Severity: Major
+* **Reviewer Lens:** `egm-codebase-details`
+* **Affected Scope:** `Lines 393-400` (`Item 14: external/bargraph/Kconfig`) vs `nuttx/drivers/leds/Kconfig#L8-33`, `nuttx/drivers/leds/userled_lower.c#L37`
+* **Discrepancy Description**: `depends on ADC && USERLED` omits `USERLED_LOWER` (required for `/dev/userleds` and `userled_lower_initialize()`) and `BUILTIN` / `NSH_BUILTIN_APPS`, and specifies no `range` bounds for `BARGRAPH_HYSTERESIS` (if `>= 585`, `thresholds[0] - hyst` underflows/turns negative), `BARGRAPH_INTERVAL_US`, `BARGRAPH_PRIORITY`, or `BARGRAPH_STACKSIZE`.
+* **Rationale & Recommendation**: Update dependencies to `ADC && USERLED && USERLED_LOWER` (and `NSH_BUILTIN_APPS` / `BUILTIN` if built as a builtin app) and add explicit `range` constraints (e.g., `range 0 584` for `BARGRAPH_HYSTERESIS`, positive bounds for interval/stack/priority).
+
+### [S9-8] `board/include/board.h` Omitted Upstream Clock/LED Macros - Severity: Major
+* **Reviewer Lens:** `egm-codebase-details`
+* **Affected Scope:** `Lines 280-289` (`Item 3: board/include/board.h`) vs `nuttx/boards/arm/rp23xx/xiao-rp2350/include/board.h#L47-122`
+* **Discrepancy Description**: Line 285 lists 5 clock macros and refers vaguely to *"oscillator startup/delay macros"*, omitting `BOARD_XOSC_STARTUPDELAY`, `BOARD_REF_FREQ`, `BOARD_SYS_FREQ`, `BOARD_PERI_FREQ`, `BOARD_USB_FREQ`, `BOARD_HSTX_FREQ`, and `BOARD_UART_BASEFREQ` (`board.h:48-60`), as well as `BOARD_LED1`..`BOARD_LED6`, `BOARD_LED1_BIT`..`BOARD_LED6_BIT`, and `LED_STARTED`..`LED_PANIC` (`board.h:95-121`).
+* **Rationale & Recommendation**: Enumerate the exact clock/PLL macros to retain from `xiao-rp2350/include/board.h` and explicitly state whether `BOARD_LED*` / `LED_*` (`CONFIG_ARCH_LEDS`) macros are omitted.
+
+### [S9-9] `setup` Kconfig Staleness Bug, Untracked `etctmp.c`, and Missing Automated Unit Tests - Severity: Major
+* **Reviewer Lens:** `egm-codebase-details`
+* **Affected Scope:** `Lines 256, 267, 381, 439-457` (`Makefile`, `Verification Plan`) vs `nuttx/.gitignore#L12`, `implementation-readiness-standard.md#L36`
 * **Discrepancy Description**:
-  * **Item 1 (`Makefile`)**: Deleting `../apps/Kconfig` in `setup` does not regenerate `Kconfig` during `make -C ../nuttx` if `../nuttx/.config` already exists (`configure.sh -e` skips `olddefconfig` when `defconfig` is unchanged); `Makefile` must invoke `$(MAKE) -C ../nuttx olddefconfig` (or `apps_preconfig`), and guard `clean`/`distclean` when `../nuttx/.config` or `../nuttx/Make.defs` is absent.
-  * **Item 2 (`board/Kconfig`)**: `nuttx/tools/Config.mk:172-180` falls back to `$(TOPDIR)/boards/dummy/dummy_kconfig` when `$(BOARD_DIR)/Kconfig` is missing, so `board/Kconfig` is not required; line 276 also hedges `"empty or board-specific helper symbols if needed"`. Either drop `board/Kconfig` or state its exact empty content.
-  * **Item 8 (`rp23xx_bringup.c`)**: `"log warning/error if < 0"` leaves the priority ambiguous (`LOG_ERR` vs `LOG_WARNING`), omits exact `return ret;` and required includes, and does not note that `rp23xx_common_bringup()` overwrites `ret` in later mount blocks (e.g., `procfs`), so ADC registration errors return `OK` (`0`).
-  * **Item 9 (`rp23xx_userleds.c`)**: Omits the `#ifndef CONFIG_ARCH_LEDS` guard, required headers (`<nuttx/board.h>`, `<arch/board/board.h>`), and whether `CONFIG_PM` (`rp23xx_led_pminitialize`) is omitted.
-* **Rationale & Recommendation**: Resolve each ambiguity and align `Config.mk` / `Unix.mk` / `rp23xx_common_bringup.c` claims with actual codebase behavior.
+  1. Checking only `[ external/bargraph/Kconfig -nt ../apps/Kconfig ]` in `Makefile` `setup` (`L267`) misses the case where `../apps/Kconfig` already exists with a newer timestamp from a prior build without `../apps/external` linked.
+  2. `nuttx/.gitignore:12` ignores `etctmp/` but not `etctmp.c`, so building creates an untracked `nuttx/boards/arm/rp23xx/common/etctmp.c` visible in `git status` until `clean`/`distclean`.
+  3. `Verification Plan` specifies no automated unit tests for `quantize_level()` hysteresis boundaries, `am_data` error/shift decoding, or transient `-EAGAIN` recovery (`implementation-readiness-standard.md:36`).
+* **Rationale & Recommendation**: Force `apps/Kconfig` regeneration whenever `../apps/external` is newly created or missing `external/Kconfig`, calibrate line 256/445 regarding untracked `etctmp.c` (or clean/explain it), and add host or NSH unit tests for the quantizer and sample decoder.
 
-### 7. Inaccurate `etctmp.c` Generation Path in Verification Plan - Severity: Major
-* **Reviewer Lens:** `egm-codebase-details`, `egm-style`, `egm-implementation-readiness`
-* **Affected Scope:** `### Verification Plan` — Compilation / Build item 3 (line 428); `nuttx/tools/Config.mk` (lines 182–185), `nuttx/tools/Unix.mk` (lines 324–328), `nuttx/boards/arm/rp23xx/common/Makefile` (line 29), `nuttx/boards/Board.mk` (lines 22–23, 50–53)
-* **Discrepancy Description**: Line 428 asserts `etctmp.c` is generated inside `nuttx/boards/arm/rp23xx/`. With `CONFIG_ARCH_BOARD_COMMON=y`, `nuttx/tools/Unix.mk` links `arch/arm/src/board -> $(BOARD_COMMON_DIR)` (`nuttx/boards/arm/rp23xx/common`), where `Board.mk` generates `nuttx/boards/arm/rp23xx/common/etctmp.c`.
-* **Rationale & Recommendation**: `CALIBRATE` line 428 to reference `nuttx/boards/arm/rp23xx/common/etctmp.c` (accessible via `nuttx/arch/arm/src/board/`).
+### [S9-10] Incorrect Symlink Tool Attribution (`configure.sh` vs `Unix.mk`) - Severity: Major
+* **Reviewer Lens:** `egm-codebase-details`
+* **Affected Scope:** `Line 319` (`Item 6: board/src/Make.defs`) vs `nuttx/tools/configure.sh#L241-243`, `nuttx/tools/Unix.mk#L324-340`
+* **Discrepancy Description**: Line 319 states `tools/configure.sh` creates `arch/arm/src/board` and `arch/arm/src/board/board` symlinks. In NuttX, `tools/configure.sh` only symlinks `nuttx/Make.defs`; `nuttx/tools/Unix.mk` creates `$(ARCH_SRC)/board` and `$(ARCH_SRC)/board/board` during `make` (`context`/`.dirlinks`).
+* **Rationale & Recommendation**: Attribute the `arch/arm/src/board` symlinks to `nuttx/tools/Unix.mk` during `make` (`context`).
 
-### 8. Verification Plan Ambiguities and Missing Boundary/Workaround Assertions - Severity: Major
-* **Reviewer Lens:** `egm-implementation-readiness`
-* **Affected Scope:** `### Verification Plan` (lines 422–436)
+### [S9-11] Uncalibrated `/proc/interrupts` Metric in CUJ 2 Verification - Severity: Major
+* **Reviewer Lens:** `egm-style`
+* **Affected Scope:** `Line 453` (`Verification Plan` — CUJ 2)
+* **Discrepancy Description**: `CALIBRATE`. The check specifies `"~20 ADC FIFO interrupt bursts per second rather than ~500,000 continuous interrupts/second"`, mixing "interrupt bursts" with "interrupts/second". `/proc/interrupts` reports cumulative integer IRQ counts, and because `rp23xx_adc.c` runs free-running conversions during the `open`-`close` window, a 1-second count delta will be `20 * N` (depending on syscall/ISR latency) rather than strictly `20`.
+* **Rationale & Recommendation**: State the measurable `/proc/interrupts` count delta (on the order of tens to low hundreds of interrupts/second matching 20 Hz `open`/`read`/`close` cycles, rather than ~500,000 interrupts/second).
+
+### [S9-12] `Make.defs` / `rp23xx_bringup.c` Alignment and Copy-Edit Nits - Severity: Nit
+* **Reviewer Lens:** `egm-codebase-details`, `egm-implementation-readiness`, `egm-style`
+* **Affected Scope:** `Lines 276, 278, 298, 350, 396, 427, 433, 446, 455-456`
 * **Discrepancy Description**:
-  * Line 436 leaves the fault-injection method undecided (`"test build or fault-injection check"`), omits verifying `SIGTERM` exits fault-blink mode cleanly, and omits restoring valid configuration afterward.
-  * Missing quantitative boundary tests for hysteresis (`585 ± 24`, `3510 ± 24`, `0`, `4095`), transient `am_data < 0` filtering without triggering fault mode, and the 5-error threshold (`4` vs `5` consecutive errors).
-  * Missing verification for `RP23XX_PADS_BANK0_GPIO_IE == 0` after boot and FIFO interrupt quiescence between 50 ms ticks (e.g., `/proc/interrupts`).
-* **Rationale & Recommendation**: Specify deterministic test steps for hysteresis boundaries, fault injection/recovery/cleanup, and hardware workaround checks.
-
-### 9. Uncalibrated `GPIO 25` Polarity Parenthetical in `rp23xx_boardinitialize.c` - Severity: Nit
-* **Reviewer Lens:** `egm-style`
-* **Affected Scope:** Item 7 (`board/src/rp23xx_boardinitialize.c`, line 322)
-* **Discrepancy Description**: Describing `BOARD_GPIO_LED_PIN` driven `true` as `(active-low off or power-on indicator matching upstream xiao-rp2350)` guesses between two opposite electrical meanings not verified in upstream `xiao-rp2350/src/rp23xx_boardinitialize.c:71-75`.
-* **Rationale & Recommendation**: `CALIBRATE` to state the verified polarity (`true` turns the active-low onboard LED off, matching upstream `xiao-rp2350`).
-
-### 10. Pre-Compilation Check Requires Flashing Tool `picotool` - Severity: Nit
-* **Reviewer Lens:** `egm-style`
-* **Affected Scope:** `### Verification Plan` — Host Prerequisite Check (line 424)
-* **Discrepancy Description**: Line 424 requires verifying `picotool` *"before compiling"*, whereas `picotool` is only used for flashing in line 430 (which also permits UF2 drag-and-drop without `picotool`).
-* **Rationale & Recommendation**: `CALIBRATE` by separating build prerequisites (`arm-none-eabi-gcc`, `genromfs`, `xxd`) from the optional flashing tool (`picotool`).
-
-### 11. Subjective Verification Condition (`"clean boot"`) - Severity: Nit
-* **Reviewer Lens:** `egm-style`
-* **Affected Scope:** `### Verification Plan` — Hardware / Integration Verification item 3 (line 433)
-* **Discrepancy Description**: `"dmesg shows clean boot"` relies on the subjective word `"clean"`.
-* **Rationale & Recommendation**: Replace with a verifiable condition (`dmesg` shows no boot errors and logs `bargraph_daemon` startup).
-
-### 12. Unconfirmed `CONFIG_BOOT_RUNFROMFLASH=y` in `defconfig` - Severity: Nit
-* **Reviewer Lens:** `egm-implementation-readiness`
-* **Affected Scope:** Item 4 (`board/scripts/Make.defs`, line 295) and Item 12 (`defconfig`, lines 367–371)
-* **Discrepancy Description**: Item 4 selects `LDSCRIPT` (`memmap_default.ld`, `memmap_copy_to_ram.ld`, or `memmap_no_flash.ld`) from `CONFIG_BOOT_*`, while Item 12 does not explicitly confirm `CONFIG_BOOT_RUNFROMFLASH=y` so `memmap_default.ld` is selected.
-* **Rationale & Recommendation**: Explicitly include `CONFIG_BOOT_RUNFROMFLASH=y` in Item 12's `defconfig` specification.
+  1. Line 350 notes `rp23xx_common_bringup()` overwrites `ret` in timer/watchdog/ROMFS blocks (none enabled here); also note explicitly that upstream `xiao-rp2350/src/rp23xx_bringup.c:69-77` returns `OK` even on `userled_lower_initialize()` failure, whereas the proposed driver returns `ret`.
+  2. Filler/redundant/imprecise wording: `"cleanly"` on lines 276, 427, 446, 455, 456; `"only a minimal"` on line 278; `"deterministic"` on line 396; `"fatal ULEDIOC_SETALL error"` on line 433; `"/dev/userleds alternates"` instead of `"the 6 LEDs alternate"` on line 456.
+* **Rationale & Recommendation**: Clarify the upstream `rp23xx_bringup.c` return difference and tighten the listed wording.

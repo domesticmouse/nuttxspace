@@ -1,6 +1,6 @@
 # Goldfish Review Report — Stage 7: Critic Review
 
-**Target:** `docs/designs/xiao-rp2350-bargraph.md` (`FeatureRange`: Lines 1–254)
+**Target:** `/home/brett/Documents/GitHub/nuttxspace/docs/designs/xiao-rp2350-bargraph.md` (`FeatureRange: Lines 1-253`)
 
 ## Reviewer Status
 
@@ -12,138 +12,70 @@
 
 ## Prioritized Findings (Blockers -> Major -> Nits)
 
-### 1. Missing Required `Risks & Limits` / `Risks & Mitigations` Section - Severity: Blocker
-* **Reviewer Lens:** `egm-design`, `egm-structural`
-* **Affected Scope:** `FeatureRange` structure (lines 1–254; absent between `## Non-Functional Requirements` and `## Detailed Implementation Plan`)
-* **Discrepancy Description**: `feature-spec-standard.md` mandates a `Risks & Limits` (`Risks & Mitigations`) section identifying failure modes, security implications, scalability/resource limits, and mitigations. While `## Non-Functional Requirements` (lines 226–230) covers CPU/interrupt load, SRAM footprint, and rollback/recovery, and CUJ 3 (lines 61–65) describes one ADC fault case, there is no dedicated section systematically analyzing failure modes, access boundaries, hardware/scalability limits, and mitigations.
-* **Rationale & Recommendation**: Add a `## Risks & Limits` section inside `FeatureRange` covering hardware, driver, daemon-lifecycle, and console failure modes and their mitigations.
-
-### 2. Incomplete Analog Pad `IE` Workaround Leaves `GPIO 27–29` Floating with `IE=1` - Severity: Major
+### [S7-1] Critical-Section Race, Preemption ISR Storm, and Blocking-Read Hang in Per-Tick `/dev/adc0` `open`/`read`/`close` - Severity: Major
 * **Reviewer Lens:** `egm-design`
-* **Affected Scope:** `The Problem` (line 19), `Goals` (line 29), `System Data Flow` (lines 135–136), `Board Bringup` (line 167); `nuttx/arch/arm/src/rp23xx/rp23xx_adc.c` (lines 466–483); `nuttx/boards/arm/rp23xx/common/src/rp23xx_common_initialize.c` (lines 60–65)
-* **Discrepancy Description**: `my_reset()` in `rp23xx_adc.c` loops across all `ADC_CHANNEL_COUNT` entries in `g_gpio_map` (`GPIO 26, 27, 28, 29`) and sets `RP23XX_PADS_BANK0_GPIO_IE=1` on all four pins. However, the proposed fix clears `RP23XX_PADS_BANK0_GPIO_IE` only on `GPIO 26`, leaving `GPIO 27–29` as unconnected floating inputs with digital input buffers enabled.
-* **Rationale & Recommendation**: Clear `RP23XX_PADS_BANK0_GPIO_IE` on all four pins (`GPIO 26–29`) after `rp23xx_common_bringup()` completes, matching the scope of `rp23xx_common_earlyinitialize()`.
-
-### 3. Uncalibrated `my_shutdown()` Timing, `0`-Sample FIFO Error Gap, and `read()` Signal/Short-Read Handling - Severity: Major
-* **Reviewer Lens:** `egm-design`, `egm-style`
-* **Affected Scope:** `The Problem` (line 20), `Goals` (lines 31–32), `System Data Flow` (lines 153–156), `ADC Sampling` (lines 175–176), `Non-Functional Requirements` (line 228); `nuttx/arch/arm/src/rp23xx/rp23xx_adc.c` (lines 176–210, 293–300, 532–539); `nuttx/drivers/analog/adc.c`
+* **Affected Scope:** `Lines 20-29, 51, 151-157, 175, 220, 228` (`rp23xx_adc.c`, `adc.c`)
 * **Discrepancy Description**:
-  * **Synchronous shutdown claim & unmeasured timings (`CALIBRATE`)**: Line 175 states `close()` -> `my_shutdown()` disables `RP23XX_ADC_CS`, `RP23XX_ADC_INTE`, and `RP23XX_ADC_IRQ_FIFO` before `usleep(50000)`. In `rp23xx_adc.c` (lines 532–539), `my_shutdown()` only calls `remove_device(dev)` without touching ADC hardware registers or IRQ state synchronously; disabling happens asynchronously inside `interrupt_handler()` on the next trailing FIFO interrupt once `g_active_count == 0`. Line 228 also cites unmeasured `~2 µs` active window and `~500,000 interrupts/second` figures, whereas `interrupt_handler()` calls `get_next_channel()` and arms a subsequent conversion after each sample.
-  * **`0`-sample FIFO error**: `rp23xx_adc.c` negates `value` on `RP23XX_ADC_FIFO_ERR` (`value = -value`), so an error when the 12-bit reading is `0` produces `0` and silently passes `am_data < 0`.
-  * **`-EINTR` and short-read handling**: `adc_read()` returns `-EINTR` if interrupted by `SIGTERM` and `-EIO` on `ad_isovr` with an empty FIFO, yet the `>= 5` consecutive error rule (line 184) does not exclude `EINTR` or specify handling for `read() != sizeof(struct adc_msg_s)`.
-* **Rationale & Recommendation**: Calibrate lines 175 and 228 to describe the actual asynchronous shutdown ISR and unmeasured conversion behavior, note exclusive access to `/dev/adc0` and the `0`-sample `FIFO_ERR` limitation, exclude `errno == EINTR` from the fault counter, and handle short/failed `read()` returns explicitly.
+  1. In `rp23xx_adc.c`, `add_device()` (`L329`) and `remove_device()` (`L387`) assume callers hold a critical section, yet `adc_open()` and `adc_close()` in `nuttx/drivers/analog/adc.c` only hold `nxmutex_lock(&dev->ad_lock)`. Furthermore, `remove_device()` leaves `RP23XX_ADC_IRQ_FIFO` enabled until the trailing `interrupt_handler()` sees `g_active_count == 0`, creating a race window on rapid `SIGTERM` restarts or mid-mutation ISR arrivals.
+  2. Line 220 claims per-tick `open`/`read`/`close` restricts ADC interrupts to *"one sample per tick plus at most one trailing completion interrupt"*. In `rp23xx_adc.c`, `interrupt_handler()` calls `get_next_channel()` immediately after `au_receive()`, starting another 48 MHz (~500 kS/s) conversion before `read()` returns and `close()` invokes `remove_device()`. Under task preemption (USB CDC/ACM, `nsh>`, `syslog`), the ADC ISR keeps firing until `bargraph_daemon` executes `close()`.
+  3. `read()` blocks unconditionally in `nxsem_wait(&fifo->af_sem)` (`adc.c:293`). If the ADC FIFO IRQ stalls after `open()` succeeds, `read()` hangs indefinitely rather than hitting CUJ 3's `>= 5` read-error threshold.
+* **Rationale & Recommendation**:
+  - Calibrate line 220 (`CALIBRATE`): narrow the NFR to what the code guarantees (conversions run only during the `open`-`close` window and halt on the next FIFO interrupt after `g_active_count == 0`) and state an explicit CPU/IRQ budget under preemption.
+  - Document the rapid-restart race window and set `CONFIG_BARGRAPH_PRIORITY` above `nsh` (or add a brief restart guard).
+  - Use `poll()` with a bounded timeout (e.g., 20–40 ms) before `read()` so an ADC IRQ stall triggers CUJ 3's fault loop instead of hanging, validate `nbytes == sizeof(struct adc_msg_s)`, and close `adc_fd` on every error/`EINTR` path.
 
-### 4. Contradiction on Onboard `GPIO 25` Polarity and State - Severity: Major
+### [S7-2] Daemon Singleton Check-Then-Act Race, Silent Startup Failure, and `/dev/null` FD Leak - Severity: Major
 * **Reviewer Lens:** `egm-design`
-* **Affected Scope:** `Hardware Pin Mapping` (line 125), `System Data Flow` (line 132); `nuttx/boards/arm/rp23xx/xiao-rp2350/src/rp23xx_boardinitialize.c` (lines 71–76); `nuttx/boards/arm/rp23xx/xiao-rp2350/src/rp23xx_autoleds.c` (line 115)
-* **Discrepancy Description**: Line 125 claims `GPIO 25` is *"Driven low/on by `rp23xx_boardearlyinitialize()`"*, whereas upstream `xiao-rp2350/src/rp23xx_boardinitialize.c` drives `GPIO 25` high (`true`), which turns the active-low onboard LED **off** per `rp23xx_autoleds.c` line 115.
-* **Rationale & Recommendation**: State explicitly whether the custom `rp23xx_boardinitialize.c` drives `GPIO 25` low (`false`, LED on) or matches upstream `true` (LED off), and keep the function name consistent (`rp23xx_boardearlyinitialize`).
+* **Affected Scope:** `Lines 57, 143, 181-182, 221` (`bargraph_main.c`, `nsh_usbconsole.c`)
+* **Discrepancy Description**:
+  1. Line 181 does not specify synchronization (`sched_lock()` or atomic CAS) around checking and setting `g_bargraph_running` before `task_create()`, leaving a check-then-act window for duplicate spawns, and `main()` returns `0` before `bargraph_daemon` opens `/dev/userleds` (so `/dev/userleds` open failure exits silently relative to the NSH caller).
+  2. Line 182 specifies `dup2()` onto FDs `0, 1, 2` without closing the temporary `/dev/null` descriptor when `fd > 2` (unlike `apps/nshlib/nsh_usbconsole.c:98-101`), leaking 1 descriptor against `CONFIG_NFILE_DESCRIPTORS_PER_BLOCK=6`.
+  3. Line 221 states `"add ~6 KB, verified against memmap_default.ld memory usage during build"` as if already executed, even though `Status` is `Draft` and no build output exists; `CONFIG_BARGRAPH_STACKSIZE=2048` also lacks peak stack verification for `syslog(LOG_ERR, ...)` formatting.
+* **Rationale & Recommendation**: Require `sched_lock()` around the check-and-set of `g_bargraph_running` (resetting on `task_create() < 0`), require `if (fd > 2) close(fd);`, forbid `syslog()` inside the `SIGTERM` handler, and calibrate line 221 (`CALIBRATE`) to a planned build-time linker/stack check (`memmap_default.ld` + `ps` / `CONFIG_STACK_COLORATION`).
 
-### 5. Uncalibrated Assertion About `rp23xx_userleds.c` Active-Low Polarity - Severity: Major
+### [S7-3] `rp23xx_bringup()` Early-Return Pattern Breaks CUJ 3 Headless Fault Blink - Severity: Major
+* **Reviewer Lens:** `egm-design`
+* **Affected Scope:** `Lines 61-63, 131-135` (`rp23xx_bringup.c`, `rp23xx_common_bringup.c`)
+* **Discrepancy Description**: Upstream `xiao-rp2350/src/rp23xx_bringup.c:56-60` returns early if `rp23xx_common_bringup()` returns `< 0`, skipping `userled_lower_initialize("/dev/userleds")`. Because `rp23xx_common_bringup()` returns the status of `rp23xx_adc_setup()` when timers/WDT/ROMFS are disabled, a boot-time `/dev/adc0` failure prevents `/dev/userleds` from being registered, making CUJ 3's fault blink unreachable.
+* **Rationale & Recommendation**: Explicitly specify in `Detailed Subsystem Mechanisms -> Board Bringup` that `board/src/rp23xx_bringup.c` logs negative returns from `rp23xx_common_bringup()` and still executes the `GPIO 26-29` `IE` clear and `userled_lower_initialize("/dev/userleds")`.
+
+### [S7-4] Incomplete Kconfig Contract, `Board.mk`/`Directory.mk` Build Rules, and Host Tool Prerequisites - Severity: Major
+* **Reviewer Lens:** `egm-design`
+* **Affected Scope:** `Lines 56, 84-98, 102-106, 170, 183-184, 215`
+* **Discrepancy Description**: `FeatureRange` omits required configuration dependencies for CUJ 2 (`CONFIG_RAMLOG=y`, `CONFIG_SYSLOG_DEVPATH="/dev/kmsg"`, `!CONFIG_NSH_DISABLE_{DMESG,PS,FREE,KILL}`, `CONFIG_FS_PROCFS=y`, `!CONFIG_DISABLE_ALL_SIGNALS`, `!CONFIG_EXAMPLES_ADC`), ROMFS startup (`CONFIG_ETC_ROMFS=y`, `CONFIG_ETC_ROMFSMOUNTPT="/etc"`, `!CONFIG_NSH_DISABLESCRIPT`), custom board identity (`CONFIG_ARCH_BOARD_CUSTOM_NAME`), and `Make.defs`/`Directory.mk` wiring (`DEPPATH`, `VPATH`, `RCSRCS = etc/init.d/rc.sysinit etc/init.d/rcS`, `MENUDESC`), plus `genromfs`/`xxd`/`sed` host dependencies.
+* **Rationale & Recommendation**: Add a concise "Required Kconfig & Build Wiring" subsection summarizing the full configuration contract, build-system hooks, and host tool prerequisites.
+
+### [S7-5] Missing Out-of-Tree Single-Shot ADC Driver Alternative and Hardware/Log Limits - Severity: Major
+* **Reviewer Lens:** `egm-design`
+* **Affected Scope:** `Lines 186-228` (`## Alternatives Considered`, `## Risks & Limits`)
+* **Discrepancy Description**:
+  1. `Alternatives Considered` omits evaluating a small board-local single-shot ADC driver in `board/src/` (keeping `nuttx/` untouched while eliminating the 500 kHz free-running burst and trailing-ISR race) and software multi-sample averaging vs `±24` hysteresis. Also, Alternative C (`L201`) states continuous-open reads *"overflow[] the 8-entry upper-half FIFO"*, whereas `adc_receive()` (`adc.c:493-509`) drops new samples silently without setting `ad_isovr`.
+  2. `Risks & Limits` omits open-wiper floating input behavior on `D0` (with `IE=0` and pulls off), 3.3 V reference ripple exceeding the ~19 mV hysteresis band, and RAMLOG circular wrap-around (`4096` bytes) overwriting boot logs before USB attaches.
+* **Rationale & Recommendation**: Add the board-local single-shot ADC driver alternative, refine Alternative C's FIFO drop description, and document open-wiper behavior, 3.3 V reference noise, and RAMLOG overwrite limits.
+
+### [S7-6] Uncalibrated Draft Claims, Subjective Modifiers, and Cross-Section Redundancy - Severity: Major
 * **Reviewer Lens:** `egm-style`
-* **Affected Scope:** `The Problem` — item 4 (line 22); `nuttx/boards/arm/rp23xx/xiao-rp2350/src/rp23xx_userleds.c` (lines 192–195)
-* **Discrepancy Description**: Line 22 asserts that upstream `rp23xx_userleds.c` *"hardcodes a single active-low onboard LED (`GPIO 25`) in `board_userled_all()`"*. In `rp23xx_userleds.c`, `board_userled_all()` calls `rp23xx_gpio_put(GPIO_LED1, (ledset & BOARD_LED1_BIT));`, passing the uninverted bit without active-low inversion.
-* **Rationale & Recommendation**: `CALIBRATE` line 22 to state that `board_userled_all()` hardcodes the single onboard LED `GPIO_LED1` / `BOARD_LED1_BIT`, without attributing active-low polarity to `rp23xx_userleds.c`.
-
-### 6. Inaccurate `rcS` Stdout Model and Unmitigated `/dev/ttyACM0` FD Inheritance on Restart - Severity: Major
-* **Reviewer Lens:** `egm-design`
-* **Affected Scope:** `The Problem` (line 21), `CUJ 2` (lines 58–59), `System Data Flow` (lines 143–147), `Daemon Lifecycle` (line 181); `apps/system/nsh/nsh_main.c` (lines 71–76); `apps/nshlib/nsh_usbconsole.c` (lines 286–290); `nuttx/sched/group/group_setupidlefiles.c` (lines 62–99)
+* **Affected Scope:** `Lines 13, 69, 226-227` (`Overview`, `Out-of-Tree Project Layout`, `Risks & Limits`)
 * **Discrepancy Description**:
-  * Line 21 attributes discarding `rcS` stdout to the USB console startup sequence, whereas `nsh_usbconsole.c` calls `nsh_nullstdio()` inside `nsh_consolemain()` *after* `nsh_initialize()` (which executes `rcS`) has already returned; boot-time `/dev/null` stdio comes from `group_setupidlefiles()` (`CONFIG_DEV_NULL=y` with `# CONFIG_DEV_CONSOLE is not set`).
-  * In CUJ 2, restarting `bargraph` from an active USB NSH session causes `task_create()` to inherit `nsh>`'s FDs `0, 1, 2` pointing to `/dev/ttyACM0`, keeping `/dev/ttyACM0` open in the background daemon across USB disconnects.
-* **Rationale & Recommendation**: Correct the `rcS` stdio explanation, require `CONFIG_DEV_NULL=y` in `defconfig`, and specify redirecting FDs `0, 1, 2` to `/dev/null` inside `bargraph_daemon` startup.
+  1. **Present-tense artifact claims & duplication (`CALIBRATE`)**: Lines 13 and 69 state in present indicative that `xiao-rp2350-bargraph/` and its files already *"live inside"* / *"reside inside"* the workspace, even though the document is a `Draft` and the folder does not exist yet. Line 69 also duplicates line 13.
+  2. **Subjective modifiers & misplaced hardware step (`CALIBRATE` / `RELOCATE` / `DROP`)**: Line 226 uses *"safely"* without citing RP2350 per-pin/total IOVDD datasheet limits alongside the `~24-36 mA` load. Line 227 uses filler/subjective terms *"intentionally"* and *"reliably"*, ends with editorial self-praise (*"without software multi-sample complexity"* -> `DROP`), and embeds an optional `100 nF` capacitor hardware action inside `Risks & Limits` (`RELOCATE` to hardware setup/troubleshooting guidance).
+* **Rationale & Recommendation**: Frame the directory layout in future/proposed tense once in `Out-of-Tree Project Layout`, cite numeric RP2350 IOVDD current limits, drop editorial self-praise, and relocate the `100 nF` capacitor step to hardware setup instructions.
 
-### 7. Daemon Restart Race, Signal-Safety Gaps, and Unverified `kill`/`ps` Config Dependencies - Severity: Major
+### [S7-7] Incorrect `clrbits_reg32()` Header Attribution and ROMFS Mount Sequence - Severity: Nit
 * **Reviewer Lens:** `egm-design`
-* **Affected Scope:** `CUJ 2` (lines 58–59), `Daemon Lifecycle` (lines 181–182), `Non-Functional Requirements` (line 230); `apps/nshlib/nsh_proccmds.c` (lines 1101–1102)
+* **Affected Scope:** `Lines 140-145, 166, 177`
 * **Discrepancy Description**:
-  * Clearing `g_bargraph_started` inside the `SIGTERM` handler (line 182) creates a race where a rapid `kill -15 <pid>` followed by `bargraph` can spawn a second daemon before the first finishes `ULEDIOC_SETALL(0)` and `close(led_fd)`. Conversely, an error exit without clearing the flag permanently blocks restarts.
-  * `g_bargraph_started` / shutdown flags need `volatile sig_atomic_t` with a separate stop-requested flag, clearing the running flag only immediately before exit after closing `/dev/userleds`.
-  * `cmd_kill` in `apps/nshlib/nsh_proccmds.c` requires `!CONFIG_NSH_DISABLE_KILL && !CONFIG_DISABLE_ALL_SIGNALS`, which CUJ 2 assumes without declaring in the design.
-* **Rationale & Recommendation**: Use `volatile sig_atomic_t` with separate stop-requested vs. active-daemon state cleared after cleanup, verify `SIGTERM` interrupts `usleep()` in both normal and fault loops, and explicitly require `ps` and `kill` enabled in config.
+  1. Line 166 attributes `clrbits_reg32()` to `arm_internal.h`; it is defined in `rp23xx_memorymap.h` (`L132`, pulled in via `rp23xx_gpio.h` and `hardware/rp23xx_pads_bank0.h`).
+  2. Line 142 attributes `mounts ROMFS (/etc)` to `nsh_main() -> nsh_initialize()`. In NuttX, `nx_romfsetc()` (`nuttx/sched/init/nx_bringup.c:316-318`) mounts `/etc` before `board_late_initialize()` and `nsh_main()`.
+  3. Line 177 does not specify whether large potentiometer jumps in one 50 ms tick step by 1 level or converge in one tick via `while` loops.
+* **Rationale & Recommendation**: Fix the header reference to `rp23xx_memorymap.h` (via `rp23xx_gpio.h`), move ROMFS mounting to Step 1 in the boot diagram, and specify `while`-loop convergence in `quantize_level()`.
 
-### 8. Faulty Assertion About `CONFIG_NFILE_DESCRIPTORS_PER_BLOCK=6` in Alternative D - Severity: Major
-* **Reviewer Lens:** `egm-design`
-* **Affected Scope:** `Alternatives Considered` — Alternative D (lines 209–210); `nuttx/fs/inode/fs_files.c` (lines 72–78, 239–244, 491–500)
-* **Discrepancy Description**: Alternative D states that opening six `/dev/gpout*` descriptors *"pushes against `CONFIG_NFILE_DESCRIPTORS_PER_BLOCK=6`"*. In `nuttx/fs/inode/fs_files.c`, `CONFIG_NFILE_DESCRIPTORS_PER_BLOCK` is the per-row allocation chunk size of an expandable 2-level FD table (`fl_rows`), bounded by `fdlist_limit()`, not a hard cap of 6 open descriptors.
-* **Rationale & Recommendation**: Revise Alternative D to cite the actual trade-offs: extra FD table block allocation, six `open`/`ioctl` syscalls per update, and `GPIO 26–28` exposure if upstream `board.h` macros remain.
-
-### 9. Unmitigated Hardware/Electrical Limits and ADC Quantizer Saturation/Noise Edges - Severity: Major
-* **Reviewer Lens:** `egm-design`
-* **Affected Scope:** `Overview` (line 11), `CUJ 1` (line 51), `Hardware Pin Mapping` (lines 117–124), `ADC Sampling` (line 177)
-* **Discrepancy Description**:
-  * No GPIO pin current budget, minimum series resistor value, or RP2350 pad drive strength is specified for 6 simultaneous active-high LEDs (`0x3f`) on `GPIO 2–7`.
-  * Single-sample reads with `HYSTERESIS=24` (~19 mV) can still flicker under USB VBUS ripple or wiper bounce without an RC bypass or multi-sample filter, and thresholds at `585 * k` (`level 6` entry at `3534`) saturate the top ~14% of full scale (`3534..4095`).
-* **Rationale & Recommendation**: Specify minimum LED series resistor sizing within RP2350 GPIO current limits, document the deliberate top-end saturation margin, and address breadboard wiper/rail noise mitigation.
-
-### 10. Uncalibrated SRAM Capacity and Budget Headroom Claim - Severity: Major
-* **Reviewer Lens:** `egm-style`
-* **Affected Scope:** `Non-Functional Requirements` — SRAM Footprint (line 229); `nuttx/boards/arm/rp23xx/xiao-rp2350/configs/usbnsh/defconfig` (line 38)
-* **Discrepancy Description**: Line 229 cites *"512 KB main SRAM (`memmap_default.ld`)"* and asserts that `CONFIG_RAMLOG_BUFSIZE=4096` and `CONFIG_BARGRAPH_STACKSIZE=2048` *"fit within the existing `usbnsh` memory budget"*. `usbnsh/defconfig` sets `CONFIG_RAM_SIZE=532480` (520 KB, not 512 KB), and no static `.bss`/`.data` or free-heap measurement is cited to verify headroom.
-* **Rationale & Recommendation**: `CALIBRATE` line 229 to match `CONFIG_RAM_SIZE=532480` (520 KB) and mark the 6 KB RAM budget impact as an unmeasured target pending build verification.
-
-### 11. Orphaned H3 Headings Following `## Non-Functional Requirements` - Severity: Major
+### [S7-8] Structural Formatting, Link Consistency, and Copy-Edit Nits - Severity: Nit
 * **Reviewer Lens:** `egm-structural`, `egm-style`
-* **Affected Scope:** `### Additional Resources` (line 234) and `### Future Improvements` (line 248)
-* **Discrepancy Description**: A horizontal rule at line 232 closes `## Non-Functional Requirements`, yet lines 234 and 248 use H3 (`###`) without a parent H2. Neither section is a subsection of Non-Functional Requirements.
-* **Rationale & Recommendation**: Promote both headings to H2 (`## Additional Resources` and `## Future Improvements`) to preserve valid H1 -> H2 -> H3 nesting.
-
-### 12. Subjective Phrasing and Uncalibrated Guarantees in CUJ 1 - Severity: Major
-* **Reviewer Lens:** `egm-style`
-* **Affected Scope:** `CUJ 1: Standalone Power-Up and Potentiometer Tracking` (line 53)
-* **Discrepancy Description**: Line 53 uses *"smoothly step"* (subjective for 7 discrete steps at 20 Hz), *"no boundary flicker when the wiper is stationary"* (holds only while input noise stays within ±24 counts), and *"zero background ADC interrupts between 50 ms sample ticks"* (ignores the trailing completion ISR before `g_active_count == 0` disables the IRQ).
-* **Rationale & Recommendation**: `CALIBRATE` line 53 to state monotonic stepping across the 7 levels, qualify flicker suppression by the ±24-count hysteresis band, and note that conversions halt once the shutdown ISR detaches the ADC IRQ.
-
-### 13. Redundancy and Meta-Commentary in `## Alternatives Considered` - Severity: Major
-* **Reviewer Lens:** `egm-style`
-* **Affected Scope:** `Alternatives Considered` — Alternatives A through F (lines 188–222)
-* **Discrepancy Description**: Every alternative repeats its **Cons** bullet almost verbatim in **Reason for Rejection** prefixed by `"Rejected by author:"`. Alternatives A and F also include casual meta-commentary (`"the entire exercise"`, `"exercise code"`, `"this NuttX learning exercise"`, `"interactive learning"`), and Alternative B calls 6 LEDs *"sufficient"* without tying it to the 0–6 bar-graph requirement.
-* **Rationale & Recommendation**: Consolidate **Cons** and **Reason for Rejection** into one concise rationale per alternative and remove meta-commentary.
-
-### 14. Cross-Section Repetition and Solution Leakage in Overview / Problem / Goals - Severity: Major
-* **Reviewer Lens:** `egm-style`
-* **Affected Scope:** `Overview` (lines 11–13), `The Problem` (line 24), `Goals` (lines 28–34), `Non-Goals` (line 39), and `Out-of-Tree Project Layout` (line 71)
-* **Discrepancy Description**: Line 24 places a full solution summary at the end of `## The Problem`, which `## Goals` immediately repeats. The full root path `/home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph` and the 6 LED pin mappings are duplicated four to five times across high-level sections, and `## Goals` (lines 29–32) embeds low-level implementation tokens (`am_data >> 19`, `clrbits_reg32`, `my_shutdown()`).
-* **Rationale & Recommendation**: Trim `## The Problem` to the problem statement, express `## Goals` as system outcomes, and keep full paths and pin inventories in their canonical Architecture sections.
-
-### 15. Silent Early Startup Failure Under `rcS` - Severity: Nit
-* **Reviewer Lens:** `egm-design`
-* **Affected Scope:** `Goals` (line 34), `CUJ 2` (line 59), `Daemon Lifecycle` (lines 181, 184)
-* **Discrepancy Description**: During `rcS` boot, stdout goes to `/dev/null`, so a `printf()` error if `task_create()` fails in `bargraph_main()` would be discarded.
-* **Rationale & Recommendation**: Log `task_create()` failures via `syslog(LOG_ERR, ...)` in addition to console output.
-
-### 16. Out-of-Tree Build Path CWD Assumption - Severity: Nit
-* **Reviewer Lens:** `egm-design`
-* **Affected Scope:** `Goals` (line 28), `Non-Goals` (line 39), `Out-of-Tree Project Layout` (lines 77, 80); `apps/.gitignore` (line 33)
-* **Discrepancy Description**: `CONFIG_ARCH_BOARD_CUSTOM_DIR="../xiao-rp2350-bargraph/board"` assumes builds execute with `nuttx/` as the working directory.
-* **Rationale & Recommendation**: State this working-directory assumption explicitly in `Out-of-Tree Project Layout`.
-
-### 17. Inconsistent Horizontal Rule Section Delimiters - Severity: Nit
-* **Reviewer Lens:** `egm-structural`
-* **Affected Scope:** Horizontal rules at lines 7, 224, 232, and 253
-* **Discrepancy Description**: An 80-hyphen horizontal rule appears after the metadata block (line 7), is omitted between `## Overview` through `## Alternatives Considered`, and reappears around `## Non-Functional Requirements` (lines 224, 232) and line 253.
-* **Rationale & Recommendation**: Apply section dividers uniformly across all H2 sections or reserve them for header/footer boundaries.
-
-### 18. Structural Asymmetry in `### Detailed Subsystem Mechanisms` - Severity: Nit
-* **Reviewer Lens:** `egm-structural`
-* **Affected Scope:** `### Detailed Subsystem Mechanisms` (lines 163–184)
-* **Discrepancy Description**: Sibling `####` subsections mix prose paragraphs (lines 165–171), bullets with bold lead-ins (lines 173–177), and plain bullets without lead-ins (lines 179–184).
-* **Rationale & Recommendation**: Use consistent formatting (e.g., bullets with bold lead-ins) across sibling subsections.
-
-### 19. Colloquialism, Hyperbole, and Filler Words in `## The Problem` and Alternative B - Severity: Nit
-* **Reviewer Lens:** `egm-style`
-* **Affected Scope:** `The Problem` (lines 17, 19, 21), `Alternatives Considered` — Alternative B (line 198)
-* **Discrepancy Description**: Includes filler (`"four concrete conflicts"`, `"Furthermore,"`, `"completely avoid"`), informal phrasing (`"wiping out any LEDs"`), and hyperbolic phrasing (`"blocks USB console enumeration forever"`).
-* **Rationale & Recommendation**: Replace with dry, factual wording (e.g., `"overwriting the pin configuration of any LEDs"`, `"indefinitely"` or `"until the task exits"`).
-
-### 20. Subjective Phrasing and Threshold Mismatch in CUJ 2 and CUJ 3 - Severity: Nit
-* **Reviewer Lens:** `egm-style`
-* **Affected Scope:** `CUJ 2` (line 59) and `CUJ 3` (line 63)
-* **Discrepancy Description**: Line 59 uses `"cleanly stops the daemon"` without stating observable state changes; line 63 says `"repeated read errors"` instead of the `"consecutive read errors (>= 5)"` threshold from line 184.
-* **Rationale & Recommendation**: State the observable stop actions in CUJ 2 and align CUJ 3 with the `>= 5` consecutive error threshold.
-
-### 21. Minor Bloat and Unsubstantiated Line Count in Meta/Architecture Sections - Severity: Nit
-* **Reviewer Lens:** `egm-style`
-* **Affected Scope:** `Open Questions` (line 45), `Out-of-Tree Project Layout` (line 108), `Hardware Pin Mapping` (lines 115–121), `Future Improvements` (lines 250–251)
-* **Discrepancy Description**: Line 45 adds wordy meta-commentary after `"None."`; line 108 cites `"over 1,000 lines"` as unverified filler; lines 115–116 and 120–121 repeat identical cell notes verbatim; lines 250–251 repeat `"optional"` inside `Future Improvements`.
-* **Rationale & Recommendation**: Trim line 45 to `"None."`, replace `"over 1,000 lines of"` with `"the upstream"`, and remove `"optional"` in Future Improvements.
+* **Affected Scope:** `Lines 19, 26, 30, 37-38, 51, 134, 145, 165, 182, 215, 222, 224-245`
+* **Discrepancy Description**:
+  1. **ASCII diagram border overflow**: Lines 134 (`82` chars) and 145 (`80` chars) overflow the 79-char box width and omit the closing right `|` border.
+  2. **Risks & Limits completeness**: Line 228 states exclusive `/dev/adc0` ownership and `0`-sample `FIFO_ERR` limitations without explicit mitigations, and security implications (even if N/A for an offline breadboard device) are not explicitly noted.
+  3. **Link text uniformity**: Lines 232-245 mix board-prefixed labels, bare filenames, and repo-relative paths.
+  4. **Redundancy and word choice**: Line 165 repeats `my_reset()` details from line 19 (where `g_gpio_map` actually has 5 entries `{26, 27, 28, 29, -1}`, 4 GPIO pins + `-1`); lines 26 and 37 duplicate the zero-modification constraint; line 38 repeats the `CMakeLists.txt` `# TODO` from line 22; line 30 says *"Filter"* instead of *"Discard"* for FIFO errors; line 51 says *"step monotonically from 0 lit (0x00) to 6 lit (0x3f)"* for a round-trip (`"to 3.3 V and back"`) and embeds an internal ISR detail (`RELOCATE` to `Detailed Subsystem Mechanisms`); lines 182 and 222 use filler `"cleanly"`; line 215 uses informal `"plumbing"`.
+* **Rationale & Recommendation**: Align the ASCII box borders, standardize `Additional Resources` link labels, add mitigations/security N/A to `Risks & Limits`, and tighten the redundant/imprecise prose.
