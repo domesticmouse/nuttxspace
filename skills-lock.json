@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "skills": {
+    "agy-brain-explorer": {
+      "source": "domesticmouse/skills",
+      "sourceType": "github",
+      "skillPath": "skills/agy-brain-explorer/SKILL.md",
+      "computedHash": "8cf74199c3b7b9c64bc1b0009e1d9aa8c1f7fdb36a0a505e95fa15e18ad0dbe8"
+    },
+    "bjm-voice": {
+      "source": "domesticmouse/skills",
+      "sourceType": "github",
+      "skillPath": "skills/bjm-voice/SKILL.md",
+      "computedHash": "3d92c0a0ece351b393f218ff347d40b97a8f01c704399071980119a020caedaa"
+    }
+  }
+}
