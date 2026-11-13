@@ -1,0 +1,6 @@
+[submodule "nuttx"]
+	path = nuttx
+	url = https://github.com/domesticmouse/nuttx
+[submodule "apps"]
+	path = apps
+	url = https://github.com/domesticmouse/nuttx-apps
