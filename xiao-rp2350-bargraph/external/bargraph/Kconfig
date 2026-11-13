@@ -1,0 +1,32 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+config BARGRAPH
+	tristate "Potentiometer LED bar graph daemon"
+	default n
+	depends on ADC && USERLED && USERLED_LOWER && BUILTIN
+	---help---
+		Enable the 20 Hz potentiometer-to-LED bar graph background daemon.
+
+if BARGRAPH
+
+config BARGRAPH_PROGNAME
+	string "Program name"
+	default "bargraph"
+	---help---
+		This is the name of the program that will be used when the NSH
+		program is installed.
+
+config BARGRAPH_PRIORITY
+	int "Bar graph daemon task priority"
+	default 100
+	range 1 255
+
+config BARGRAPH_STACKSIZE
+	int "Bar graph daemon stack size"
+	default 2048
+	range 1024 8192
+
+endif # BARGRAPH

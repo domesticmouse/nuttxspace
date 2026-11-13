@@ -1,0 +1,18 @@
+############################################################################
+# xiao-rp2350-bargraph/board/src/Make.defs
+############################################################################
+
+CSRCS = rp23xx_boardinitialize.c
+CSRCS += rp23xx_bringup.c
+
+ifneq ($(CONFIG_ARCH_LEDS),y)
+  CSRCS += rp23xx_userleds.c
+endif
+
+ifeq ($(CONFIG_ETC_ROMFS),y)
+  RCSRCS = etc/init.d/rcS
+endif
+
+DEPPATH += --dep-path board
+VPATH += :board
+CFLAGS += ${INCDIR_PREFIX}$(TOPDIR)$(DELIM)arch$(DELIM)$(CONFIG_ARCH)$(DELIM)src$(DELIM)board$(DELIM)board

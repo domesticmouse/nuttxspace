@@ -1,0 +1,7 @@
+/* xiao-rp2350-bargraph/board/src/etc/init.d/rcS */
+
+#include <nuttx/config.h>
+
+#ifdef CONFIG_BARGRAPH
+bargraph
+#endif

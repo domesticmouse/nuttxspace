@@ -1,0 +1,7 @@
+############################################################################
+# xiao-rp2350-bargraph/external/bargraph/Make.defs
+############################################################################
+
+ifneq ($(CONFIG_BARGRAPH),)
+CONFIGURED_APPS += $(APPDIR)/external/bargraph
+endif
