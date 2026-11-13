@@ -5,7 +5,7 @@ Top-level NuttX workspace repository coordinating the Apache NuttX RTOS kernel (
 
 ## Subdirectories & Boundaries
 - `apps`: [./apps/README.md](./apps/README.md) - NuttX user-space application repository containing NuttShell (`nshlib`), built-in system utilities (`system`), networking/graphics/filesystem services, and example/testing applications.
-- `docs`: [./docs/designs/xiao-rp2350-bargraph.md](./docs/designs/xiao-rp2350-bargraph.md) - System architecture and implementation design documents (`docs/designs/xiao-rp2350-bargraph.md`).
+- `docs`: [./docs/designs/xiao-rp2350-bargraph.md](./docs/designs/xiao-rp2350-bargraph.md) - System architecture and implementation design documents (`docs/designs/xiao-rp2350-bargraph.md`), plus the step-by-step software-engineer tutorial ([./docs/tutorials/xiao-rp2350-bargraph.md](./docs/tutorials/xiao-rp2350-bargraph.md)).
 - `nuttx`: [./nuttx/README.md](./nuttx/README.md) - Apache NuttX RTOS kernel, architecture HALs (`arch`), board support packages (`boards`), drivers (`drivers`), filesystems (`fs`), C/C++/math libraries (`libs`), memory manager (`mm`), and networking stack (`net`).
 - `xiao-rp2350-bargraph`: [./xiao-rp2350-bargraph/Makefile](./xiao-rp2350-bargraph/Makefile) - Out-of-tree XIAO RP2350 potentiometer-to-6-LED bar-graph project containing custom board support (`board/`), the `bargraph` NSH daemon (`external/bargraph/`), and host unit tests (`tests/test_bargraph_logic.c`).
 
