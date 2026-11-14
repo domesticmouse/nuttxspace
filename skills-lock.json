@@ -7,11 +7,23 @@
       "skillPath": "skills/agy-brain-explorer/SKILL.md",
       "computedHash": "8cf74199c3b7b9c64bc1b0009e1d9aa8c1f7fdb36a0a505e95fa15e18ad0dbe8"
     },
+    "asciinema": {
+      "source": "domesticmouse/skills",
+      "sourceType": "github",
+      "skillPath": "skills/asciinema/SKILL.md",
+      "computedHash": "9780a0ed69821d0780f786b0ffa128084646df42ef5f7ae0abbdc730bc51fdb3"
+    },
     "bjm-voice": {
       "source": "domesticmouse/skills",
       "sourceType": "github",
       "skillPath": "skills/bjm-voice/SKILL.md",
       "computedHash": "3d92c0a0ece351b393f218ff347d40b97a8f01c704399071980119a020caedaa"
+    },
+    "cast-player-html": {
+      "source": "domesticmouse/skills",
+      "sourceType": "github",
+      "skillPath": "skills/cast-player-html/SKILL.md",
+      "computedHash": "1fdc0d308a0f4bd3024f4a7cbae9a2f2854da7194e27040c57172f46022718b2"
     }
   }
 }
