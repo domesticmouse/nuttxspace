@@ -39,27 +39,11 @@ Here is everything you need on the table:
 
 If you have never looked inside a solderless breadboard, think of the metal clips under the plastic holes as **variable scopes**:
 
-```text
-  Power Rails (Global scope: entire row connected horizontally)
-  [-]  o  o  o  o  o   o  o  o  o  o   o  o  o  o  o  ...  -> GND
-  [+]  o  o  o  o  o   o  o  o  o  o   o  o  o  o  o  ...  -> 3.3 V
-  ------------------------------------------------------------------
-  a    o  o  o  o  o   o  o  o  o  o   ...   \
-  b    o  o  o  o  o   o  o  o  o  o   ...    | Terminal Strip (Local scope:
-  c    o  o  o  o  o   o  o  o  o  o   ...    | 5 vertical holes share 1 wire)
-  d    o  o  o  o  o   o  o  o  o  o   ...    |
-  e    o  o  o  o  o   o  o  o  o  o   ...   /
-  ========== CENTRE TRENCH (Namespace barrier: no connection across!) ==========
-  f    o  o  o  o  o   o  o  o  o  o   ...   \
-  g    o  o  o  o  o   o  o  o  o  o   ...    | Separate 5-hole vertical strip
-  h    o  o  o  o  o   o  o  o  o  o   ...    |
-  i    o  o  o  o  o   o  o  o  o  o   ...    |
-  j    o  o  o  o  o   o  o  o  o  o   ...   /
-```
+![Solderless breadboard internal metal clips and variable scopes](../assets/breadboard-scopes.svg)
 
 *   **The two outer rails (`+` and `-`)** run horizontally along the edges—think of them as **global buses** for `3.3 V` power and `GND` (ground). *(Double-check long 830-point breadboards: some split the power rails in half right at the middle, marked by a gap in the red/blue printed line.)*
-*   **The inner 5-hole columns (`a–e` and `f–j`)** connect vertically—each 5-hole strip is a **local node**. Anything plugged into `1a` and `1e` is electrically wired together.
-*   **The centre trench** isolates rows `a–e` from `f–j`. That is why you straddle the XIAO RP2350 across the centre trench: its left header pins sit in column `e` and its right header pins sit in column `f`, so the chip doesn't short its own pins together.
+*   **The inner 5-hole columns (`a–e` and `f–j`)** connect vertically—each 5-hole strip is a **local node**. Anything plugged into the same 5-hole strip (such as `12a` and `12e`) is electrically wired together.
+*   **The centre trench** isolates rows `a–e` from `f–j`. That is why you straddle the XIAO RP2350 across the centre trench between rows `e` and `f`: one header row sits in row `e` and the opposite header row sits in row `f`, so the chip doesn't short its own pins together.
 
 ### Voltage (`3.3 V` vs `GND`): Never Plug `5 V` Into a GPIO Pin
 
@@ -278,7 +262,11 @@ Seat your XIAO RP2350 across the breadboard's centre trench (USB-C connector poi
 
 *(Notice the non-sequential GPIO numbers on the right side: `D8` is `GPIO 2`, `D9` is `GPIO 4`, and `D10` is `GPIO 3`! Always trust the chip GPIO mapping, not physical pin order.)*
 
-Here is the signal flow visually:
+In the physical layout below, each LED straddles the centre trench with its longer `+` anode leg in row `e` (receiving the GPIO signal) and its shorter `-` cathode leg in row `f`, sharing that lower 5-hole strip (`f–j`) with a `>= 330 Ω` series resistor down to the bottom `GND` (`-`) rail:
+
+![Physical breadboard wiring diagram for XIAO RP2350 bar graph](../assets/breadboard-wiring.svg)
+
+Here is the logical signal flow visually:
 
 ```mermaid
 flowchart LR
