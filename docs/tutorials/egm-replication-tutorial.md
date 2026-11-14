@@ -29,29 +29,7 @@ EGM tackles this by separating **map-reading**, **plain-English interrogation**,
 
 ## 2. High-Level Experiment Map & Telemetry
 
-The diagram below traces both what actually happened (`47` sessions, `20` root Git commits from `572a92a` to `682e169`) and where the streamlined replay sequence reorders Phase 0 upfront.
-
-```mermaid
-flowchart TD
-    P0["Phase 0 (Do First on Replay): Install Fedora 44 Toolchain & uv"]
-    P1["Phase 1: Init Submodules on egm Branch + /egm-bootstrap + /egm-drift-report"]
-    P2["Phase 2: /egm-brainstorm (ELI5 Hardware Q&A + 7 Goldfish Probes)"]
-    P3["Phase 3: /egm-draft (Upstream Audit -> Technical Spec)"]
-    P4A["Phase 4a: /egm-review Pass 1 (Interactive - Slow Serial Loop)"]
-    P4B["Phase 4b: /egm-review Pass 2 (Consolidated - Parallel Batch)"]
-    P4C["Phase 4c: /egm-review Pass 3 + /egm-resolve (Fatal ISR & Runtime Fixes)"]
-    P5["Phase 5: Implement Firmware + Compile nuttx.uf2"]
-    P6["Phase 6: Author Tutorial + Export 47 AGY Traces"]
-
-    P0 --> P1
-    P1 --> P2
-    P2 --> P3
-    P3 --> P4A
-    P4A --> P4B
-    P4B --> P4C
-    P4C --> P5
-    P5 --> P6
-```
+The ledger below traces both what actually happened (`47` sessions, `20` root Git commits from `572a92a` to `682e169`) and where the streamlined replay sequence reorders Phase 0 upfront.
 
 > [!TIP]
 > When you replay this experiment for a demo or workshop, run **Phase 0 first** (before Phase 1) and go straight to **Consolidated `/egm-review` + `/egm-resolve`** (at least two consolidated passes, skipping Pass 1's interactive stage-by-stage loop).
