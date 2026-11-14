@@ -3,9 +3,11 @@
 ## Overview
 Top-level NuttX workspace repository coordinating the Apache NuttX RTOS kernel (`nuttx`), the companion user-space applications repository (`apps`), out-of-tree target firmware (`xiao-rp2350-bargraph`), and design documentation (`docs`). Configures workspace builds where `nuttx` boots the kernel, scheduler, VFS, drivers, and networking stack, `apps` provides the NuttShell (`nshlib`), system utilities, examples, and test suites, and `xiao-rp2350-bargraph` supplies an out-of-tree custom board and 20 Hz potentiometer LED bar-graph daemon for the Seeed Studio XIAO RP2350.
 
+**Hosted Documentation:** [https://domesticmouse.github.io/nuttxspace/](https://domesticmouse.github.io/nuttxspace/)
+
 ## Subdirectories & Boundaries
 - `apps`: [./apps/README.md](./apps/README.md) - NuttX user-space application repository containing NuttShell (`nshlib`), built-in system utilities (`system`), networking/graphics/filesystem services, and example/testing applications.
-- `docs`: [./docs/designs/xiao-rp2350-bargraph.md](./docs/designs/xiao-rp2350-bargraph.md) - System architecture and implementation design documents (`docs/designs/xiao-rp2350-bargraph.md`), plus software-engineer tutorials for the firmware ([./docs/tutorials/xiao-rp2350-bargraph.md](./docs/tutorials/xiao-rp2350-bargraph.md)) and replaying the EGM workflow ([./docs/tutorials/egm-replication-tutorial.md](./docs/tutorials/egm-replication-tutorial.md)).
+- `docs`: [./docs/index.md](./docs/index.md) - Hosted documentation site published via GitHub Pages, containing tutorials ([./docs/tutorials/xiao-rp2350-bargraph.md](./docs/tutorials/xiao-rp2350-bargraph.md), [./docs/tutorials/egm-replication-tutorial.md](./docs/tutorials/egm-replication-tutorial.md)), system architecture and design specs (`docs/designs/`), EGM audit and review reports (`docs/reports/`), and exported conversation traces ([./docs/prompts/README.md](./docs/prompts/README.md)).
 - `nuttx`: [./nuttx/README.md](./nuttx/README.md) - Apache NuttX RTOS kernel, architecture HALs (`arch`), board support packages (`boards`), drivers (`drivers`), filesystems (`fs`), C/C++/math libraries (`libs`), memory manager (`mm`), and networking stack (`net`).
 - `xiao-rp2350-bargraph`: [./xiao-rp2350-bargraph/Makefile](./xiao-rp2350-bargraph/Makefile) - Out-of-tree XIAO RP2350 potentiometer-to-6-LED bar-graph project containing custom board support (`board/`), the `bargraph` NSH daemon (`external/bargraph/`), and host unit tests (`tests/test_bargraph_logic.c`).
 
@@ -20,7 +22,7 @@ Top-level NuttX workspace repository coordinating the Apache NuttX RTOS kernel (
 - Running `make -C xiao-rp2350-bargraph setup`, `configure`, or `all` creates the gitignored symlink `apps/external -> ../xiao-rp2350-bargraph/external`, generates composite `Kconfig` files (`xiao-rp2350-bargraph/external/Kconfig`, `apps/Kconfig`), stages ROMFS `etctmp*` files in `nuttx/boards/arm/rp23xx/common/`, and produces `nuttx/nuttx` (ELF) and `nuttx/nuttx.uf2` (RP2350 UF2 image via `picotool`) alongside `nuttx/nuttx.manifest`; running `make -C xiao-rp2350-bargraph distclean` removes these generated artifacts.
 
 ## System Verification
-- **Host Prerequisites (Fedora 44)** (see [./TODO.md](./TODO.md)):
+- **Host Prerequisites (Fedora 44)** (see [./docs/designs/TODO.md](./docs/designs/TODO.md)):
   - Host build and packaging tools: `gcc`, `make`, `bison`, `flex`, `gperf`, `gettext`, `texinfo`, `ncurses-devel`, `genromfs`, `xxd`, `cmake`, `libusb1-devel`, and `picocom`.
   - Kconfig frontends: `kconfig-conf`, `kconfig-tweak`, and `kconfig-mconf`.
   - ARM bare-metal cross-compiler toolchain: `arm-none-eabi-gcc-cs`, `arm-none-eabi-gcc-cs-c++`, `arm-none-eabi-binutils-cs`, and `arm-none-eabi-newlib` (`arm-none-eabi-gcc` `15.2.0-4.fc44`).

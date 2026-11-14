@@ -4,7 +4,7 @@ The joy of building with microcontrollers is watching a physical thing light up 
 
 If you have spent your career writing backend services, web apps, or mobile UIs, embedded hardware tutorials often start by assuming you already own an oscilloscope, remember Kirchhoff's voltage law from university, and instinctively know what an "input-enable pad register" does. Or, on the other end of the spectrum, they hand you an Arduino one-liner like `analogRead()` and `digitalWrite()` that hides everything interesting behind a single-threaded polling loop.
 
-This tutorial takes a different route. Starting from literally nothing—an empty folder and a handful of loose electronic parts—we are going to build [`xiao-rp2350-bargraph`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph): a real, production-style embedded firmware project running on the **Apache NuttX RTOS** (Real-Time Operating System) on a **Seeed Studio XIAO RP2350**.
+This tutorial takes a different route. Starting from literally nothing—an empty folder and a handful of loose electronic parts—we are going to build [`xiao-rp2350-bargraph`](https://github.com/domesticmouse/nuttxspace/tree/main/xiao-rp2350-bargraph): a real, production-style embedded firmware project running on the **Apache NuttX RTOS** (Real-Time Operating System) on a **Seeed Studio XIAO RP2350**.
 
 By the end, you will have:
 
@@ -107,8 +107,8 @@ However, coming from Linux, there are **two critical mental-model differences** 
 
 1.  **Flat Address Space (No MMU)**: On a Cortex-M33 microcontroller in NuttX flat-build mode, there is no virtual memory isolation between processes. Every task shares one global address space. That means `static` globals in our `bargraph` app persist in RAM across shell commands—which is actually how our singleton guard knows the daemon is already running!
 2.  **Upper-Half vs Lower-Half Drivers**: NuttX splits device drivers cleanly into two layers, much like an interface and a concrete implementation:
-    *   **Upper-half drivers** (for example [`nuttx/drivers/analog/adc.c`](file:///home/brett/Documents/GitHub/nuttxspace/nuttx/drivers/analog/adc.c) and `userled_upper.c`) implement the portable VFS glue (`open`, `read`, `poll`, `ioctl`, ring buffers, locking) that creates `/dev/adc0` and `/dev/userleds`.
-    *   **Lower-half drivers** (for example [`nuttx/arch/arm/src/rp23xx/rp23xx_adc.c`](file:///home/brett/Documents/GitHub/nuttxspace/nuttx/arch/arm/src/rp23xx/rp23xx_adc.c) and our custom [`rp23xx_userleds.c`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/board/src/rp23xx_userleds.c)) talk directly to RP2350 hardware registers and GPIO pins.
+    *   **Upper-half drivers** (for example [`nuttx/drivers/analog/adc.c`](https://github.com/domesticmouse/nuttx/blob/egm/drivers/analog/adc.c) and `userled_upper.c`) implement the portable VFS glue (`open`, `read`, `poll`, `ioctl`, ring buffers, locking) that creates `/dev/adc0` and `/dev/userleds`.
+    *   **Lower-half drivers** (for example [`nuttx/arch/arm/src/rp23xx/rp23xx_adc.c`](https://github.com/domesticmouse/nuttx/blob/egm/arch/arm/src/rp23xx/rp23xx_adc.c) and our custom [`rp23xx_userleds.c`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/board/src/rp23xx_userleds.c)) talk directly to RP2350 hardware registers and GPIO pins.
 
 Remember that distinction—because two of our biggest hardware traps live right on the boundary between those two halves!
 
@@ -120,7 +120,7 @@ Before writing custom firmware, we need a Linux host environment capable of comp
 
 ### 1. Host Prerequisites (Fedora 44 Example)
 
-Here is the exact toolset documented in [`TODO.md`](file:///home/brett/Documents/GitHub/nuttxspace/TODO.md) for Fedora 44 (on Debian/Ubuntu, package names map closely to `gcc-arm-none-eabi`, `genromfs`, `xxd`, `kconfig-frontends`, `picocom`, and `libusb-1.0-0-dev`):
+Here is the exact toolset documented in [`TODO.md`](../designs/TODO.md) for Fedora 44 (on Debian/Ubuntu, package names map closely to `gcc-arm-none-eabi`, `genromfs`, `xxd`, `kconfig-frontends`, `picocom`, and `libusb-1.0-0-dev`):
 
 1. **Core host compiler, parser generators, and Kconfig dependencies**:
    ```bash
@@ -227,7 +227,7 @@ If you glance at the XIAO RP2350 pinout, the cleanest wiring in the world would 
 
 Turns out, that neat wiring **breaks** on NuttX!
 
-Here is what I found when inspecting [`nuttx/arch/arm/src/rp23xx/rp23xx_adc.c`](file:///home/brett/Documents/GitHub/nuttxspace/nuttx/arch/arm/src/rp23xx/rp23xx_adc.c#L144-L147):
+Here is what I found when inspecting [`nuttx/arch/arm/src/rp23xx/rp23xx_adc.c`](https://github.com/domesticmouse/nuttx/blob/egm/arch/arm/src/rp23xx/rp23xx_adc.c#L144-L147):
 
 ```c
 static const int8_t g_gpio_map[ADC_CHANNEL_COUNT] =
@@ -310,7 +310,7 @@ Double-check your six LED orientations (long leg toward the jumper wire from `D3
 
 We could hack our LED pins straight into `nuttx/boards/arm/rp23xx/xiao-rp2350/`. Tempting, right?
 
-Don't do it! Mixing your personal breadboard wiring into an upstream kernel submodule creates a merge nightmare the moment you pull upstream NuttX updates. Instead, NuttX supports a clean out-of-tree plugin architecture (`CONFIG_ARCH_BOARD_CUSTOM=y`) that lets us keep every custom board file, boot script, application, test, and build wrapper inside a separate sibling directory: [`xiao-rp2350-bargraph/`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph).
+Don't do it! Mixing your personal breadboard wiring into an upstream kernel submodule creates a merge nightmare the moment you pull upstream NuttX updates. Instead, NuttX supports a clean out-of-tree plugin architecture (`CONFIG_ARCH_BOARD_CUSTOM=y`) that lets us keep every custom board file, boot script, application, test, and build wrapper inside a separate sibling directory: [`xiao-rp2350-bargraph/`](https://github.com/domesticmouse/nuttxspace/tree/main/xiao-rp2350-bargraph).
 
 Let's create the project skeleton:
 
@@ -357,7 +357,7 @@ nuttxspace/
 
 ### Four Build-System Rules That Make Out-of-Tree Builds Click
 
-Before populating those files, save yourself hours of Makefile debugging by knowing four quirks inside NuttX's build system ([`nuttx/tools/Config.mk`](file:///home/brett/Documents/GitHub/nuttxspace/nuttx/tools/Config.mk)):
+Before populating those files, save yourself hours of Makefile debugging by knowing four quirks inside NuttX's build system ([`nuttx/tools/Config.mk`](https://github.com/domesticmouse/nuttx/blob/egm/tools/Config.mk)):
 
 1.  **`xiao-rp2350-bargraph/common/` MUST NOT exist**: Around lines 184–187 of `nuttx/tools/Config.mk`, NuttX checks if `$(BOARD_DIR)/../common` exists on disk. If it does, it hijacks `BOARD_COMMON_DIR` away from `nuttx/boards/arm/rp23xx/common`. Keeping `common/` absent from `xiao-rp2350-bargraph/` lets `CONFIG_ARCH_BOARD_COMMON=y` automatically pull in all the shared RP2350 chip initialisation and bringup helpers!
 2.  **Automatic `dummy_kconfig` fallback**: Because we don't need any custom board-level Kconfig options, leaving `board/Kconfig` absent causes `nuttx/tools/Config.mk` to bind `BOARD_KCONFIG` to `boards/dummy/dummy_kconfig`. Less boilerplate for us.
@@ -366,7 +366,7 @@ Before populating those files, save yourself hours of Makefile debugging by know
 
 ### Step 5.1: Compiler Flags & Linker Script (`board/scripts/Make.defs`)
 
-When `tools/configure.sh` sets up a build, it symlinks `nuttx/Make.defs` to your board's `scripts/Make.defs`. Create [`xiao-rp2350-bargraph/board/scripts/Make.defs`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/board/scripts/Make.defs):
+When `tools/configure.sh` sets up a build, it symlinks `nuttx/Make.defs` to your board's `scripts/Make.defs`. Create [`xiao-rp2350-bargraph/board/scripts/Make.defs`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/board/scripts/Make.defs):
 
 ```makefile
 ############################################################################
@@ -396,9 +396,9 @@ AFLAGS := $(CFLAGS) -D__ASSEMBLY__
 
 ### Step 5.2: Board Header (`board/include/board.h`)
 
-Now let's write [`xiao-rp2350-bargraph/board/include/board.h`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/board/include/board.h).
+Now let's write [`xiao-rp2350-bargraph/board/include/board.h`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/board/include/board.h).
 
-Compare this with upstream [`nuttx/boards/arm/rp23xx/xiao-rp2350/include/board.h`](file:///home/brett/Documents/GitHub/nuttxspace/nuttx/boards/arm/rp23xx/xiao-rp2350/include/board.h). We keep the RP2350 clock macros (`150 MHz` system clock, `48 MHz` USB and ADC clocks), keep `BOARD_GPIO_LED_PIN` (`25`, the onboard yellow LED), set `BOARD_NLEDS` to `6`, and add `GPIO_ADC_BASE` (`26`) and `GPIO_ADC_COUNT` (`4`).
+Compare this with upstream [`nuttx/boards/arm/rp23xx/xiao-rp2350/include/board.h`](https://github.com/domesticmouse/nuttx/blob/egm/boards/arm/rp23xx/xiao-rp2350/include/board.h). We keep the RP2350 clock macros (`150 MHz` system clock, `48 MHz` USB and ADC clocks), keep `BOARD_GPIO_LED_PIN` (`25`, the onboard yellow LED), set `BOARD_NLEDS` to `6`, and add `GPIO_ADC_BASE` (`26`) and `GPIO_ADC_COUNT` (`4`).
 
 Just as importantly, look at what we **leave out**: we deliberately omit upstream's `GPIO_OUT1` (`28`), `GPIO_IN1` (`27`), and `GPIO_IRQPIN1` (`26`) definitions, as well as unused I2C/SPI headers. That guarantees no generic `/dev/gpout*` character driver can accidentally touch our ADC pin or the clobbered pins.
 
@@ -484,7 +484,7 @@ NuttX boots in three distinct stages:
 2.  **`rp23xx_boardinitialize()`**: Runs during core board init and delegates to `rp23xx_common_initialize()`.
 3.  **`board_late_initialize()`**: Guarded by `CONFIG_BOARD_LATE_INITIALIZE`, this runs *after* VFS and RAMLOG are ready, right before NuttShell runs `/etc/init.d/rcS`. Note that upstream `usbnsh/defconfig` leaves `CONFIG_BOARD_LATE_INITIALIZE` up to Kconfig's default (`y`), so we explicitly enable it in our `defconfig` to ensure `/dev/adc0` and `/dev/userleds` actually exist before our startup script launches!
 
-Create [`xiao-rp2350-bargraph/board/src/rp23xx_boardinitialize.c`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/board/src/rp23xx_boardinitialize.c):
+Create [`xiao-rp2350-bargraph/board/src/rp23xx_boardinitialize.c`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/board/src/rp23xx_boardinitialize.c):
 
 ```c
 /****************************************************************************
@@ -564,13 +564,13 @@ void board_late_initialize(void)
 
 Here is a sneaky hardware quirk you only uncover by reading the chip errata and driver source side by side.
 
-In [`nuttx/boards/arm/rp23xx/common/src/rp23xx_common_initialize.c`](file:///home/brett/Documents/GitHub/nuttxspace/nuttx/boards/arm/rp23xx/common/src/rp23xx_common_initialize.c#L60-L65), the RP23XX common init explicitly disables the digital input buffer (`IE`, Input Enable) on `GPIO 26–29` so analogue voltages don't cause digital pad leakage (particularly important on RP2350 silicon due to RP2350-E9 pad behaviour!).
+In [`nuttx/boards/arm/rp23xx/common/src/rp23xx_common_initialize.c`](https://github.com/domesticmouse/nuttx/blob/egm/boards/arm/rp23xx/common/src/rp23xx_common_initialize.c#L60-L65), the RP23XX common init explicitly disables the digital input buffer (`IE`, Input Enable) on `GPIO 26–29` so analogue voltages don't cause digital pad leakage (particularly important on RP2350 silicon due to RP2350-E9 pad behaviour!).
 
 **However**, a few milliseconds later, `rp23xx_common_bringup()` calls `rp23xx_adc_setup("/dev/adc0", ...)` -> `adc_register()` -> `my_reset()` -> `rp23xx_gpio_set_function(a_gpio, RP23XX_GPIO_FUNC_NULL)`. And what does `rp23xx_gpio_set_function()` do under the hood? **It turns `IE=1` right back on!**
 
 Which leads me to an interesting realisation: because we aren't patching `nuttx/`, we can just clear `RP23XX_PADS_BANK0_GPIO_IE` across `GPIO 26–29` immediately *after* `rp23xx_common_bringup()` returns!
 
-Notice one more piece of defensive engineering in [`xiao-rp2350-bargraph/board/src/rp23xx_bringup.c`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/board/src/rp23xx_bringup.c): if `rp23xx_common_bringup()` returns an error (say `/dev/adc0` failed to register), we log it to `syslog` **without returning early**, and still register `/dev/userleds`. Why? Because if the ADC fails at boot when no laptop is attached, the LEDs are the *only* display our daemon has to flash a fault pattern!
+Notice one more piece of defensive engineering in [`xiao-rp2350-bargraph/board/src/rp23xx_bringup.c`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/board/src/rp23xx_bringup.c): if `rp23xx_common_bringup()` returns an error (say `/dev/adc0` failed to register), we log it to `syslog` **without returning early**, and still register `/dev/userleds`. Why? Because if the ADC fails at boot when no laptop is attached, the LEDs are the *only* display our daemon has to flash a fault pattern!
 
 ```c
 /****************************************************************************
@@ -658,9 +658,9 @@ int rp23xx_bringup(void)
 
 ### Step 5.5: The 6-LED Lower-Half Driver (`rp23xx_userleds.c`)
 
-If you read upstream [`nuttx/boards/arm/rp23xx/xiao-rp2350/src/rp23xx_userleds.c`](file:///home/brett/Documents/GitHub/nuttxspace/nuttx/boards/arm/rp23xx/xiao-rp2350/src/rp23xx_userleds.c#L192-L195), you will notice it hardcodes a single LED (`GPIO_LED1` / `GPIO 25`) inside `board_userled_all()` rather than iterating over an array. Even more subtly, `CONFIG_ARCH_LEDS` defaults to `y` in `nuttx/boards/Kconfig` whenever a board supports LEDs—which compiles NuttX's kernel panic-blink driver (`rp23xx_autoleds.c`) instead of `/dev/userleds`!
+If you read upstream [`nuttx/boards/arm/rp23xx/xiao-rp2350/src/rp23xx_userleds.c`](https://github.com/domesticmouse/nuttx/blob/egm/boards/arm/rp23xx/xiao-rp2350/src/rp23xx_userleds.c#L192-L195), you will notice it hardcodes a single LED (`GPIO_LED1` / `GPIO 25`) inside `board_userled_all()` rather than iterating over an array. Even more subtly, `CONFIG_ARCH_LEDS` defaults to `y` in `nuttx/boards/Kconfig` whenever a board supports LEDs—which compiles NuttX's kernel panic-blink driver (`rp23xx_autoleds.c`) instead of `/dev/userleds`!
 
-By disabling `CONFIG_ARCH_LEDS` (`# CONFIG_ARCH_LEDS is not set`) and enabling `CONFIG_BOARD_CUSTOM_LEDS=y`, `CONFIG_USERLED=y`, and `CONFIG_USERLED_LOWER=y` in our `defconfig`, NuttX builds our custom [`xiao-rp2350-bargraph/board/src/rp23xx_userleds.c`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/board/src/rp23xx_userleds.c) instead. All six LED pins (`D3, D4, D5, D8, D9, D10` -> `GPIO 5, 6, 7, 2, 4, 3`) are configured as active-high outputs driven low (`false`) at boot, and `board_userled_all()` updates all six LEDs from a single 6-bit integer bitmask (`0x00`..`0x3f`):
+By disabling `CONFIG_ARCH_LEDS` (`# CONFIG_ARCH_LEDS is not set`) and enabling `CONFIG_BOARD_CUSTOM_LEDS=y`, `CONFIG_USERLED=y`, and `CONFIG_USERLED_LOWER=y` in our `defconfig`, NuttX builds our custom [`xiao-rp2350-bargraph/board/src/rp23xx_userleds.c`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/board/src/rp23xx_userleds.c) instead. All six LED pins (`D3, D4, D5, D8, D9, D10` -> `GPIO 5, 6, 7, 2, 4, 3`) are configured as active-high outputs driven low (`false`) at boot, and `board_userled_all()` updates all six LEDs from a single 6-bit integer bitmask (`0x00`..`0x3f`):
 
 ```c
 /****************************************************************************
@@ -743,9 +743,9 @@ void board_userled_all(uint32_t ledset)
 
 ### Step 5.6: The ROMFS Boot Script & Board `Make.defs` (`rcS` and `board/src/Make.defs`)
 
-Here is a fun gotcha in [`nuttx/boards/Board.mk`](file:///home/brett/Documents/GitHub/nuttxspace/nuttx/boards/Board.mk#L29-L31): any file listed in `RCSRCS` gets piped through the **C preprocessor (`cpp`)** before `genromfs` packages it! That means if you put a normal `# shell comment` inside `rcS`, `cpp` explodes with an invalid preprocessor directive error!
+Here is a fun gotcha in [`nuttx/boards/Board.mk`](https://github.com/domesticmouse/nuttx/blob/egm/boards/Board.mk#L29-L31): any file listed in `RCSRCS` gets piped through the **C preprocessor (`cpp`)** before `genromfs` packages it! That means if you put a normal `# shell comment` inside `rcS`, `cpp` explodes with an invalid preprocessor directive error!
 
-Always use C-style `/* ... */` comments in `RCSRCS` scripts. Create [`xiao-rp2350-bargraph/board/src/etc/init.d/rcS`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/board/src/etc/init.d/rcS):
+Always use C-style `/* ... */` comments in `RCSRCS` scripts. Create [`xiao-rp2350-bargraph/board/src/etc/init.d/rcS`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/board/src/etc/init.d/rcS):
 
 ```c
 /* xiao-rp2350-bargraph/board/src/etc/init.d/rcS */
@@ -757,7 +757,7 @@ bargraph
 #endif
 ```
 
-And wire our board source files and ROMFS script together in [`xiao-rp2350-bargraph/board/src/Make.defs`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/board/src/Make.defs) (notice we omit `rp23xx_gpio.c` completely, and include `board/board` because NuttX symlinks `arch/arm/src/board` to the common RP23XX directory and `arch/arm/src/board/board` to our custom `board/src`):
+And wire our board source files and ROMFS script together in [`xiao-rp2350-bargraph/board/src/Make.defs`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/board/src/Make.defs) (notice we omit `rp23xx_gpio.c` completely, and include `board/board` because NuttX symlinks `arch/arm/src/board` to the common RP23XX directory and `arch/arm/src/board/board` to our custom `board/src`):
 
 ```makefile
 ############################################################################
@@ -786,12 +786,12 @@ CFLAGS += ${INCDIR_PREFIX}$(TOPDIR)$(DELIM)arch$(DELIM)$(CONFIG_ARCH)$(DELIM)src
 
 Now, before we even think about writing OS task management or hardware device loops, let's follow good software engineering hygiene: **separate pure math and decoding logic from NuttX headers so we can unit-test it natively on Linux with `gcc`.**
 
-Flashing a microcontroller just to debug an off-by-one bug in a threshold array is slow and unnecessary. Putting pure functions in [`xiao-rp2350-bargraph/external/bargraph/bargraph_logic.h`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/external/bargraph/bargraph_logic.h) lets us test the *exact* production inline functions on our host machine in milliseconds.
+Flashing a microcontroller just to debug an off-by-one bug in a threshold array is slow and unnecessary. Putting pure functions in [`xiao-rp2350-bargraph/external/bargraph/bargraph_logic.h`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/external/bargraph/bargraph_logic.h) lets us test the *exact* production inline functions on our host machine in milliseconds.
 
 Let's examine the three pure functions we need:
 
 1.  **`decode_adc_sample(int32_t am_data, uint16_t *raw_out)`**:
-    Look inside [`nuttx/arch/arm/src/rp23xx/rp23xx_adc.c`](file:///home/brett/Documents/GitHub/nuttxspace/nuttx/arch/arm/src/rp23xx/rp23xx_adc.c#L200-L210): the RP2350 hardware produces a 12-bit sample (`0..4095`), then the driver shifts it left by 19 bits (`value <<= 19`) to pack it into a signed 32-bit integer—and if the hardware `RP23XX_ADC_FIFO_ERR` flag was set on that conversion, the driver **negates it (`value = -value`)**!
+    Look inside [`nuttx/arch/arm/src/rp23xx/rp23xx_adc.c`](https://github.com/domesticmouse/nuttx/blob/egm/arch/arm/src/rp23xx/rp23xx_adc.c#L200-L210): the RP2350 hardware produces a 12-bit sample (`0..4095`), then the driver shifts it left by 19 bits (`value <<= 19`) to pack it into a signed 32-bit integer—and if the hardware `RP23XX_ADC_FIFO_ERR` flag was set on that conversion, the driver **negates it (`value = -value`)**!
     So, `am_data < 0` means a conversion error (`-EAGAIN`), while valid readings shift right by 19 (`am_data >> 19`) to recover `0..4095`.
 2.  **`quantize_level(uint16_t raw, int current_level, int hyst)`**:
     We divide the 12-bit scale (`0..4095`) into 7 discrete levels (`0` to `6` LEDs lit) at multiples of `585`: `{ 585, 1170, 1755, 2340, 2925, 3510 }`.
@@ -800,7 +800,7 @@ Let's examine the three pure functions we need:
 3.  **`level_to_led_mask(int level)`**:
     Turns `0..6` into a bitmask for `/dev/userleds`: `0` -> `0x00` (`0b000000`), `1` -> `0x01`, `3` -> `0x07`, `6` -> `0x3f` (`0b111111`).
 
-Create [`xiao-rp2350-bargraph/external/bargraph/bargraph_logic.h`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/external/bargraph/bargraph_logic.h):
+Create [`xiao-rp2350-bargraph/external/bargraph/bargraph_logic.h`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/external/bargraph/bargraph_logic.h):
 
 ```c
 /****************************************************************************
@@ -909,7 +909,7 @@ static inline uint32_t level_to_led_mask(int level)
 #endif /* __XIAO_RP2350_BARGRAPH_EXTERNAL_BARGRAPH_BARGRAPH_LOGIC_H */
 ```
 
-Now create the host unit test suite in [`xiao-rp2350-bargraph/tests/test_bargraph_logic.c`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/tests/test_bargraph_logic.c):
+Now create the host unit test suite in [`xiao-rp2350-bargraph/tests/test_bargraph_logic.c`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/tests/test_bargraph_logic.c):
 
 ```c
 /****************************************************************************
@@ -1055,7 +1055,7 @@ Next, we wire our application into NuttX's `apps/` build tree using the built-in
 
 Create these four tiny build-registration files inside `xiao-rp2350-bargraph/external/`:
 
-1. [`xiao-rp2350-bargraph/external/Makefile`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/external/Makefile):
+1. [`xiao-rp2350-bargraph/external/Makefile`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/external/Makefile):
    ```makefile
    ############################################################################
    # xiao-rp2350-bargraph/external/Makefile
@@ -1066,7 +1066,7 @@ Create these four tiny build-registration files inside `xiao-rp2350-bargraph/ext
    include $(APPDIR)/Directory.mk
    ```
 
-2. [`xiao-rp2350-bargraph/external/Make.defs`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/external/Make.defs):
+2. [`xiao-rp2350-bargraph/external/Make.defs`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/external/Make.defs):
    ```makefile
    ############################################################################
    # xiao-rp2350-bargraph/external/Make.defs
@@ -1075,7 +1075,7 @@ Create these four tiny build-registration files inside `xiao-rp2350-bargraph/ext
    include $(wildcard $(APPDIR)/external/*/Make.defs)
    ```
 
-3. [`xiao-rp2350-bargraph/external/bargraph/Kconfig`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/external/bargraph/Kconfig):
+3. [`xiao-rp2350-bargraph/external/bargraph/Kconfig`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/external/bargraph/Kconfig):
    ```kconfig
    #
    # For a description of the syntax of this configuration file,
@@ -1111,7 +1111,7 @@ Create these four tiny build-registration files inside `xiao-rp2350-bargraph/ext
    endif # BARGRAPH
    ```
 
-4. [`xiao-rp2350-bargraph/external/bargraph/Make.defs`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/external/bargraph/Make.defs) and [`xiao-rp2350-bargraph/external/bargraph/Makefile`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/external/bargraph/Makefile):
+4. [`xiao-rp2350-bargraph/external/bargraph/Make.defs`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/external/bargraph/Make.defs) and [`xiao-rp2350-bargraph/external/bargraph/Makefile`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/external/bargraph/Makefile):
    ```makefile
    # xiao-rp2350-bargraph/external/bargraph/Make.defs
    ifneq ($(CONFIG_BARGRAPH),)
@@ -1138,23 +1138,23 @@ If you wrote a naive C loop that opened `/dev/adc0` once at startup, slept `50 m
 
 #### Trap #2: The 500 kSPS Free-Running ADC Interrupt Storm & Stale Ring Buffer
 
-Most ADCs in POSIX RTOSes either wait for a software trigger (`ioctl(fd, ANIOC_TRIGGER, 0)`) or sample at a configured clock divider. Not `rp23xx_adc.c`! Look at `my_ioctl()` in [`rp23xx_adc.c`](file:///home/brett/Documents/GitHub/nuttxspace/nuttx/arch/arm/src/rp23xx/rp23xx_adc.c#L575-L584): it returns `-ENOTTY` for everything, configures no clock divider, and at the end of `interrupt_handler()` it unconditionally calls `get_next_channel()` to fire `RP23XX_ADC_CS_START_ONCE`.
+Most ADCs in POSIX RTOSes either wait for a software trigger (`ioctl(fd, ANIOC_TRIGGER, 0)`) or sample at a configured clock divider. Not `rp23xx_adc.c`! Look at `my_ioctl()` in [`rp23xx_adc.c`](https://github.com/domesticmouse/nuttx/blob/egm/arch/arm/src/rp23xx/rp23xx_adc.c#L575-L584): it returns `-ENOTTY` for everything, configures no clock divider, and at the end of `interrupt_handler()` it unconditionally calls `get_next_channel()` to fire `RP23XX_ADC_CS_START_ONCE`.
 
-In plain English: **as long as `/dev/adc0` stays open, the RP2350 hardware finishes a conversion every 2 microseconds and slams the CPU with ~500,000 interrupts per second.** Meanwhile, the upper-half ring buffer in [`nuttx/drivers/analog/adc.c`](file:///home/brett/Documents/GitHub/nuttxspace/nuttx/drivers/analog/adc.c#L491-L508) (`CONFIG_ADC_FIFOSIZE=8`) refuses new samples once full! So keeping `/dev/adc0` open and sleeping `50 ms` gives you *stale* data from 50 ms ago while burning CPU on dropped interrupts.
+In plain English: **as long as `/dev/adc0` stays open, the RP2350 hardware finishes a conversion every 2 microseconds and slams the CPU with ~500,000 interrupts per second.** Meanwhile, the upper-half ring buffer in [`nuttx/drivers/analog/adc.c`](https://github.com/domesticmouse/nuttx/blob/egm/drivers/analog/adc.c#L491-L508) (`CONFIG_ADC_FIFOSIZE=8`) refuses new samples once full! So keeping `/dev/adc0` open and sleeping `50 ms` gives you *stale* data from 50 ms ago while burning CPU on dropped interrupts.
 
-**The Fix**: Open `/dev/adc0` with `O_RDONLY | O_NONBLOCK`, wait up to `10 ms` via `poll(POLLIN)` (so a dead ADC never hangs the daemon forever in a blocking semaphore), read **5 bytes** (`sizeof(struct adc_msg_s)`—notice [`adc_read()`](file:///home/brett/Documents/GitHub/nuttxspace/nuttx/drivers/analog/adc.c#L241-L244) checks `buflen % 5 == 0` to decide whether to include the `am_channel` + `am_data` struct header!), and immediately **`close()`** `/dev/adc0` on every 50 ms tick. Closing the descriptor triggers `my_shutdown()`, which stops the 500 kHz interrupt stream while the daemon sleeps!
+**The Fix**: Open `/dev/adc0` with `O_RDONLY | O_NONBLOCK`, wait up to `10 ms` via `poll(POLLIN)` (so a dead ADC never hangs the daemon forever in a blocking semaphore), read **5 bytes** (`sizeof(struct adc_msg_s)`—notice [`adc_read()`](https://github.com/domesticmouse/nuttx/blob/egm/drivers/analog/adc.c#L241-L244) checks `buflen % 5 == 0` to decide whether to include the `am_channel` + `am_data` struct header!), and immediately **`close()`** `/dev/adc0` on every 50 ms tick. Closing the descriptor triggers `my_shutdown()`, which stops the 500 kHz interrupt stream while the daemon sleeps!
 
 #### Trap #3: The `close()` Race Condition in `rp23xx_adc.c`
 
 Now, remember what I said earlier about reading the upper-half and lower-half together? Here is a bug that could crash your board randomly after running cleanly for ten minutes.
 
-Look at the doc comment on `remove_device()` in [`rp23xx_adc.c`](file:///home/brett/Documents/GitHub/nuttxspace/nuttx/arch/arm/src/rp23xx/rp23xx_adc.c#L387-L407):
+Look at the doc comment on `remove_device()` in [`rp23xx_adc.c`](https://github.com/domesticmouse/nuttx/blob/egm/arch/arm/src/rp23xx/rp23xx_adc.c#L387-L407):
 
 ```c
 /* Note: This is called from inside a critical section. */
 ```
 
-Inside `remove_device()`, it clears `g_first_device = NULL` **before** decrementing `g_active_count -= 1`. Then look at `adc_close()` in [`nuttx/drivers/analog/adc.c`](file:///home/brett/Documents/GitHub/nuttxspace/nuttx/drivers/analog/adc.c#L187-L209): the upper-half holds only a mutex (`nxmutex_lock(&dev->ad_lock)`), **not a critical section**!
+Inside `remove_device()`, it clears `g_first_device = NULL` **before** decrementing `g_active_count -= 1`. Then look at `adc_close()` in [`nuttx/drivers/analog/adc.c`](https://github.com/domesticmouse/nuttx/blob/egm/drivers/analog/adc.c#L187-L209): the upper-half holds only a mutex (`nxmutex_lock(&dev->ad_lock)`), **not a critical section**!
 
 If the 500 kHz ADC FIFO interrupt preempts `close()` right between setting `g_first_device = NULL` and decrementing `g_active_count`, `interrupt_handler()` sees `g_active_count != 0`, calls `get_next_channel()`, walks an empty device list, and blows an `ASSERT(next != g_current_channel)` kernel panic!
 
@@ -1162,7 +1162,7 @@ If the 500 kHz ADC FIFO interrupt preempts `close()` right between setting `g_fi
 
 #### Trap #4: Headless Boot (`rcS`) vs Blocking USB-C Enumeration
 
-Earlier, when we flashed stock `usbnsh` and saw a blank screen until pressing `Enter` three times, remember why? Look at [`apps/system/nsh/nsh_main.c`](file:///home/brett/Documents/GitHub/nuttxspace/apps/system/nsh/nsh_main.c#L71-L76) and [`apps/nshlib/nsh_usbconsole.c`](file:///home/brett/Documents/GitHub/nuttxspace/apps/nshlib/nsh_usbconsole.c#L160-L300):
+Earlier, when we flashed stock `usbnsh` and saw a blank screen until pressing `Enter` three times, remember why? Look at [`apps/system/nsh/nsh_main.c`](https://github.com/domesticmouse/nuttx-apps/blob/egm/system/nsh/nsh_main.c#L71-L76) and [`apps/nshlib/nsh_usbconsole.c`](https://github.com/domesticmouse/nuttx-apps/blob/egm/nshlib/nsh_usbconsole.c#L160-L300):
 
 1.  `nsh_main()` calls `nsh_initialize()`, which executes `/etc/init.d/rcS` **synchronously**.
 2.  Only *after* `rcS` finishes does `nsh_main()` call `nsh_consolemain()`, which connects the USB pull-up (`BOARDIOC_USBDEV_CONNECT`) and waits in `nsh_waitusbready()` for three `\r` or `\n` keystrokes on `/dev/ttyACM0`.
@@ -1178,7 +1178,7 @@ If `bargraph` ran its `while` loop directly inside `main()`, **`rcS` would never
 
 ### Step 7.3: Write `external/bargraph/bargraph_main.c`
 
-Create [`xiao-rp2350-bargraph/external/bargraph/bargraph_main.c`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/external/bargraph/bargraph_main.c):
+Create [`xiao-rp2350-bargraph/external/bargraph/bargraph_main.c`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/external/bargraph/bargraph_main.c):
 
 ```c
 /****************************************************************************
@@ -1521,9 +1521,9 @@ We only need two final files to tie the entire out-of-tree workspace together.
 
 ### Step 8.1: Kernel & App Configuration (`board/configs/bargraph/defconfig`)
 
-Starting from upstream [`xiao-rp2350/configs/usbnsh/defconfig`](file:///home/brett/Documents/GitHub/nuttxspace/nuttx/boards/arm/rp23xx/xiao-rp2350/configs/usbnsh/defconfig), we drop the sample apps (`CONFIG_EXAMPLES_HELLO`, `CONFIG_TESTING_GETPRIME`, `CONFIG_TESTING_OSTEST`), swap the board target to our custom board directory, turn off `CONFIG_ARCH_LEDS`, turn on `ADC`, `RP23XX_ADC_CHANNEL0`, `USERLED`, `ETC_ROMFS`, `RAMLOG_SYSLOG` (4 KB ring buffer for `dmesg`), and enable `CONFIG_BARGRAPH=y`.
+Starting from upstream [`xiao-rp2350/configs/usbnsh/defconfig`](https://github.com/domesticmouse/nuttx/blob/egm/boards/arm/rp23xx/xiao-rp2350/configs/usbnsh/defconfig), we drop the sample apps (`CONFIG_EXAMPLES_HELLO`, `CONFIG_TESTING_GETPRIME`, `CONFIG_TESTING_OSTEST`), swap the board target to our custom board directory, turn off `CONFIG_ARCH_LEDS`, turn on `ADC`, `RP23XX_ADC_CHANNEL0`, `USERLED`, `ETC_ROMFS`, `RAMLOG_SYSLOG` (4 KB ring buffer for `dmesg`), and enable `CONFIG_BARGRAPH=y`.
 
-Create [`xiao-rp2350-bargraph/board/configs/bargraph/defconfig`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/board/configs/bargraph/defconfig):
+Create [`xiao-rp2350-bargraph/board/configs/bargraph/defconfig`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/board/configs/bargraph/defconfig):
 
 ```kconfig
 #
@@ -1596,9 +1596,9 @@ CONFIG_USERLED_LOWER=y
 
 ### Step 8.2: The Top-Level Build Wrapper (`xiao-rp2350-bargraph/Makefile`)
 
-Remember earlier how `apps/` generates composite `Kconfig` files? Look closely at the `setup:` rule in [`xiao-rp2350-bargraph/Makefile`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/Makefile). Because `apps/Makefile` caches `apps/Kconfig` and `apps/Make.defs` ignores `external/` until `external/Kconfig` is rebuilt, our `setup` target links `../apps/external -> ../xiao-rp2350-bargraph/external` and automatically clears stale `Kconfig` files whenever you first set up the link or edit `external/bargraph/Kconfig`.
+Remember earlier how `apps/` generates composite `Kconfig` files? Look closely at the `setup:` rule in [`xiao-rp2350-bargraph/Makefile`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/Makefile). Because `apps/Makefile` caches `apps/Kconfig` and `apps/Make.defs` ignores `external/` until `external/Kconfig` is rebuilt, our `setup` target links `../apps/external -> ../xiao-rp2350-bargraph/external` and automatically clears stale `Kconfig` files whenever you first set up the link or edit `external/bargraph/Kconfig`.
 
-Create [`xiao-rp2350-bargraph/Makefile`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/Makefile):
+Create [`xiao-rp2350-bargraph/Makefile`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/Makefile):
 
 ```makefile
 ############################################################################
@@ -1735,4 +1735,4 @@ Now let's run the full build-and-verify loop from the `nuttxspace/` workspace ro
 
 You started with a bare breadboard and zero electrical engineering assumptions, and you now have a real-time POSIX RTOS firmware project with out-of-tree board isolation, clean driver workarounds, host unit tests, and hardware fault diagnostics.
 
-If you want to keep exploring from here, check out [`docs/designs/xiao-rp2350-bargraph.md`](file:///home/brett/Documents/GitHub/nuttxspace/docs/designs/xiao-rp2350-bargraph.md) for the deeper architecture trade-offs—or try extending [`xiao-rp2350-bargraph`](file:///home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph) yourself by adding RP2350 PWM duty-cycle smoothing on spare pins so the top active LED fades smoothly between potentiometer notches instead of snapping!
+If you want to keep exploring from here, check out [`docs/designs/xiao-rp2350-bargraph.md`](../designs/xiao-rp2350-bargraph.md) for the deeper architecture trade-offs—or try extending [`xiao-rp2350-bargraph`](https://github.com/domesticmouse/nuttxspace/tree/main/xiao-rp2350-bargraph) yourself by adding RP2350 PWM duty-cycle smoothing on spare pins so the top active LED fades smoothly between potentiometer notches instead of snapping!

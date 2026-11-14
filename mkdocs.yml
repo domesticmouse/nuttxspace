@@ -1,0 +1,122 @@
+site_name: NuttX Workspace (nuttxspace)
+site_description: Out-of-tree Apache NuttX firmware for XIAO RP2350, EGM design & review artifacts, tutorials, and exported session traces.
+site_url: https://domesticmouse.github.io/nuttxspace/
+repo_url: https://github.com/domesticmouse/nuttxspace
+repo_name: domesticmouse/nuttxspace
+docs_dir: docs
+
+hooks:
+  - hooks/github_alerts.py
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Tutorials:
+      - "From Zero to xiao-rp2350-bargraph": tutorials/xiao-rp2350-bargraph.md
+      - "Replicating the NuttX EGM Experiment": tutorials/egm-replication-tutorial.md
+  - Designs & Specs:
+      - "Design Spec: xiao-rp2350-bargraph": designs/xiao-rp2350-bargraph.md
+      - "Concepts Brief": designs/concepts_brief.md
+      - "Initial Design Draft": designs/design_draft.md
+      - "Build Prerequisites (TODO)": designs/TODO.md
+  - EGM Review Reports:
+      - "Drift Report (2026-11-13)": reports/2026-11-13_DRIFT_REPORT.md
+      - "Pass 2 Consolidated Review": reports/consolidated_review_report.md
+      - "Pass 3 Goldfish Review": reports/goldfish_review_report.md
+      - "Comprehension Report": reports/comprehension_report.md
+      - "Design Critic Report": reports/critic_report.md
+      - "Implementation Readiness Report": reports/implementation_readiness_report.md
+      - "Zoom Out Report": reports/zoom_out_report.md
+      - "Intermediate Zoom Out Report": reports/intermediate_zoom_out_report.md
+  - Session Traces:
+      - "Trace Index": prompts/README.md
+      - "01 — Submodules & EGM Bootstrap": prompts/01-77065362-this-is-a-git-repo-i-d.md
+      - "02 — Brainstorm Parent (xiao-rp2350)": prompts/02-5d581875-i-want-to-develop-a-nuttx-app.md
+      - "03 — Brainstorm Worker": prompts/03-5bb3080a-none.md
+      - "04 — Brainstorm Worker": prompts/04-8b3f6a88-none.md
+      - "05 — Brainstorm Worker": prompts/05-823a11c3-none.md
+      - "06 — Brainstorm Worker": prompts/06-ddfb4c40-none.md
+      - "07 — Brainstorm Worker": prompts/07-a304496a-none.md
+      - "08 — Brainstorm Worker": prompts/08-75e23c78-none.md
+      - "09 — Brainstorm Worker": prompts/09-c0c3e721-none.md
+      - "10 — Design Draft (/egm-draft)": prompts/10-4973fb71-conversation.md
+      - "11 — Review Pass 1 (Interactive)": prompts/11-2adb2b87-conversation.md
+      - "12 — Pass 1 Worker": prompts/12-25c73851-none.md
+      - "13 — Pass 1 Worker": prompts/13-cf56ca2e-none.md
+      - "14 — Pass 1 Worker": prompts/14-c321fff0-none.md
+      - "15 — Pass 1 Worker": prompts/15-02a827a3-none.md
+      - "16 — Pass 1 Worker": prompts/16-996a4d95-none.md
+      - "17 — Pass 1 Worker": prompts/17-19a716cf-none.md
+      - "18 — Pass 1 Worker": prompts/18-df51336b-none.md
+      - "19 — Pass 1 Worker": prompts/19-f56b7fd5-none.md
+      - "20 — Pass 1 Worker": prompts/20-86542106-none.md
+      - "21 — Pass 1 Worker": prompts/21-777d8fc8-none.md
+      - "22 — Review Pass 2 (Consolidated)": prompts/22-1335b34e-docs-designs-xiao-rp2350-bargraph-md.md
+      - "23 — Pass 2 Worker": prompts/23-41e1fcf2-none.md
+      - "24 — Pass 2 Worker": prompts/24-a8c3e08f-none.md
+      - "25 — Pass 2 Worker": prompts/25-6d3b479d-none.md
+      - "26 — Pass 2 Worker": prompts/26-75439779-none.md
+      - "27 — Pass 2 Worker": prompts/27-db1f08ae-none.md
+      - "28 — Pass 2 Worker": prompts/28-b4e59c5a-none.md
+      - "29 — Pass 2 Worker": prompts/29-84084b29-none.md
+      - "30 — Pass 2 Worker": prompts/30-3861ec7b-none.md
+      - "31 — Pass 2 Worker": prompts/31-05934b66-none.md
+      - "32 — Pass 2 Worker": prompts/32-d239d478-none.md
+      - "33 — Review Pass 3 & Implement": prompts/33-06650694-docs-designs-xiao-rp2350-bargraph-md.md
+      - "34 — Pass 3 Worker": prompts/34-b25d6f75-none.md
+      - "35 — Pass 3 Worker": prompts/35-523dcbd6-none.md
+      - "36 — Pass 3 Worker": prompts/36-6d3ac7be-none.md
+      - "37 — Pass 3 Worker": prompts/37-717f12a5-none.md
+      - "38 — Pass 3 Worker": prompts/38-5731c9da-none.md
+      - "39 — Pass 3 Worker": prompts/39-6be6df2f-none.md
+      - "40 — Pass 3 Worker": prompts/40-62500cc9-none.md
+      - "41 — Pass 3 Worker": prompts/41-cbdba71c-none.md
+      - "42 — Pass 3 Worker": prompts/42-64f7cb0f-none.md
+      - "43 — Pass 3 Worker": prompts/43-36fdaf77-none.md
+      - "44 — Host Toolchain Audit": prompts/44-3ed3c8d3-i-think-i-ve-installed-the-required.md
+      - "45 — Toolchain & UF2 Build Verify": prompts/45-d1ec3eba-i-think-i-ve-installed-the-required.md
+      - "46 — Tutorial Authoring": prompts/46-03e64f54-ls.md
+      - "47 — Trace Export (/agy-brain-explorer)": prompts/47-413a122e-please-pull-all-agy-traces-for-this.md
