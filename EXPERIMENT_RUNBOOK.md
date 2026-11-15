@@ -18,8 +18,8 @@ Working operator checklist for provisioning, recording, post-processing, trace-e
 | **Recording Layout** | Single continuous recording:<br>`recordings/raw/vanilla-vibe.cast` | Five per-phase recordings:<br>`01-bootstrap.cast` … `05-implement.cast` stitched into `recordings/final/egm-flow.cast` |
 | **Terminal Geometry** | `120x36` (`-i 2.0`) | `120x36` (`-i 2.0`) |
 | **Stop Criterion** | `make -C xiao-rp2350-bargraph test` and `make -C xiao-rp2350-bargraph` produce `nuttx/nuttx.uf2` (or hit a terminal blocker). | Same build/test target after two passes of Consolidated `/egm-review` + `/egm-resolve`. |
-| **Off-Screen Capture** | `agy-brain-explorer.py export --project "nuttxspace-vanilla"` | `agy-brain-explorer.py export --project "nuttxspace-egm"` (captures all Goldfish subagents) |
-| **Post-Run Audit** | Score generated code against the 10-point hardware/RTOS bug scorecard + run a Goldfish audit. | Compare defect count, trace steps, `README.md` usage, and build retries against Vanilla. |
+| **Off-Screen Capture** | Export via `/agy-brain-explorer` in `nuttxspace` (`nuttxspace-vanilla` -> `docs/prompts-vanilla/`) | Export via `/agy-brain-explorer` in `nuttxspace` (`nuttxspace-egm` -> `docs/prompts-egm/`, incl. Goldfish subagents) |
+| **Post-Run Audit** | AGY comparative audit in `nuttxspace` scoring `nuttxspace-vanilla` against the 10-point hardware/RTOS scorecard. | Compare defect count, trace steps, `README.md` usage, and build retries against Vanilla. |
 
 ---
 
@@ -387,208 +387,82 @@ git commit -m "Phase 5: implement xiao-rp2350-bargraph firmware and host tests"
 
 ---
 
-## 6. Capturing Off-Screen Telemetry & Subagent Traces (`/agy-brain-explorer`)
+## 6. Post-Recording Step 1: Match & Export AGY Traces (`/agy-brain-explorer`)
 
-Because Goldfish subagents, thinking blocks, file reads, and off-camera retries are stored in `~/.gemini/**/brain/`, export every trace from **both** experiments using `.agents/skills/agy-brain-explorer/scripts/agy-brain-explorer.py`.
+Once both recordings are saved in `recordings/raw/`, switch to **`~/Documents/GitHub/nuttxspace`** and start `agy` (note: this workspace already includes the `/agy-brain-explorer`, `/asciinema`, and `/cast-player-html` skills).
 
-> [!IMPORTANT]
-> When running these commands through an Antigravity agent instead of directly in your terminal, `agy-brain-explorer.py` must be executed with `BypassSandbox: true` (both `uv run` and `~/.gemini/**/brain/` sit outside the default sandbox).
-
-### 6.1 Discover Projects & Correlate Multi-Take Recordings
-
-Run from `~/Documents/GitHub/nuttxspace`:
+### 6.1 Launch `agy` in `nuttxspace`
 
 ```bash
 cd ~/Documents/GitHub/nuttxspace
-
-# 1. List discovered projects across ~/.gemini/**/brain/
-uv run .agents/skills/agy-brain-explorer/scripts/agy-brain-explorer.py projects
-
-# 2. List all sessions for each experiment workspace
-uv run .agents/skills/agy-brain-explorer/scripts/agy-brain-explorer.py --project "nuttxspace-vanilla" --limit 50
-uv run .agents/skills/agy-brain-explorer/scripts/agy-brain-explorer.py --project "nuttxspace-egm" --limit 100
+agy
 ```
 
-If you had any aborted or superseded `asciinema` takes in either workspace, match the `.cast` header `"timestamp"` and duration against each session's `Created (Local)` and `Duration` before trashing dead takes:
+### 6.2 Prompt: Correlate `.cast` Timestamps, Clean Dead Takes & Export Traces
 
-```bash
-# Inspect .cast Unix start timestamp and duration
-python3 -c 'import json, datetime; h=json.loads(open("recordings/raw/vanilla-vibe.cast").readline()); print(datetime.datetime.fromtimestamp(h["timestamp"]))'
-python3 .agents/skills/asciinema/scripts/trim-cast.py recordings/raw/vanilla-vibe.cast --info
-
-# Move superseded takes to macOS Trash (preview first with --dry-run)
-uv run .agents/skills/agy-brain-explorer/scripts/agy-brain-explorer.py delete <OLD_ID_1> <OLD_ID_2> --dry-run
-uv run .agents/skills/agy-brain-explorer/scripts/agy-brain-explorer.py delete <OLD_ID_1> <OLD_ID_2> --force
-```
-
-### 6.2 Export Full Trace Logs (Parent + All Subagents)
-
-Export cleanly into dedicated directories inside `nuttxspace/docs/` (wipe first if re-exporting so numbering starts cleanly at `01-`):
-
-```bash
-cd ~/Documents/GitHub/nuttxspace
-
-rm -rf docs/prompts-vanilla docs/prompts-egm
-
-uv run .agents/skills/agy-brain-explorer/scripts/agy-brain-explorer.py \
-  export --project "nuttxspace-vanilla" -o ./docs/prompts-vanilla
-
-uv run .agents/skills/agy-brain-explorer/scripts/agy-brain-explorer.py \
-  export --project "nuttxspace-egm" -o ./docs/prompts-egm
-```
-
-### 6.3 Extract Off-Screen Telemetry Metrics
-
-Compare how many files, `README.md` contracts, steps, and shell build retries happened behind the scenes in each experiment:
-
-```bash
-python3 - <<'EOF'
-import pathlib, re
-
-for label, folder in [("Vanilla", "docs/prompts-vanilla"), ("EGM", "docs/prompts-egm")]:
-    p = pathlib.Path(folder)
-    files = sorted(f for f in p.glob("*.md") if f.name != "README.md")
-    steps = reads = readme_reads = cmds = 0
-    for f in files:
-        txt = f.read_text(encoding="utf-8")
-        m = re.search(r"\*\*Total Steps\*\*\s*\|\s*(\d+)", txt)
-        if m:
-            steps += int(m.group(1))
-        reads += len(re.findall(r"\|\s*`read_file`\s*\|", txt))
-        cmds += len(re.findall(r"\|\s*`run_command`\s*\|", txt))
-        readme_reads += len(re.findall(r"read_file.*README\.md", txt))
-    print(f"{label:8s} -> sessions={len(files):2d}, steps={steps:4d}, read_file={reads:4d}, README_reads={readme_reads:3d}, run_command={cmds:3d}")
-EOF
-```
-
-*(Note: verify the regex against a sample exported trace if your `agy-brain-explorer` table columns differ—each exported Markdown log includes `### Files Read` and `### Tool Invocations` tables.)*
-
----
-
-## 7. Post-Processing `.cast` Recordings & Building HTML Cast Players
-
-### 7.1 Sanitize & Trim Every Raw Recording
-
-Strip any stray `stdin` (`"i"`), sensitive `env` keys, OSC 3008/7 sequences, and trailing `Ctrl+D` / shell-exit frames while appending a clean `3.0s` final-frame hold:
-
-```bash
-cd ~/Documents/GitHub/nuttxspace
-
-# Vanilla
-python3 .agents/skills/asciinema/scripts/sanitize-cast.py \
-  recordings/raw/vanilla-vibe.cast recordings/final/vanilla-vibe.cast
-python3 .agents/skills/asciinema/scripts/trim-cast.py \
-  recordings/final/vanilla-vibe.cast --in-place
-python3 .agents/skills/asciinema/scripts/trim-cast.py \
-  recordings/final/vanilla-vibe.cast --info
-
-# EGM phases 01..05
-mkdir -p recordings/final/egm-phases
-for name in 01-bootstrap 02-brainstorm 03-draft 04-review 05-implement; do
-  python3 .agents/skills/asciinema/scripts/sanitize-cast.py \
-    "recordings/raw/${name}.cast" "recordings/final/egm-phases/${name}.cast"
-  python3 .agents/skills/asciinema/scripts/trim-cast.py \
-    "recordings/final/egm-phases/${name}.cast" --in-place
-  python3 .agents/skills/asciinema/scripts/trim-cast.py \
-    "recordings/final/egm-phases/${name}.cast" --info
-done
-```
-
-### 7.2 Stitch EGM Phases `01`–`05` into `recordings/final/egm-flow.cast`
-
-Because `asciinema 3.2.1` records `asciicast v3` (relative `dt` deltas), phases concatenate cleanly by keeping the header from `01-bootstrap.cast`, dropping intermediate `"x"` exit events, clearing the terminal between phases (`\u001b[2J\u001b[H`), inserting a phase boundary `"m"` marker, and preserving the final `"x"` hold only from `05-implement.cast`:
-
-```bash
-python3 - <<'EOF'
-import json
-from pathlib import Path
-
-phases = [
-    ("01-bootstrap.cast", "1. Phase 1: Bootstrap & Drift Audit"),
-    ("02-brainstorm.cast", "2. Phase 2: /egm-brainstorm"),
-    ("03-draft.cast", "3. Phase 3: /egm-draft"),
-    ("04-review.cast", "4. Phase 4: Consolidated /egm-review + /egm-resolve"),
-    ("05-implement.cast", "5. Phase 5: Implement & Build nuttx.uf2"),
-]
-
-in_dir = Path("recordings/final/egm-phases")
-out_path = Path("recordings/final/egm-flow.cast")
-
-out_lines = []
-for idx, (fname, marker_label) in enumerate(phases):
-    lines = [l for l in (in_dir / fname).read_text(encoding="utf-8").splitlines() if l.strip()]
-    if idx == 0:
-        out_lines.append(lines[0])  # v3 header
-    else:
-        # Clean screen transition + phase marker between stitched sessions
-        out_lines.append(json.dumps([0.5, "o", "\x1b[2J\x1b[H"], ensure_ascii=False))
-        out_lines.append(json.dumps([0.0, "m", marker_label], ensure_ascii=False))
-
-    is_last_phase = idx == len(phases) - 1
-    for line in lines[1:]:
-        if line.lstrip().startswith("#"):
-            continue
-        ev = json.loads(line)
-        if len(ev) >= 2 and ev[1] == "x" and not is_last_phase:
-            continue
-        out_lines.append(line)
-
-out_path.write_text("\n".join(out_lines) + "\n", encoding="utf-8")
-print(f"Wrote stitched recording -> {out_path} ({len(out_lines)} lines)")
-EOF
-
-python3 .agents/skills/asciinema/scripts/trim-cast.py recordings/final/egm-flow.cast --info
-python3 .agents/skills/asciinema/scripts/mark-cast.py recordings/final/egm-flow.cast --list
-```
-
-### 7.3 Add Stop Points (`"m"` Markers), Tighten Paste Delays & Build HTML Players
-
-Scaffold both standalone HTML players from [`.agents/skills/cast-player-html/resources/cast-player-template.html`](.agents/skills/cast-player-html/resources/cast-player-template.html):
-
-```bash
-cp .agents/skills/cast-player-html/resources/cast-player-template.html \
-  prototypes/vanilla-vibe-cast-player.html
-cp .agents/skills/cast-player-html/resources/cast-player-template.html \
-  prototypes/egm-flow-cast-player.html
-```
-
-1. **Edit metadata titles** in each HTML file (lines `1..453`, avoiding line `454` `EMBEDDED_CAST_GZ_B64`):
-   - `<title>`, `.top-title`, and `.slide-title` for `vanilla-vibe-cast-player.html` and `egm-flow-cast-player.html`.
-   - *(Tip from `cast-player-html` skill: if `egm-flow.cast` ends up with 50+ stop points, omit `<div class="chapter-pills" id="chapter-pills"></div>` so the pill grid does not push `#player-container` off-screen inside the 16:9 `.slidev-frame`.)*
-2. **Place accurate `"m"` stop points** using [`mark-cast.py`](.agents/skills/asciinema/scripts/mark-cast.py):
-   ```bash
-   # Search key commands, questions, /clear boundaries, and final build verification
-   python3 .agents/skills/asciinema/scripts/mark-cast.py recordings/final/vanilla-vibe.cast --search "agy|make -C" --context 4
-   python3 .agents/skills/asciinema/scripts/mark-cast.py recordings/final/egm-flow.cast --search "/egm-|/clear|make -C" --context 4
-
-   # Tighten cut-and-paste / prompt delays and re-embed EMBEDDED_CAST_GZ_B64
-   python3 .agents/skills/asciinema/scripts/mark-cast.py recordings/final/vanilla-vibe.cast \
-     --tighten-pastes --in-place --embed-html prototypes/vanilla-vibe-cast-player.html
-
-   python3 .agents/skills/asciinema/scripts/mark-cast.py recordings/final/egm-flow.cast \
-     --tighten-pastes --in-place --embed-html prototypes/egm-flow-cast-player.html
-   ```
-   Follow the two-stop rule from [`.agents/skills/cast-player-html/SKILL.md`](.agents/skills/cast-player-html/SKILL.md) for every interactive question, typed prompt, and `/clear`: one stop before typing (`Q: ...` / `Ready for ...`), one stop after typing before `Enter` (`Answer: ...` / `/command`).
-3. **Verify HTML player JS syntax**:
-   ```bash
-   python3 -c 'from pathlib import Path; import subprocess; h=Path("prototypes/egm-flow-cast-player.html").read_text(); js=h.split("<script>")[1].split("</script>")[0]; Path("/tmp/check_player.js").write_text(js); subprocess.run(["node","--check","/tmp/check_player.js"], check=True)'
-   ```
-
----
-
-## 8. Post-Recording Goldfish & Defect Comparison Audit
-
-Even if `vanilla-vibe` compiles `nuttx.uf2`, check **both** compiled projects against the 10 hardware/RTOS traps surfaced during the original EGM experiment (`docs/reports/goldfish_review_report.md` and `docs/designs/concepts_brief.md`).
-
-### 8.1 Optional Goldfish Audit Prompt Against Vanilla
-
-After `vanilla-vibe` finishes, open a fresh `agy` session in `~/Documents/GitHub/nuttxspace-vanilla` (without modifying Vanilla's recorded output) and run a targeted audit:
+Paste this prompt into `agy` (approve `BypassSandbox` when prompted so `/agy-brain-explorer` can read `~/.gemini/**/brain/`):
 
 ```text
-Spawn `egm-codebase-details` and `egm-design` as fresh read-only auditors against `xiao-rp2350-bargraph/` and compare every board, Kconfig, ADC, GPIO/LED, and NSH initialization choice against the real code in `nuttx/` and `apps/`. Report all runtime, pin-conflict, interrupt, and build bugs without modifying files.
+/agy-brain-explorer I just finished capturing two comparative asciinema experiments in sibling workspaces and need to match the recordings in `recordings/raw/` to their full Antigravity parent + subagent traces:
+
+- Vanilla recording: `recordings/raw/vanilla-vibe.cast` (recorded in `~/Documents/GitHub/nuttxspace-vanilla`)
+- EGM phase recordings: `recordings/raw/01-bootstrap.cast`, `02-brainstorm.cast`, `03-draft.cast`, `04-review.cast`, and `05-implement.cast` (recorded in `~/Documents/GitHub/nuttxspace-egm`)
+
+Please:
+1. Discover all sessions under `~/.gemini/**/brain/` for projects `nuttxspace-vanilla` and `nuttxspace-egm`, including any orphaned or subagent sessions spawned during those runs.
+2. Read the `.cast` header `timestamp` and duration (`--info` via `trim-cast.py`) for every recording in `recordings/raw/` and correlate each `.cast` file against the discovered sessions (`Created (Local)` and `Duration`).
+3. List any aborted or superseded takes that do not match the canonical recordings and ask my confirmation before moving them to Trash.
+4. Export the canonical Vanilla parent/subagent traces to `docs/prompts-vanilla/` and the canonical EGM parent/subagent traces to `docs/prompts-egm/`.
+5. Print a side-by-side telemetry summary comparing both experiments: session count (parent vs. subagent), total steps, `read_file` calls, `README.md` contract reads, and `run_command` build/test attempts.
 ```
 
-### 8.2 Side-by-Side 10-Point Defect Scorecard
+### Trace Extraction Checklist
+
+- [ ] Every raw `.cast` file in `recordings/raw/` is matched to its exact AGY parent session(s) by start timestamp and duration.
+- [ ] Any aborted/superseded takes have been confirmed and trashed cleanly.
+- [ ] `docs/prompts-vanilla/README.md` and `docs/prompts-egm/README.md` exist with complete exported traces.
+
+---
+
+## 7. Post-Recording Step 2: Clean Up `.cast` Files, Stitch EGM & Build HTML Players
+
+In the same `agy` session inside `~/Documents/GitHub/nuttxspace` (or after `/clear`), invoke `/asciinema` and `/cast-player-html` to clean up the recordings, cross-reference stop points with the exported traces, and generate the standalone HTML comparison players.
+
+### 7.1 Prompt: Sanitize, Trim, Stitch, Mark Stop Points & Embed HTML Players
+
+```text
+/asciinema /cast-player-html Now clean up the raw recordings in `recordings/raw/` and build standalone HTML comparison players using the exported traces in `docs/prompts-vanilla/` and `docs/prompts-egm/` for context:
+
+1. Sanitize (`sanitize-cast.py`) and trim (`trim-cast.py`) `recordings/raw/vanilla-vibe.cast` into `recordings/final/vanilla-vibe.cast`, and do the same for `01-bootstrap.cast`..`05-implement.cast` into `recordings/final/egm-phases/`.
+2. Stitch the five trimmed EGM phase casts (`01-bootstrap.cast` through `05-implement.cast`) in order into `recordings/final/egm-flow.cast`, keeping the `asciicast v3` header from `01-bootstrap.cast`, dropping intermediate `"x"` exit events, clearing the screen (`\u001b[2J\u001b[H`) between phases, inserting numbered phase boundary `"m"` markers, and preserving the final `"x"` hold only at the end of `05-implement.cast`.
+3. Inspect stdout events (`mark-cast.py --search` / `--inspect`) alongside `docs/prompts-vanilla/` and `docs/prompts-egm/` to place numbered `"m"` stop points at key milestones (command entry, interactive questions/prompts using the two-stop pattern, `/clear` boundaries, review passes, and final `make test` / `make` `.uf2` build verification), then run `--tighten-pastes`.
+4. Scaffold `prototypes/vanilla-vibe-cast-player.html` and `prototypes/egm-flow-cast-player.html` from `.agents/skills/cast-player-html/resources/cast-player-template.html`, update their titles/headers, embed `EMBEDDED_CAST_GZ_B64` via `mark-cast.py --embed-html`, and verify valid JS syntax (`node --check`) and marker timing (`mark-cast.py --list`). (If `egm-flow.cast` exceeds ~50 stop points, omit `<div class="chapter-pills" id="chapter-pills"></div>` per the `cast-player-html` skill so the player fits inside the 16:9 frame.)
+```
+
+### Cast Cleanup Checklist
+
+- [ ] `recordings/final/vanilla-vibe.cast` and `recordings/final/egm-flow.cast` pass `trim-cast.py --info` with zero trailing exit prompts.
+- [ ] `mark-cast.py --list` shows clean, sequentially numbered stop points aligned to command lines and two-stop interactive prompts.
+- [ ] `prototypes/vanilla-vibe-cast-player.html` and `prototypes/egm-flow-cast-player.html` both pass `node --check` and open cleanly via `file://` in a browser.
+
+---
+
+## 8. Post-Recording Step 3: Goldfish Audit & Comparative Scorecard
+
+Once traces are exported and recordings are packaged, run an audit prompt in `~/Documents/GitHub/nuttxspace` (using fresh Goldfish subagents) to grade the Vanilla implementation against the EGM implementation across all 10 hardware/RTOS traps from [`docs/reports/goldfish_review_report.md`](docs/reports/goldfish_review_report.md) and [`docs/designs/concepts_brief.md`](docs/designs/concepts_brief.md).
+
+### 8.1 Prompt: Side-by-Side Goldfish Audit & Telemetry Report
+
+```text
+Spawn `egm-codebase-details` and `egm-design` as fresh read-only auditors (with permission to read `~/Documents/GitHub/nuttxspace-vanilla` and `~/Documents/GitHub/nuttxspace-egm`, without modifying either repo) to compare the two generated `xiao-rp2350-bargraph/` implementations alongside:
+- Vanilla traces: `docs/prompts-vanilla/`
+- EGM traces: `docs/prompts-egm/`
+- Recording durations & stop points: `recordings/final/vanilla-vibe.cast` and `recordings/final/egm-flow.cast`
+
+Grade both implementations against the 10-point hardware/RTOS scorecard in `EXPERIMENT_RUNBOOK.md` (Section 8.2), cite exact file paths and line numbers for every defect or pass, and write the filled comparison report (with the telemetry table from Section 8.3) to `docs/reports/vanilla-vs-egm-comparison.md`.
+```
+
+### 8.2 Side-by-Side 10-Point Defect Scorecard (Reference Rubric)
 
 | # | Hardware / RTOS Invariant | What Goes Wrong Without Checking Deeply | Vanilla (`nuttxspace-vanilla`) | EGM (`nuttxspace-egm`) |
 | :---: | :--- | :--- | :--- | :--- |
@@ -603,7 +477,7 @@ Spawn `egm-codebase-details` and `egm-design` as fresh read-only auditors agains
 | **9** | **Multi-LED `rp23xx_userleds.c` (`CONFIG_ARCH_LEDS`)** | Leaving `CONFIG_ARCH_LEDS=y` compiles `rp23xx_autoleds.c` (single onboard LED) instead of `rp23xx_userleds.c` implementing active-high `board_userled_all()` across 6 LEDs. | `[ ] Pass / [ ] Fail` | `[ ] Pass / [ ] Fail` |
 | **10** | **Host Unit Test Separation (`CON-9`)** | Coupling hysteresis/quantization logic to `<nuttx/...>` headers prevents `make -C xiao-rp2350-bargraph test` from running on the host C compiler. | `[ ] Pass / [ ] Fail` | `[ ] Pass / [ ] Fail` |
 
-### 8.3 Telemetry Comparison Table (Fill After Trace Export)
+### 8.3 Telemetry Comparison Table (Target Output Schema)
 
 | Metric | Vanilla (`docs/prompts-vanilla`) | EGM (`docs/prompts-egm`) |
 | :--- | :--- | :--- |
