@@ -17,10 +17,10 @@ Working operator checklist for provisioning, recording, post-processing, trace-e
 | **Starting Baseline** | Functional requirements only (no prescribed GPIO pins, driver quirks, or Kconfig fixes). | Same functional requirements + EGM phase constraints (`One concern at a time`, read nearest `README.md`). |
 | **Recording Layout** | Single continuous recording:<br>`recordings/raw/vanilla-vibe.cast` | Five per-phase recordings:<br>`01-bootstrap.cast` … `05-implement.cast` stitched into `recordings/final/egm-flow.cast` |
 | **Terminal Geometry** | `120x36` (`-i 2.0`) | `120x36` (`-i 2.0`) |
-| **Stop Criterion** | `make -C xiao-rp2350-bargraph test` and `make -C xiao-rp2350-bargraph` produce `nuttx/nuttx.uf2` (or hit a terminal blocker). | Same build/test target after two passes of Consolidated `/egm-review` + `/egm-resolve`. |
+| **Stop Criterion** | `make -C xiao-rp2350-bargraph test` and `make -C xiao-rp2350-bargraph` produce `nuttx/nuttx.uf2` (or hit a terminal blocker), followed by generating `breadboard-wiring.svg` and `WIRING.md`. | Same build/test target after two passes of Consolidated `/egm-review` + `/egm-resolve`, followed by generating `breadboard-wiring.svg` and `WIRING.md`. |
 | **Off-Screen Capture** | Export via `/agy-brain-explorer` in `nuttxspace` (`nuttxspace-vanilla` -> `docs/prompts-vanilla/`) | Export via `/agy-brain-explorer` in `nuttxspace` (`nuttxspace-egm` -> `docs/prompts-egm/`, incl. Goldfish subagents) |
-| **Post-Run File Capture** | `docs/vanilla/xiao-rp2350-bargraph/` clean source snapshot + any workspace `.md` or `~/.gemini` brain artifacts (`docs/vanilla/brain/`, if any; Run 1 typically generates zero planning docs). | `docs/egm/` containing root `README.md`, `designs/` (`concepts_brief.md`, `design_draft.md`, `xiao-rp2350-bargraph.md`), `reports/` (`*DRIFT_REPORT.md`, `pass1/*_report.md`, `pass2/*_report.md`), `brain/` artifacts, and `docs/egm/xiao-rp2350-bargraph/` clean source snapshot. |
-| **Post-Run Audit** | AGY comparative audit in `nuttxspace` scoring `nuttxspace-vanilla` against the 10-point hardware/RTOS scorecard. | Compare defect count, trace steps, `README.md` usage, and build retries against Vanilla. |
+| **Post-Run File Capture** | `docs/vanilla/xiao-rp2350-bargraph/` clean source snapshot (including `breadboard-wiring.svg` and `WIRING.md`) + any workspace `.md` or `~/.gemini` brain artifacts (`docs/vanilla/brain/`, if any; Run 1 typically generates zero planning docs). | `docs/egm/` containing root `README.md`, `designs/` (`concepts_brief.md`, `design_draft.md`, `xiao-rp2350-bargraph.md`), `reports/` (`*DRIFT_REPORT.md`, `pass1/*_report.md`, `pass2/*_report.md`), `brain/` artifacts, and `docs/egm/xiao-rp2350-bargraph/` clean source snapshot (including `breadboard-wiring.svg` and `WIRING.md`). |
+| **Post-Run Audit** | AGY comparative audit in `nuttxspace` scoring `nuttxspace-vanilla` against the 10-point hardware/RTOS scorecard and verifying its generated `breadboard-wiring.svg` + `WIRING.md`. | Compare defect count, trace steps, `README.md` usage, build retries, and generated wiring SVG/guide accuracy against Vanilla. |
 
 ---
 
@@ -166,15 +166,23 @@ Requirements:
 - Include a Makefile in `xiao-rp2350-bargraph/` that builds host unit tests (`make -C xiao-rp2350-bargraph test`) and compiles the firmware into `nuttx/nuttx.uf2` (`make -C xiao-rp2350-bargraph`).
 ```
 
-### 4.3 Operator Rules During Experiment A
+### 4.3 Follow-Up Prompt: Breadboard Layout SVG & Circuit Wiring Guide (Post Code Generation)
+
+Once firmware code generation and build/test verification complete (and before exiting `agy`), paste this follow-up prompt verbatim:
+
+```text
+Now generate a detailed breadboard layout diagram as a standalone SVG file at `xiao-rp2350-bargraph/breadboard-wiring.svg` and a matching Markdown wiring guide at `xiao-rp2350-bargraph/WIRING.md` describing step-by-step how to wire up the Seeed Studio XIAO RP2350, the potentiometer, and the 6 discrete LEDs (including exact header pin labels, GPIO numbers, power/ground rails, and series resistors) to match the firmware you just wrote, and embed `breadboard-wiring.svg` in `WIRING.md`.
+```
+
+### 4.4 Operator Rules During Experiment A
 
 - **Do not coach embedded fixes**: Answer product-level clarifying questions if asked (e.g., *"6 LEDs is fine"*, *"any free breadboard pins you pick are fine"*, *"start automatically in the background so USB-C NSH still works"*), without hinting at `GPIO 26–29` `my_reset()`, `IE` leakage, `>> 19` shifting, `open/read/close` vs. 500 kHz IRQs, or `enter_critical_section()`.
-- **Watch for `apps/external` symlink & clean submodules**: After the agent reports completion, run these verification commands **on camera** before exiting the recording:
+- **Watch for `apps/external` symlink & clean submodules**: After the agent reports completion (including `breadboard-wiring.svg` and `WIRING.md`), run these verification commands **on camera** before exiting the recording:
 
 ```bash
 make -C xiao-rp2350-bargraph test
 make -C xiao-rp2350-bargraph
-ls -lh nuttx/nuttx nuttx/nuttx.uf2
+ls -lh nuttx/nuttx nuttx/nuttx.uf2 xiao-rp2350-bargraph/breadboard-wiring.svg xiao-rp2350-bargraph/WIRING.md
 git -C nuttx status -s
 git -C apps status -s
 ```
@@ -184,6 +192,7 @@ git -C apps status -s
 ### Run 1 Recording Checklist
 
 - [ ] `~/Documents/GitHub/nuttxspace/recordings/raw/vanilla-vibe.cast` exists and is non-empty.
+- [ ] `xiao-rp2350-bargraph/breadboard-wiring.svg` and `xiao-rp2350-bargraph/WIRING.md` were generated after code generation.
 - [ ] Build/test outcome (`PASS` or exact blocker) and `git status` of `nuttx/` + `apps/` were captured on camera.
 
 ---
@@ -212,7 +221,7 @@ Please:
 3. List any aborted or superseded takes that do not match the canonical `vanilla-vibe.cast` recording and ask my confirmation before moving them to Trash.
 4. Export the canonical Vanilla parent/subagent traces to `docs/prompts-vanilla/`.
 5. Capture Run 1's generated files into `docs/vanilla/`:
-   - Copy `~/Documents/GitHub/nuttxspace-vanilla/xiao-rp2350-bargraph/` into `docs/vanilla/xiao-rp2350-bargraph/`, excluding build outputs (`*.o`, `*.d`, `.depend`, `Make.dep`, `.built`, `.kconfig`, and compiled host test binaries such as `tests/test_bargraph_logic`).
+   - Copy `~/Documents/GitHub/nuttxspace-vanilla/xiao-rp2350-bargraph/` into `docs/vanilla/xiao-rp2350-bargraph/` (including `breadboard-wiring.svg` and `WIRING.md`), excluding build outputs (`*.o`, `*.d`, `.depend`, `Make.dep`, `.built`, `.kconfig`, and compiled host test binaries such as `tests/test_bargraph_logic`).
    - Check for any planning, design, or documentation Markdown files created in `~/Documents/GitHub/nuttxspace-vanilla/` (outside `nuttx/` and `apps/`), as well as any Markdown artifacts (`implementation_plan.md`, `task.md`, `walkthrough.md`) inside the canonical session's `~/.gemini/**/brain/<session-id>/` directory. Copy any that exist into `docs/vanilla/` (or `docs/vanilla/brain/`), and explicitly report if Run 1 generated zero planning files.
 6. Print a Vanilla telemetry summary: session count (parent vs. subagent), total steps, `read_file` calls, `README.md` reads, `run_command` build/test attempts, and count of planning/design files generated (`0` expected for Vanilla).
 ```
@@ -225,7 +234,7 @@ In the same `agy` session inside `~/Documents/GitHub/nuttxspace` (or after `/cle
 /asciinema /cast-player-html Now clean up `recordings/raw/vanilla-vibe.cast` and build the standalone Vanilla HTML player using the exported traces in `docs/prompts-vanilla/` for context:
 
 1. Sanitize (`sanitize-cast.py`) and trim (`trim-cast.py`) `recordings/raw/vanilla-vibe.cast` into `recordings/final/vanilla-vibe.cast`.
-2. Inspect stdout events (`mark-cast.py --search` / `--inspect`) alongside `docs/prompts-vanilla/` to place numbered `"m"` stop points at key milestones (command entry, interactive questions/prompts using the two-stop pattern, and final `make test` / `make` `.uf2` build verification), then run `--tighten-pastes`.
+2. Inspect stdout events (`mark-cast.py --search` / `--inspect`) alongside `docs/prompts-vanilla/` to place numbered `"m"` stop points at key milestones (command entry, interactive questions/prompts using the two-stop pattern, post-generation wiring SVG/Markdown prompt, and final `make test` / `make` `.uf2` build verification), then run `--tighten-pastes`.
 3. Scaffold `prototypes/vanilla-vibe-cast-player.html` from `.agents/skills/cast-player-html/resources/cast-player-template.html`, update its title/header, embed `EMBEDDED_CAST_GZ_B64` via `mark-cast.py --embed-html`, and verify valid JS syntax (`node --check`) and marker timing (`mark-cast.py --list`).
 ```
 
@@ -233,7 +242,7 @@ In the same `agy` session inside `~/Documents/GitHub/nuttxspace` (or after `/cle
 
 - [ ] `recordings/raw/vanilla-vibe.cast` is matched to its exact AGY parent session(s) by start timestamp and duration, and any aborted/superseded takes have been confirmed and trashed cleanly.
 - [ ] `docs/prompts-vanilla/README.md` exists with complete exported traces.
-- [ ] `docs/vanilla/xiao-rp2350-bargraph/` contains a clean snapshot of the Vanilla source tree (with build binaries/objects stripped), and any optional workspace/brain Markdown files have been captured in `docs/vanilla/` (or confirmed absent).
+- [ ] `docs/vanilla/xiao-rp2350-bargraph/` contains a clean snapshot of the Vanilla source tree (with build binaries/objects stripped), including `breadboard-wiring.svg` and `WIRING.md`, and any optional workspace/brain Markdown files have been captured in `docs/vanilla/` (or confirmed absent).
 - [ ] `recordings/final/vanilla-vibe.cast` passes `trim-cast.py --info` with zero trailing exit prompts, and `mark-cast.py --list` shows clean, sequentially numbered stop points aligned to command lines and two-stop interactive prompts.
 - [ ] `prototypes/vanilla-vibe-cast-player.html` passes `node --check` and opens cleanly via `file://` in a browser.
 
@@ -455,23 +464,32 @@ asciinema rec -i 2.0 --window-size 120x36 --overwrite \
   ~/Documents/GitHub/nuttxspace/recordings/raw/05-implement.cast
 ```
 
-Launch `agy` and trigger implementation from the reviewed spec:
+Launch `agy` and send these two prompts sequentially:
 
-```text
-Implement @[docs/designs/xiao-rp2350-bargraph.md] in `xiao-rp2350-bargraph/`, keeping `nuttx/` and `apps/` submodules completely unmodified. After creating the files, run `make -C xiao-rp2350-bargraph test` and `make -C xiao-rp2350-bargraph` and verify `nuttx/nuttx.uf2` builds cleanly and `git -C nuttx status -s` / `git -C apps status -s` show zero tracked modifications.
-```
+1. **Prompt 1 (Firmware Implementation & Build Verification):**
+   ```text
+   Implement @[docs/designs/xiao-rp2350-bargraph.md] in `xiao-rp2350-bargraph/`, keeping `nuttx/` and `apps/` submodules completely unmodified. After creating the files, run `make -C xiao-rp2350-bargraph test` and `make -C xiao-rp2350-bargraph` and verify `nuttx/nuttx.uf2` builds cleanly and `git -C nuttx status -s` / `git -C apps status -s` show zero tracked modifications.
+   ```
 
-Once `make -C xiao-rp2350-bargraph test` and `make -C xiao-rp2350-bargraph` pass on camera, exit `agy`, commit the generated firmware, and exit the shell:
+2. **Prompt 2 (Breadboard Layout SVG & Circuit Wiring Guide — Post Code Generation):**
+   Once firmware implementation and build/test verification pass, paste this follow-up prompt verbatim before exiting `agy`:
+   ```text
+   Now generate a detailed breadboard layout diagram as a standalone SVG file at `xiao-rp2350-bargraph/breadboard-wiring.svg` and a matching Markdown wiring guide at `xiao-rp2350-bargraph/WIRING.md` describing step-by-step how to wire up the Seeed Studio XIAO RP2350, the potentiometer, and the 6 discrete LEDs (including exact header pin labels, GPIO numbers, power/ground rails, and series resistors) to match the firmware you just wrote, and embed `breadboard-wiring.svg` in `WIRING.md`.
+   ```
+
+Once `make -C xiao-rp2350-bargraph test`, `make -C xiao-rp2350-bargraph`, `xiao-rp2350-bargraph/breadboard-wiring.svg`, and `xiao-rp2350-bargraph/WIRING.md` are verified on camera, exit `agy`, commit the generated firmware and wiring docs, and exit the shell:
 
 ```bash
+ls -lh xiao-rp2350-bargraph/breadboard-wiring.svg xiao-rp2350-bargraph/WIRING.md
 git add xiao-rp2350-bargraph
-git commit -m "Phase 5: implement xiao-rp2350-bargraph firmware and host tests"
+git commit -m "Phase 5: implement xiao-rp2350-bargraph firmware, host tests, and wiring docs"
 ```
 
 ### Run 2 Recording Checklist
 
 - [ ] All 5 raw `.cast` files (`01-bootstrap.cast` through `05-implement.cast`) exist in `~/Documents/GitHub/nuttxspace/recordings/raw/`.
 - [ ] `make -C xiao-rp2350-bargraph test` and `make -C xiao-rp2350-bargraph` both succeeded in `nuttxspace-egm`, producing `nuttx/nuttx.uf2`.
+- [ ] `xiao-rp2350-bargraph/breadboard-wiring.svg` and `xiao-rp2350-bargraph/WIRING.md` were generated in Phase 5 after code generation.
 - [ ] `git -C nuttx status -s` and `git -C apps status -s` show zero modified tracked files.
 
 ---
@@ -493,7 +511,7 @@ Unlike Run 1 (which typically produces only C/Makefile/Kconfig implementation fi
 | **Phase 4** (`/egm-review`, Pass 1 & Pass 2) | `docs/reports/pass1/*_report.md`, `docs/reports/pass2/*_report.md` (`comprehension_report.md`, `critic_report.md`, `structural_report.md` / `style_report.md` if emitted, `intermediate_zoom_out_report.md`, `zoom_out_report.md`, `implementation_readiness_report.md`, `consolidated_review_report.md`) | `docs/egm/reports/pass1/` and `docs/egm/reports/pass2/` | Per-persona and deduplicated critique reports (`C-01`..`C-22`): naive-reader jargon checks (`egm-comprehension`), deep hardware/RTOS/Kconfig/ISR defects (`egm-design` + `egm-codebase-details`), YAGNI/TRIZ simplification (`egm-zoom-out` + `egm-inventive-catalyst`), and build actionability (`egm-implementation-readiness`). |
 | **Phase 4** (`/egm-resolve`, Pass 1 & Pass 2) | `goldfish_review_report.md` (per pass) + `xiao-rp2350-bargraph.pass1.md` / `.pass2.md` | `docs/egm/reports/pass1/`, `docs/egm/reports/pass2/`, plus latest `docs/egm/reports/goldfish_review_report.md` | Resolution ledger recording every finding's disposition (`ACCEPT`, `REJECT`, `MODIFY`) and per-pass design snapshots showing progressive defect elimination. |
 | **Phase 4** (Final Spec) | `docs/designs/xiao-rp2350-bargraph.md` | `docs/egm/designs/xiao-rp2350-bargraph.md` | The final hardened implementation specification fed into Phase 5. |
-| **Phase 5** (Implementation) | `xiao-rp2350-bargraph/` | `docs/egm/xiao-rp2350-bargraph/` | Clean out-of-tree board config, driver bringup, daemon C code, and host unit test source tree (stripped of build binaries/object files). |
+| **Phase 5** (Implementation) | `xiao-rp2350-bargraph/` (incl. `breadboard-wiring.svg`, `WIRING.md`) | `docs/egm/xiao-rp2350-bargraph/` | Clean out-of-tree board config, driver bringup, daemon C code, host unit test source tree (stripped of build binaries/object files), and post-generation breadboard SVG + Markdown wiring guide. |
 | **Optional / Brain Artifacts** | `TODO.md`, `~/.gemini/**/brain/<session-id>/*.md` (`implementation_plan.md`, `task.md`, `walkthrough.md`) | `docs/egm/designs/TODO.md`, `docs/egm/brain/` | Supplemental checklists or Antigravity session brain artifacts produced during any EGM phase. |
 
 ### 8.2 Launch `agy` in `nuttxspace`
@@ -519,7 +537,7 @@ Please:
    - Root architectural contract: copy `README.md` -> `docs/egm/README.md`.
    - Design & planning specs: copy `concepts_brief.md` (root or `docs/designs/`), `design_draft.md`, `docs/designs/xiao-rp2350-bargraph.v0-draft.md`, `docs/designs/xiao-rp2350-bargraph.md`, and `TODO.md` (if present) into `docs/egm/designs/`.
    - Drift, review & resolution reports: copy `docs/reports/` (including `*DRIFT_REPORT.md`, `pass1/*`, `pass2/*`, any `pass3/*`, and top-level `*_report.md` files) and any root-level `*_report.md` / `*DRIFT_REPORT.md` files into `docs/egm/reports/`.
-   - Clean implementation snapshot: copy `xiao-rp2350-bargraph/` into `docs/egm/xiao-rp2350-bargraph/`, excluding build outputs (`*.o`, `*.d`, `.depend`, `Make.dep`, `.built`, `.kconfig`, and compiled host test binaries such as `tests/test_bargraph_logic`).
+   - Clean implementation snapshot: copy `xiao-rp2350-bargraph/` into `docs/egm/xiao-rp2350-bargraph/` (including `breadboard-wiring.svg` and `WIRING.md`), excluding build outputs (`*.o`, `*.d`, `.depend`, `Make.dep`, `.built`, `.kconfig`, and compiled host test binaries such as `tests/test_bargraph_logic`).
    - Brain artifacts: check the canonical `nuttxspace-egm` session folders under `~/.gemini/**/brain/` for any generated `.md` artifacts (`implementation_plan.md`, `task.md`, `walkthrough.md`) and copy any found into `docs/egm/brain/<session-prefix>/`.
 6. Print a side-by-side telemetry summary comparing `docs/prompts-egm/` + `docs/egm/` against `docs/prompts-vanilla/` + `docs/vanilla/`: session count (parent vs. subagent), total steps, `read_file` calls, `README.md` contract reads, `run_command` build/test attempts, and count of planning/design/review files generated.
 ```
@@ -533,7 +551,7 @@ In the same `agy` session inside `~/Documents/GitHub/nuttxspace` (or after `/cle
 
 1. Sanitize (`sanitize-cast.py`) and trim (`trim-cast.py`) `recordings/raw/01-bootstrap.cast`..`05-implement.cast` into `recordings/final/egm-phases/`.
 2. Stitch the five trimmed EGM phase casts (`01-bootstrap.cast` through `05-implement.cast`) in order into `recordings/final/egm-flow.cast`, keeping the `asciicast v3` header from `01-bootstrap.cast`, dropping intermediate `"x"` exit events, clearing the screen (`\u001b[2J\u001b[H`) between phases, inserting numbered phase boundary `"m"` markers, and preserving the final `"x"` hold only at the end of `05-implement.cast`.
-3. Inspect stdout events (`mark-cast.py --search` / `--inspect`) alongside `docs/prompts-egm/` to place numbered `"m"` stop points at key milestones (command entry, interactive questions/prompts using the two-stop pattern, `/clear` boundaries, review passes, and final `make test` / `make` `.uf2` build verification), then run `--tighten-pastes`.
+3. Inspect stdout events (`mark-cast.py --search` / `--inspect`) alongside `docs/prompts-egm/` to place numbered `"m"` stop points at key milestones (command entry, interactive questions/prompts using the two-stop pattern, `/clear` boundaries, review passes, final `make test` / `make` `.uf2` build verification, and post-generation wiring SVG/Markdown prompt), then run `--tighten-pastes`.
 4. Scaffold `prototypes/egm-flow-cast-player.html` from `.agents/skills/cast-player-html/resources/cast-player-template.html`, update its title/header, embed `EMBEDDED_CAST_GZ_B64` via `mark-cast.py --embed-html`, and verify valid JS syntax (`node --check`) and marker timing (`mark-cast.py --list`). (If `egm-flow.cast` exceeds ~50 stop points, omit `<div class="chapter-pills" id="chapter-pills"></div>` per the `cast-player-html` skill so the player fits inside the 16:9 frame.)
 ```
 
@@ -541,7 +559,7 @@ In the same `agy` session inside `~/Documents/GitHub/nuttxspace` (or after `/cle
 
 - [ ] All 5 raw EGM `.cast` files (`01-bootstrap.cast` through `05-implement.cast`) are matched to their exact AGY parent/subagent session(s) by start timestamp and duration, and any aborted/superseded takes have been confirmed and trashed cleanly.
 - [ ] `docs/prompts-egm/README.md` exists with complete exported traces (including Goldfish subagents).
-- [ ] `docs/egm/` contains `README.md`, `designs/` (`concepts_brief.md`, `design_draft.md`, `xiao-rp2350-bargraph.v0-draft.md`, `xiao-rp2350-bargraph.md`), `reports/` (`*DRIFT_REPORT.md`, `pass1/`, `pass2/`), and a clean `xiao-rp2350-bargraph/` source snapshot (with build binaries/objects stripped).
+- [ ] `docs/egm/` contains `README.md`, `designs/` (`concepts_brief.md`, `design_draft.md`, `xiao-rp2350-bargraph.v0-draft.md`, `xiao-rp2350-bargraph.md`), `reports/` (`*DRIFT_REPORT.md`, `pass1/`, `pass2/`), and a clean `xiao-rp2350-bargraph/` source snapshot (with build binaries/objects stripped), including `breadboard-wiring.svg` and `WIRING.md`.
 - [ ] `recordings/final/egm-flow.cast` passes `trim-cast.py --info` with zero trailing exit prompts, and `mark-cast.py --list` shows clean, sequentially numbered stop points aligned to phase boundaries, command lines, and two-stop interactive prompts.
 - [ ] `prototypes/egm-flow-cast-player.html` passes `node --check` and opens cleanly via `file://` in a browser.
 
@@ -561,7 +579,7 @@ Spawn `egm-codebase-details` and `egm-design` as fresh read-only auditors (with 
 - EGM captured designs, per-pass review reports & source: `docs/egm/` (and `~/Documents/GitHub/nuttxspace-egm`)
 - Recording durations & stop points: `recordings/final/vanilla-vibe.cast` and `recordings/final/egm-flow.cast`
 
-Grade both implementations against the 10-point hardware/RTOS scorecard in `EXPERIMENT_RUNBOOK.md` (Section 9.2), cite exact file paths and line numbers for every defect or pass, and write the filled comparison report (with the telemetry table from Section 9.3) to `docs/reports/vanilla-vs-egm-comparison.md`.
+Grade both implementations against the 10-point hardware/RTOS scorecard in `EXPERIMENT_RUNBOOK.md` (Section 9.2), verify each generated `breadboard-wiring.svg` + `WIRING.md` matches its own firmware pins and hardware safety rules (`3V3` vs. `5V`, avoiding `GPIO 26–29` for LEDs, series resistors), cite exact file paths and line numbers for every defect or pass, and write the filled comparison report (with the telemetry table from Section 9.3) to `docs/reports/vanilla-vs-egm-comparison.md`.
 ```
 
 ### 9.2 Side-by-Side 10-Point Defect Scorecard (Reference Rubric)
