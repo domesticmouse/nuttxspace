@@ -127,9 +127,9 @@ git status
 
 ### Run 1 Provisioning Verification Checklist
 
-- [ ] `~/Documents/GitHub/nuttxspace-vanilla` has clean `git status`, `nuttx` at `master` (`562db43781`), `apps` at `master` (`ab105e659c`), and `14` `README.md` files total.
-- [ ] `nuttxspace-vanilla` does not contain `xiao-rp2350-bargraph/` or `docs/` yet.
-- [ ] Note down any existing `nuttxspace-vanilla` sessions in `~/.gemini` (none should exist before recording).
+- [x] `~/Documents/GitHub/nuttxspace-vanilla` has clean `git status`, `nuttx` at `master` (`562db43781`), `apps` at `master` (`ab105e659`), and `14` `README.md` files total. *(Verified post-Run 1: `nuttx` on `562db43781`, `apps` on `ab105e659`, `13` `README.md` files across `nuttx/` and `apps/`, and zero tracked/untracked submodule edits.)*
+- [x] `nuttxspace-vanilla` does not contain `xiao-rp2350-bargraph/` or `docs/` yet. *(Confirmed clean prior to Run 1; `## main` at cast event `#0013`, `raw=2.83s`.)*
+- [x] Note down any existing `nuttxspace-vanilla` sessions in `~/.gemini` (none should exist before recording). *(Confirmed: `0` prior sessions; only `60c052d5` exists.)*
 
 ---
 
@@ -193,9 +193,9 @@ git -C apps status -s
 
 ### Run 1 Recording Checklist
 
-- [ ] `~/Documents/GitHub/nuttxspace/recordings/raw/vanilla-vibe.cast` exists and is non-empty.
-- [ ] A breadboard wiring Markdown file (with parts list and wiring description) and matching SVG diagram were generated after code generation.
-- [ ] Build/test outcome (`PASS` or exact blocker) and `git status` of `nuttx/` + `apps/` were captured on camera.
+- [x] `~/Documents/GitHub/nuttxspace/recordings/raw/vanilla-vibe.cast` exists and is non-empty. *(Verified: `3,400,774` bytes / `3.2M`, `asciicast v3` at `120x36`, `21,303` events, `46m 40.0s` raw / `33m 04.3s` at `idle_time_limit=2.0s`.)*
+- [x] A breadboard wiring Markdown file (with parts list and wiring description) and matching SVG diagram were generated after code generation. *(Verified: `BREADBOARD_WIRING.md` and `breadboard_circuit.svg` generated in `xiao-rp2350-bargraph/` after Step 211 and validated with `xmllint --noout` at Step 221.)*
+- [x] Build/test outcome (`PASS` or exact blocker) and `git status` of `nuttx/` + `apps/` were captured on camera. *(Verified on camera at cast events `#21267`–`#21295`: `make -C xiao-rp2350-bargraph test` passed, `make -C xiao-rp2350-bargraph` built `nuttx/nuttx` `2.7M` and `nuttx/nuttx.uf2` `230K`, `git status -s` showed `?? xiao-rp2350-bargraph/`, and both `nuttx/` and `apps/` remained clean.)*
 
 ---
 
@@ -231,6 +231,9 @@ Please:
 
 ### 5.3 Prompt: Sanitize, Trim, Mark Stop Points & Build Vanilla HTML Player (`/asciinema` `/cast-player-html`)
 
+> [!WARNING]
+> **`trim-cast.py` pitfall on `recordings/raw/vanilla-vibe.cast`**: `trim-cast.py --info` flags `press ctrl+d again to exit` at event `#21252` (`raw=2763.25s`), where the operator exited `agy` **before** running the on-camera final shell verification commands (`make test`, `make`, `ls -lh nuttx/nuttx nuttx/nuttx.uf2`, `git status -s`) at events `#21267`–`#21295` (`raw=2776.26s`–`2780.28s`). Do **not** auto-truncate at `#21252`; preserve events `#21267`–`#21295` and trim only the trailing `19.55s` idle wait at event `#21301` (`raw=2800.01s`) when producing `recordings/final/vanilla-vibe.cast`.
+
 In the same `agy` session inside `~/Documents/GitHub/nuttxspace` (or after `/clear`), invoke `/asciinema` and `/cast-player-html`:
 
 ```text
@@ -243,11 +246,27 @@ In the same `agy` session inside `~/Documents/GitHub/nuttxspace` (or after `/cle
 
 ### Run 1 Post-Processing Checklist
 
-- [ ] `recordings/raw/vanilla-vibe.cast` is matched to its exact AGY parent session(s) by start timestamp and duration, and any aborted/superseded takes have been confirmed and trashed cleanly.
-- [ ] `docs/prompts-vanilla/README.md` exists with complete exported traces.
-- [ ] `docs/vanilla/xiao-rp2350-bargraph/` contains a clean snapshot of the Vanilla source tree (with build binaries/objects stripped), the generated breadboard wiring Markdown and SVG files are captured in `docs/vanilla/`, and any optional workspace/brain Markdown files have been captured in `docs/vanilla/` (or confirmed absent).
+- [x] `recordings/raw/vanilla-vibe.cast` is matched to its exact AGY parent session(s) by start timestamp and duration, and any aborted/superseded takes have been confirmed and trashed cleanly. *(Matched to single session `60c052d5-d0e1-4595-8065-6dba6563fc22`; `0` subagents; `0` aborted/superseded takes to trash.)*
+- [x] `docs/prompts-vanilla/README.md` exists with complete exported traces. *(Exported `docs/prompts-vanilla/README.md` and `docs/prompts-vanilla/01-60c052d5-i-want-to-build-an-out-of.md`.)*
+- [x] `docs/vanilla/xiao-rp2350-bargraph/` contains a clean snapshot of the Vanilla source tree (with build binaries/objects stripped), the generated breadboard wiring Markdown and SVG files are captured in `docs/vanilla/`, and any optional workspace/brain Markdown files have been captured in `docs/vanilla/` (or confirmed absent). *(Captured `30` clean files in `docs/vanilla/xiao-rp2350-bargraph/` plus `docs/vanilla/BREADBOARD_WIRING.md` and `docs/vanilla/breadboard_circuit.svg`; confirmed `0` planning/design/brain Markdown files.)*
 - [ ] `recordings/final/vanilla-vibe.cast` passes `trim-cast.py --info` with zero trailing exit prompts, and `mark-cast.py --list` shows clean, sequentially numbered stop points aligned to command lines and two-stop interactive prompts.
 - [ ] `prototypes/vanilla-vibe-cast-player.html` passes `node --check` and opens cleanly via `file://` in a browser.
+
+#### Run 1 Trace & Recording Cross-Check Summary (2026-11-15)
+
+- **AGY Session**: `60c052d5-d0e1-4595-8065-6dba6563fc22` (`antigravity-cli`, `Gemini 4 Argon (Medium)`), active `17:27:24`–`18:12:57+11:00` (`0:45:33`), `225` total steps, `4` user prompts (Steps `0`, `4`, `206`, `211`), `0` subagents.
+- **Tool Telemetry (`135` tool calls)**: `read_file`: `66` (`0` `nuttx/` or `apps/` `README.md` reads; `1` self-authored `xiao-rp2350-bargraph/README.md` read at Step `212`; `6` `.rst` docs under `nuttx/Documentation/`), `run_command`: `35`, `write_file`: `27`, `edit_file`: `6`, `manage_task`: `1`.
+- **Cast ↔ Trace Correlation (`recordings/raw/vanilla-vibe.cast`, header `timestamp=1794724031` / `17:27:11+11:00`)**:
+
+| Cast Event(s) | Cast Time (`raw` / `1x`) | Local Time | Trace Step(s) | Milestone |
+| :--- | :--- | :--- | :--- | :--- |
+| `#0008`–`#0020` | `1.87s`–`4.95s` / `1.87s`–`4.95s` | `17:27:13`–`17:27:16` | *(pre-session)* | `git status -sb` (`## main`) and `agy` (`Antigravity CLI 1.5.9`) launch |
+| `#0021`–`#0026` | `11.55s`–`13.00s` / `6.95s`–`8.40s` | `17:27:24` | `Step 0` | Opening prompt pasted and submitted |
+| `#0326`–`#0378` | `40.97s`–`90.72s` / `36.37s`–`54.74s` | `17:27:52`–`17:28:42` | `Steps 3–4` | Clarifying Q&A (`"any free breadboard pins you pick are fine..."`) |
+| `#17265`–`#17507` | `2375.49s`–`2399.39s` / `1607.32s`–`1631.22s` | `18:06:46`–`18:07:10` | `Steps 206–207` | `734.19s` idle pause post-`Step 205`, followed by `status` check (`manage_task` + `ls -lh`) |
+| `#17750`–`#17756` | `2428.92s`–`2429.49s` / `1645.00s`–`1645.57s` | `18:07:40`–`18:07:41` | `Step 211` | Follow-up prompt for breadboard wiring Markdown and SVG diagram |
+| `#21252`–`#21259` | `2763.25s`–`2763.84s` / `1974.92s`–`1975.51s` | `18:13:14` | *(exit `agy`)* | `Ctrl+D` exits `agy`, printing `Resume with -c (or command below): agy --conversation=60c052d5-d0e1-4595-8065-6dba6563fc22` |
+| `#21267`–`#21295` | `2776.26s`–`2780.28s` / `1978.08s`–`1982.11s` | `18:13:27`–`18:13:31` | *(post-`agy` shell)* | Final on-camera `make test`, `make` (`nuttx/nuttx.uf2` `230K`), and `git status -s` |
 
 ---
 
@@ -607,11 +626,11 @@ Grade both implementations against the 10-point hardware/RTOS scorecard in `EXPE
 
 | Metric | Vanilla (`docs/prompts-vanilla`) | EGM (`docs/prompts-egm`) |
 | :--- | :--- | :--- |
-| **Raw Recording Duration** | | |
-| **Playback Duration (`idle=2.0s`)** | | |
-| **Parent + Subagent Sessions** | | |
-| **Total Trajectory Steps** | | |
-| **`read_file` Calls / `README.md` Reads** | | |
-| **Build Failures Before Clean `.uf2`** | | |
-| **Planning & Review Artifacts Generated** | | |
-| **Scorecard Pass Count (`X / 10`)** | | |
+| **Raw Recording Duration** | `46m 40.0s` (`2,800.03s`; `45m 33s` inside `agy`) | |
+| **Playback Duration (`idle=2.0s`)** | `33m 04.3s` (`1,984.30s`) | |
+| **Parent + Subagent Sessions** | `1` parent (`60c052d5`) + `0` subagents | |
+| **Total Trajectory Steps** | `225` steps (`4` user turns, `135` tool calls) | |
+| **`read_file` Calls / `README.md` Reads** | `66` `read_file` / `0` `nuttx` or `apps` `README.md` reads (`1` self-authored `README.md`, `6` `.rst` docs) | |
+| **Build Failures Before Clean `.uf2`** | `1` silent Kconfig drop (Step 180 missing `CONFIG_ANALOG=y` dropped `CONFIG_ADC`; fixed at Step 196) + `1` SVG `xmllint` error (Step 219) | |
+| **Planning & Review Artifacts Generated** | `0` planning/design/brain files | |
+| **Scorecard Pass Count (`X / 10`)** | Pending Section 9 audit | |

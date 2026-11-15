@@ -1,0 +1,46 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+menu "External Bar-Graph Application"
+
+config BARGRAPH_APP
+	tristate "XIAO RP2350 Potentiometer LED Bar-Graph Application"
+	default y
+	depends on ADC && USERLED
+	---help---
+		Enable the out-of-tree potentiometer-to-6-LED bar-graph daemon
+		and interactive NSH command for the Seeed Studio XIAO RP2350.
+
+if BARGRAPH_APP
+
+config BARGRAPH_APP_PROGNAME
+	string "Bar-graph NSH command name"
+	default "bargraph"
+	---help---
+		The command name registered in NuttShell (NSH).
+
+config BARGRAPH_APP_PRIORITY
+	int "Bar-graph task priority"
+	default 100
+
+config BARGRAPH_APP_STACKSIZE
+	int "Bar-graph task stack size"
+	default 2048
+
+config BARGRAPH_ADC_DEVPATH
+	string "ADC device path"
+	default "/dev/adc0"
+
+config BARGRAPH_LED_DEVPATH
+	string "UserLED device path"
+	default "/dev/userleds"
+
+config BARGRAPH_POLL_INTERVAL_MS
+	int "ADC polling interval in milliseconds"
+	default 25
+
+endif # BARGRAPH_APP
+
+endmenu # External Bar-Graph Application

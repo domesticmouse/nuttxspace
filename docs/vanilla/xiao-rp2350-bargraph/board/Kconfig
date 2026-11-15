@@ -1,0 +1,13 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+config XIAO_RP2350_BARGRAPH_BOARD
+	bool "Seeed Studio XIAO RP2350 Breadboard Bar-Graph Board"
+	default y
+	---help---
+		Out-of-tree custom board configuration for a Seeed Studio
+		XIAO RP2350 with 1 potentiometer on A0/D0 (GPIO26) and
+		6 discrete bar-graph LEDs on D3..D8 (GPIO5, GPIO6, GPIO7,
+		GPIO0, GPIO1, GPIO2).

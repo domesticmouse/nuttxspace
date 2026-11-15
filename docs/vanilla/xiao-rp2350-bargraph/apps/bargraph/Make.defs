@@ -1,0 +1,9 @@
+############################################################################
+# xiao-rp2350-bargraph/apps/bargraph/Make.defs
+#
+# SPDX-License-Identifier: Apache-2.0
+############################################################################
+
+ifneq ($(CONFIG_BARGRAPH_APP),)
+CONFIGURED_APPS += $(APPDIR)/external/bargraph
+endif

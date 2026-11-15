@@ -1,0 +1,37 @@
+############################################################################
+# xiao-rp2350-bargraph/board/scripts/Make.defs
+#
+# SPDX-License-Identifier: Apache-2.0
+############################################################################
+
+include $(TOPDIR)/.config
+include $(TOPDIR)/tools/Config.mk
+include $(TOPDIR)/tools/rp23xx/Config.mk
+include $(TOPDIR)/arch/arm/src/armv8-m/Toolchain.defs
+
+# Ensure the gitignored out-of-tree apps/external symlink points to our
+# application directory even if configure.sh is invoked directly in nuttx/.
+ifeq ($(wildcard $(TOPDIR)/../apps/external),)
+  ifneq ($(wildcard $(TOPDIR)/../xiao-rp2350-bargraph/apps),)
+    $(shell ln -sfn ../xiao-rp2350-bargraph/apps $(TOPDIR)/../apps/external)
+  endif
+endif
+
+ifeq ($(CONFIG_BOOT_RUNFROMFLASH),y)
+  LDSCRIPT = memmap_default.ld
+else ifeq ($(CONFIG_BOOT_COPYTORAM),y)
+  LDSCRIPT = memmap_copy_to_ram.ld
+else
+  LDSCRIPT = memmap_no_flash.ld
+endif
+
+ARCHSCRIPT += $(BOARD_DIR)$(DELIM)scripts$(DELIM)$(LDSCRIPT)
+
+CFLAGS := $(ARCHCFLAGS) $(ARCHOPTIMIZATION) $(ARCHCPUFLAGS) $(ARCHINCLUDES) $(ARCHDEFINES) $(EXTRAFLAGS) -pipe
+CXXFLAGS := $(ARCHCXXFLAGS) $(ARCHOPTIMIZATION) $(ARCHCPUFLAGS) $(ARCHXXINCLUDES) $(ARCHDEFINES) $(EXTRAFLAGS) -pipe
+CPPFLAGS := $(ARCHINCLUDES) $(ARCHDEFINES) $(EXTRAFLAGS)
+AFLAGS := $(CFLAGS) -D__ASSEMBLY__
+
+NXFLATLDFLAGS1 = -r -d -warn-common
+NXFLATLDFLAGS2 = $(NXFLATLDFLAGS1) -T$(TOPDIR)/binfmt/libnxflat/gnu-nxflat-pcrel.ld -no-check-sections
+LDNXFLATFLAGS = -e main -s 2048
