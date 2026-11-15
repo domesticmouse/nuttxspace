@@ -21,7 +21,7 @@ Most software engineers approach an unfamiliar codebase by grepping for an entry
 EGM tackles this by separating **map-reading**, **plain-English interrogation**, **design drafting**, and **adversarial multi-persona review** from writing code:
 
 - **Recursive directory contracts (`/egm-bootstrap` + `/egm-drift-report`).** In the `egm` branch of `nuttx` (`2,607` `README.md` contracts) and `apps` (`635` `README.md` contracts), directories carry compact architectural blueprints covering responsibilities, files, invariants, and side effects—for example `nuttx/boards/arm/rp23xx/xiao-rp2350/` [README.md](https://github.com/domesticmouse/nuttx/blob/egm/boards/arm/rp23xx/xiao-rp2350/README.md), `src/` [README.md](https://github.com/domesticmouse/nuttx/blob/egm/boards/arm/rp23xx/xiao-rp2350/src/README.md), `arch/arm/src/rp23xx/` [README.md](https://github.com/domesticmouse/nuttx/blob/egm/arch/arm/src/rp23xx/README.md), and `drivers/analog/` [README.md](https://github.com/domesticmouse/nuttx/blob/egm/drivers/analog/README.md).
-- **ELI5 hardware discovery (`/egm-brainstorm`).** Forces the agent to ask one scoped question at a time in plain software-engineer English while investigating the real chip/board code behind the scenes.
+- **Plain-English hardware discovery (`/egm-brainstorm`).** Forces the agent to ask one scoped question at a time in plain software-engineer English while investigating the real chip/board code behind the scenes.
 - **Grounded technical spec (`/egm-draft`).** Turns the agreed brief into a concrete implementation plan pinned to actual file paths, headers, and Kconfig symbols.
 - **Parallel Goldfish reviewers (`/egm-review` + `/egm-resolve`).** Spawns isolated subagents with distinct personas—for instance `egm-comprehension` (a naive reader checking undefined jargon), `egm-codebase-details`, `egm-design`, `egm-implementation-readiness`, `egm-structural`, `egm-style`, `egm-zoom-out`, and `egm-inventive-catalyst`—each reading fresh without sharing your sunk-cost bias.
 
@@ -116,7 +116,6 @@ Each phase below gives you three things: what actually ran in the session traces
 /egm-brainstorm I want to build an out-of-tree NuttX app for the Seeed Studio XIAO RP2350 (potentiometer ADC input -> 6-LED bar graph) keeping nuttx/ and apps/ unmodified.
 Constraints for this session:
 - Ask me one concern at a time.
-- Explain hardware and RTOS concepts ELI5 for a software engineer.
 - Instruct any research subagents to read nearest EGM README.md contracts before reading .c/.h files.
 ```
 
@@ -211,7 +210,7 @@ Software engineers trust compiler errors and stack traces. In NuttX, a wrong Kco
 
 ### 2. What Each EGM Stage Buys a Non-Hardware Engineer
 - **`egm` Branch + `/egm-drift-report` -> Territory Before Code:** Instead of reading `7,197` directories, you read 50-line architectural contracts and run drift detection before trusting any doc (remember `nuttx/libs/libxx/libstdc++/` [README.md](https://github.com/domesticmouse/nuttx/blob/egm/libs/libxx/libstdc++/README.md) caught immediately by `/egm-drift-report`).
-- **`/egm-brainstorm` (with `one concern at a time. ELI5`) -> Safe Interrogation:** Lets you ask *"Wait—why can't my NSH app just flip GPIO pins itself without a board file?"* without losing design rigour in [concepts_brief.md](../designs/concepts_brief.md).
+- **`/egm-brainstorm` (with `one concern at a time`) -> Safe Interrogation:** Lets you ask *"Wait—why can't my NSH app just flip GPIO pins itself without a board file?"* without losing design rigour in [concepts_brief.md](../designs/concepts_brief.md).
 - **Consolidated `/egm-review` + `/egm-resolve` -> Adversarial Code Review Before Code Exists:** Spawns `egm-comprehension` (verifies your explanation makes sense to a newcomer) alongside `egm-codebase-details` and `egm-design` (which prove your Kconfig symbols don't exist and your `close()` races a 2 µs ISR).
 
 ### 3. Seven Lessons at a Glance (Slide Cheat-Sheet)
@@ -221,7 +220,7 @@ Software engineers trust compiler errors and stack traces. In NuttX, a wrong Kco
 | Toolchain installed after `implement` | Sessions 33, 44, 45 | Verify cross-compiler, `kconfig-conf`, `picotool`, and `uv` in **Phase 0**. |
 | Submodules added on `master` | Session 01 (`Step 31`) | Clone/add `nuttx` & `apps` directly with `-b egm`. |
 | Bootstrap doc hallucinations | Session 01 (`Steps 260–274`) | Always pair `/egm-bootstrap` edits with `/egm-drift-report`. |
-| Dense jargon & multi-question dumps | Session 02 (Turns 2 & 7) | Put `"One concern at a time, ELI5"` in the opening `/egm-brainstorm` prompt. |
+| Dense jargon & multi-question dumps | Session 02 (Turns 2 & 7) | Put `"One concern at a time"` in the opening `/egm-brainstorm` prompt. |
 | `egm-synthesizer` permission detour | Sessions 02, 11, 22 | Fix `egm-synthesizer` tool grants (or note coordinators can dispatch directly). |
 | Goldfishes skipped `README.md` (`7 / 2,397` reads) | Traces `03`–`43` | Tell Goldfish review prompts to check local EGM `README.md` contracts first. |
 | Interactive review + `Conclude` ambiguity | Session 11 (`1:26:20`) | Always use `Consolidated report` + `/egm-resolve` (or `/egm-review-loop`) across 2+ passes. |
@@ -229,7 +228,7 @@ Software engineers trust compiler errors and stack traces. In NuttX, a wrong Kco
 ### 4. Fast-Replay Cheat-Sheet (7 Steps)
 1. Install Fedora/host toolchain prerequisites ([TODO.md](../designs/TODO.md)) + `uv`.
 2. Add `nuttx` and `apps` submodules tracking the `egm` branch; bootstrap root [README.md](../index.md) and run `/egm-drift-report`.
-3. Run `/egm-brainstorm` with `"One concern at a time, ELI5 hardware concepts"` -> [concepts_brief.md](../designs/concepts_brief.md).
+3. Run `/egm-brainstorm` with `"One concern at a time"` -> [concepts_brief.md](../designs/concepts_brief.md).
 4. Run `/egm-draft @[concepts_brief.md]` -> `docs/designs/<project>.md`.
 5. Run two consolidated `/egm-review` + `/egm-resolve` passes (or `/egm-review-loop`)—pay special attention to `CON-1`-style ISR teardown, blocking I/O, and Kconfig symbol verification.
 6. Run `implement` in execution mode, then `make -C <project> test && make -C <project>`.

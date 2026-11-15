@@ -14,7 +14,7 @@ Working operator checklist for provisioning, recording, post-processing, trace-e
 | **Isolated Workspace** | `~/Documents/GitHub/nuttxspace-vanilla` | `~/Documents/GitHub/nuttxspace-egm` |
 | **Why Isolated?** | Must **not** contain `xiao-rp2350-bargraph/` or `docs/` so the agent cannot peek at finished code or prior designs. | Must **not** contain `xiao-rp2350-bargraph/` or `docs/` so every discovery and review finding happens fresh. |
 | **Submodule Branches** | `nuttx` on `master` (`7` READMEs)<br>`apps` on `master` (`7` READMEs) | `nuttx` on `egm` (`2,608` `README.md` contracts)<br>`apps` on `egm` (`634` `README.md` contracts) |
-| **Starting Baseline** | Functional requirements only (no prescribed GPIO pins, driver quirks, or Kconfig fixes). | Same functional requirements + EGM phase constraints (`One concern at a time`, `ELI5`, read nearest `README.md`). |
+| **Starting Baseline** | Functional requirements only (no prescribed GPIO pins, driver quirks, or Kconfig fixes). | Same functional requirements + EGM phase constraints (`One concern at a time`, read nearest `README.md`). |
 | **Recording Layout** | Single continuous recording:<br>`recordings/raw/vanilla-vibe.cast` | Five per-phase recordings:<br>`01-bootstrap.cast` … `05-implement.cast` stitched into `recordings/final/egm-flow.cast` |
 | **Terminal Geometry** | `120x36` (`-i 2.0`) | `120x36` (`-i 2.0`) |
 | **Stop Criterion** | `make -C xiao-rp2350-bargraph test` and `make -C xiao-rp2350-bargraph` produce `nuttx/nuttx.uf2` (or hit a terminal blocker). | Same build/test target after two passes of Consolidated `/egm-review` + `/egm-resolve`. |
@@ -254,14 +254,13 @@ asciinema rec -i 2.0 --window-size 120x36 --overwrite \
   ~/Documents/GitHub/nuttxspace/recordings/raw/02-brainstorm.cast
 ```
 
-Launch `agy` and paste the **Opening Prompt** (note the three fast-path guardrails from [`docs/tutorials/egm-replication-tutorial.md`](docs/tutorials/egm-replication-tutorial.md)):
+Launch `agy` and paste the **Opening Prompt** (note the fast-path guardrails from [`docs/tutorials/egm-replication-tutorial.md`](docs/tutorials/egm-replication-tutorial.md)):
 
 ```text
 /egm-brainstorm I want to build an out-of-tree Apache NuttX application and custom board configuration in a new `xiao-rp2350-bargraph/` directory of this workspace for a Seeed Studio XIAO RP2350 mounted on a breadboard with 1 potentiometer and 6 discrete LEDs acting as a bar graph, with a USB-C NSH console and automatic startup at boot, keeping `nuttx/` and `apps/` unmodified.
 
 Constraints for this session:
 - Ask me one concern at a time.
-- Explain hardware and RTOS concepts ELI5 for a software engineer.
 - Instruct any research subagents to read nearest EGM README.md contracts before reading .c/.h files.
 ```
 
