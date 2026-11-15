@@ -14,7 +14,7 @@ The workspace builds an out-of-tree custom board and 20 Hz potentiometer-to-6-LE
 - [Final Design Spec (`xiao-rp2350-bargraph`)](designs/xiao-rp2350-bargraph.md) — Grounded technical specification detailing hardware pinouts, Kconfig wiring, ISR teardown safety, `O_NONBLOCK` + `poll()` sampling, ROMFS startup, and verification criteria.
 - [Concepts Brief](designs/concepts_brief.md) — Plain-English architectural brief produced during `/egm-brainstorm` discovery.
 - [Initial Design Draft](designs/design_draft.md) — Pre-review technical draft prior to consolidated EGM review passes.
-- [Build Environment Prerequisites (`TODO`)](designs/TODO.md) — Fedora 44 host tooling, `arm-none-eabi-*` cross-compiler, and `picotool` setup checklist.
+- [Build Environment Prerequisites (`TODO`)](designs/TODO.md) — Fedora 44 and macOS host tooling, `arm-none-eabi-*` cross-compiler, and `picotool` setup checklist.
 
 ### EGM Audit & Review Reports
 - [Drift Report (2026-11-13)](reports/2026-11-13_DRIFT_REPORT.md) — `/egm-drift-report` consistency check against upstream `nuttx` and `apps` `README.md` contracts.
@@ -48,12 +48,17 @@ The workspace builds an out-of-tree custom board and 20 Hz potentiometer-to-6-LE
 
 ## Quickstart & System Verification
 
-### Host Prerequisites (Fedora 44)
-See [Build Environment Prerequisites (`TODO`)](designs/TODO.md) for installation instructions:
-- Host build and packaging tools: `gcc`, `make`, `bison`, `flex`, `gperf`, `gettext`, `texinfo`, `ncurses-devel`, `genromfs`, `xxd`, `cmake`, `libusb1-devel`, and `picocom`.
-- Kconfig frontends: `kconfig-conf`, `kconfig-tweak`, and `kconfig-mconf`.
-- ARM bare-metal cross-compiler toolchain: `arm-none-eabi-gcc-cs`, `arm-none-eabi-gcc-cs-c++`, `arm-none-eabi-binutils-cs`, and `arm-none-eabi-newlib` (`arm-none-eabi-gcc` `15.2.0-4.fc44`).
-- RP2350 UF2 packaging and flashing tool: `picotool` (`v2.3.1` in `/usr/local/bin/picotool`).
+### Host Prerequisites (Fedora 44 & macOS)
+See [Build Environment Prerequisites (`TODO`)](designs/TODO.md) for installation instructions and macOS compatibility notes:
+- **Fedora 44**:
+  - Host build and packaging tools: `gcc`, `make`, `bison`, `flex`, `gperf`, `gettext`, `texinfo`, `ncurses-devel`, `genromfs`, `xxd`, `cmake`, `libusb1-devel`, and `picocom`.
+  - Kconfig frontends: `kconfig-conf`, `kconfig-tweak`, and `kconfig-mconf`.
+  - ARM bare-metal cross-compiler toolchain: `arm-none-eabi-gcc-cs`, `arm-none-eabi-gcc-cs-c++`, `arm-none-eabi-binutils-cs`, and `arm-none-eabi-newlib` (`arm-none-eabi-gcc` `15.2.0-4.fc44`).
+  - RP2350 UF2 packaging and flashing tool: `picotool` (`v2.3.1` in `/usr/local/bin/picotool`).
+- **macOS (`Darwin`)**:
+  - Host build, packaging, and serial tools: Xcode Command Line Tools (`clang`/`gcc`, `make`, `xxd`), `genromfs` (`px4/px4` tap), `flock` (`discoteq/discoteq` tap), `picotool`, and a USB serial terminal (`picocom`, `minicom`, or `tio`).
+  - ARM bare-metal cross-compiler toolchain: `arm-none-eabi-gcc` (e.g., Homebrew `--cask gcc-arm-embedded`).
+  - Kconfig frontends: `kconfig-conf`, `kconfig-tweak`, and `kconfig-mconf` on `PATH` (invoked with `KCONFIG_LIB=` for `/bin/sh` compatibility).
 
 ### Host Unit Tests
 ```bash
@@ -65,16 +70,16 @@ Compiles and runs `xiao-rp2350-bargraph/tests/test_bargraph_logic`, verifying `d
 ```bash
 make -C xiao-rp2350-bargraph
 ```
-Configures `xiao-rp2350-bargraph/board/configs/bargraph/defconfig`, builds `nuttx/nuttx`, and converts it to `nuttx/nuttx.uf2` (verified footprint: `FLASH: 117320 B / 2 MB (5.59%)`, `RAM: 15096 B / 512 KB (2.88%)`).
+Auto-detects macOS (`-m`) vs Linux (`-l`) via `uname -s`, passes `KCONFIG_LIB=` so `nuttx/tools/Unix.mk` uses `kconfig-conf` instead of `kconfiglib`'s bash process substitution (which fails under macOS's default `/bin/sh`), configures `xiao-rp2350-bargraph/board/configs/bargraph/defconfig`, builds `nuttx/nuttx`, and converts it to `nuttx/nuttx.uf2` (verified footprint: `FLASH: 117320 B / 2 MB (5.59%)`, `RAM: 15096 B / 512 KB (2.88%)`).
 
 ### Hardware Pinout & Flashing (Seeed Studio XIAO RP2350)
 - Potentiometer wiper on `D0` (`GPIO 26` / `/dev/adc0`, `0–3.3 V`) and 6 active-high LEDs with `>= 330 Ω` series resistors on `D3–D5` (`GPIO 5, 6, 7`) and `D8–D10` (`GPIO 2, 4, 3`) mapped to `/dev/userleds` bits `0..5` (`0x01..0x20`).
 - Flash in `BOOTSEL` mode via `picotool load -f nuttx/nuttx.uf2 -x` or by copying `nuttx/nuttx.uf2` to the `RP2350` USB mass-storage volume.
 
 ### Interactive USB-C NuttShell (`nsh>`) Verification
-- Connect to `/dev/ttyACM0` (`picocom -b 115200 /dev/ttyACM0`) and press Enter three times to open `nsh>`.
+- Connect to `/dev/ttyACM0` on Linux (`picocom -b 115200 /dev/ttyACM0`) or `/dev/cu.usbmodem*` on macOS (`picocom -b 115200 /dev/cu.usbmodem*`) and press Enter three times to open `nsh>`.
 - Inspect boot/daemon logs (`dmesg`), running tasks (`ps`), singleton guard (`bargraph`), graceful shutdown (`kill -15 <pid>`), and headless ADC fault blink (`bargraph /dev/adc_missing` -> alternating `0x15` / `0x2a` at 250 ms).
 
 ### Clean Targets
-- Clean compiled objects and test binary: `make -C xiao-rp2350-bargraph clean`
-- Clean out-of-tree build, generated `Kconfig` files, and `apps/external` symlink state: `make -C xiao-rp2350-bargraph distclean`
+- Clean compiled objects and test binary: `make -C xiao-rp2350-bargraph clean` (also removes out-of-tree `external/bargraph/*.o` and `external/bargraph/.built` even when `nuttx/.config` is not yet present).
+- Clean out-of-tree build, generated `Kconfig` files, and `apps/external` symlink state: `make -C xiao-rp2350-bargraph distclean` (also removes `external/.kconfig`, `external/bargraph/*.o`, `external/bargraph/.built`, `external/bargraph/.depend`, and `external/bargraph/Make.dep` even if `nuttx/.config` is not present).

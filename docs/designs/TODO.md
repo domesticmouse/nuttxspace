@@ -28,6 +28,19 @@
   sudo cmake --install /tmp/picotool/build
   ```
 
+## macOS Host Setup & Compatibility
+
+- [x] **macOS Toolchain Packages**:
+  - **ARM bare-metal cross-compiler**: `arm-none-eabi-gcc` (e.g., `brew install --cask gcc-arm-embedded`)
+  - **ROMFS & ELF-to-UF2 packaging**: `genromfs` (`brew tap px4/px4 && brew install genromfs`), `xxd` (built into macOS `/usr/bin/xxd`), and `picotool` (`brew install picotool`)
+  - **Build locking helper**: `flock` (`brew tap discoteq/discoteq && brew install flock`)
+  - **Kconfig frontends**: `kconfig-conf`, `kconfig-tweak`, and `kconfig-mconf` on `PATH`
+  - **Serial terminal** (optional for `nsh>` over `/dev/cu.usbmodem*`): `picocom`, `minicom`, or `tio`
+- [x] **Makefile Cross-Host Compatibility Fixes (`xiao-rp2350-bargraph/Makefile`)**:
+  - **`HOST_FLAG` detection**: Detects `Darwin` via `uname -s` (`HOST_FLAG := $(if $(filter Darwin,$(shell uname -s)),-m,-l)`) so `nuttx/tools/configure.sh` receives `-m` on macOS instead of hardcoding `-l`.
+  - **`KCONFIG_LIB=` override**: Passes `KCONFIG_LIB=` during `tools/configure.sh` and `olddefconfig` so `nuttx/tools/Unix.mk` uses `kconfig-conf` instead of `kconfiglib`'s bash process substitution (`2> >(...)`), which fails under macOS's default `/bin/sh`.
+  - **Unconditional `external/bargraph/` cleanup**: `clean` removes `external/bargraph/*.o` and `external/bargraph/.built`, and `distclean` also removes `external/.kconfig`, `external/bargraph/.depend`, and `external/bargraph/Make.dep` even when `nuttx/.config` is not yet present—avoiding stale host-path dependencies when switching between Linux (`/home/...`) and macOS (`/Users/...`).
+
 ## Build & Verification Commands Once Installed
 
 - [x] Run host unit tests: `make -C xiao-rp2350-bargraph test`

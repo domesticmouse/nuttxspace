@@ -295,17 +295,18 @@ All files below are created inside `/home/brett/Documents/GitHub/nuttxspace/xiao
 ##### 1. `xiao-rp2350-bargraph/Makefile` (Create)
 
 *   **Type / Scope**: Top-level GNU Make build, configuration, and host-test wrapper.
-*   **Rationale**: Keeps wrapper scripts, custom board files, and application sources outside `nuttx/` while managing the `apps/external` symlink and Kconfig regeneration (`preconfig`, the `apps/` Make target that invokes `apps/tools/mkkconfig.sh` to assemble composite `Kconfig` files).
+*   **Rationale**: Keeps wrapper scripts, custom board files, and application sources outside `nuttx/` while managing the `apps/external` symlink and Kconfig regeneration (`preconfig`, the `apps/` Make target that invokes `apps/tools/mkkconfig.sh` to assemble composite `Kconfig` files) across both Linux and macOS hosts.
 *   **Proposed Changes**:
+    *   `HOST_FLAG` detection: Sets `HOST_FLAG := $(if $(filter Darwin,$(shell uname -s)),-m,-l)` so `nuttx/tools/configure.sh` automatically receives `-m` on macOS (`Darwin`) and `-l` on Linux.
     *   `setup` target (requires `external/Makefile`, created in Phase 3):
         *   Creates or verifies the symlink `../apps/external -> ../xiao-rp2350-bargraph/external`, aborting if `../apps/external` exists as a non-symlink directory.
         *   Because `apps/Makefile` defines `Kconfig:` with no prerequisites and `apps/Make.defs` filters out `external/` whenever `external/Kconfig` exists, explicitly runs `rm -f ../apps/Kconfig external/Kconfig` whenever `../apps/external` was just created, `external/Kconfig` is missing, or `external/bargraph/Kconfig` is newer than `../apps/Kconfig`.
-        *   If `../nuttx/.config` already exists, runs `$(MAKE) -C ../nuttx olddefconfig` to refresh Kconfig trees (`apps_preconfig` runs `$(MAKE) -C $(APPDIR) preconfig` with `DELIM` defined); before `configure`, `tools/configure.sh` triggers `olddefconfig` directly (if invoking `apps` `preconfig` standalone prior to `configure`, pass `DELIM=/`).
-    *   `configure` target: Depends on `setup` (once Phase 3 `external/` exists; during Phase 1–2 validation, run `./tools/configure.sh` before `external/` exists); runs `cd ../nuttx && ./tools/configure.sh -e -l ../xiao-rp2350-bargraph/board/configs/bargraph` (`-e` runs `distclean` if configuration changed; `-l` selects the Linux host environment).
-    *   `all` (default) target: Depends on `setup`; runs `configure` if `../nuttx/.config` is missing, then runs `$(MAKE) -C ../nuttx` to produce `../nuttx/nuttx.uf2` (leaving `etctmp/` and `etctmp.c` intact for fast incremental builds).
+        *   If `../nuttx/.config` already exists, runs `$(MAKE) -C ../nuttx olddefconfig KCONFIG_LIB=` to refresh Kconfig trees (`apps_preconfig` runs `$(MAKE) -C $(APPDIR) preconfig` with `DELIM` defined); passing `KCONFIG_LIB=` forces `nuttx/tools/Unix.mk` to use `kconfig-conf` instead of `kconfiglib`'s bash process substitution (`2> >(...)`), which fails under macOS's default `/bin/sh` (if invoking `apps` `preconfig` standalone prior to `configure`, pass `DELIM=/`).
+    *   `configure` target: Depends on `setup` (once Phase 3 `external/` exists; during Phase 1–2 validation, run `./tools/configure.sh` before `external/` exists); runs `cd ../nuttx && ./tools/configure.sh -e $(HOST_FLAG) ../xiao-rp2350-bargraph/board/configs/bargraph KCONFIG_LIB=` (`-e` runs `distclean` if configuration changed; `$(HOST_FLAG)` selects `-m` on macOS or `-l` on Linux; `KCONFIG_LIB=` forwards to `olddefconfig`).
+    *   `all` (default) target: Depends on `setup`; if `../nuttx/.config` is missing, runs `cd ../nuttx && ./tools/configure.sh -e $(HOST_FLAG) ../xiao-rp2350-bargraph/board/configs/bargraph KCONFIG_LIB=`, then runs `$(MAKE) -C ../nuttx` to produce `../nuttx/nuttx.uf2` (leaving `etctmp/` and `etctmp.c` intact for fast incremental builds).
     *   `test` target: Compiles `tests/test_bargraph_logic.c` with host `gcc -Wall -Wextra -Werror -Iexternal/bargraph` and executes the resulting host binary.
-    *   `clean` target: Runs `$(MAKE) -C ../nuttx clean` if `../nuttx/Make.defs` and `../nuttx/.config` exist, and removes `../nuttx/boards/arm/rp23xx/common/etctmp` and `../nuttx/boards/arm/rp23xx/common/etctmp.c` if present.
-    *   `distclean` target: Runs `$(MAKE) -C ../nuttx distclean` if configured, then removes `../apps/external`, `external/Kconfig`, `../apps/Kconfig`, host test binaries, and any leftover `etctmp` / `etctmp.c`.
+    *   `clean` target: Runs `$(MAKE) -C ../nuttx clean` if `../nuttx/Make.defs` and `../nuttx/.config` exist, and removes `../nuttx/boards/arm/rp23xx/common/etctmp`, `../nuttx/boards/arm/rp23xx/common/etctmp.c`, `$(TEST_BIN)`, `external/bargraph/*.o`, and `external/bargraph/.built` even if `nuttx/.config` is not yet present.
+    *   `distclean` target: Runs `$(MAKE) -C ../nuttx distclean` if configured, then removes `../apps/external`, `external/Kconfig`, `external/.kconfig`, `../apps/Kconfig`, `$(TEST_BIN)`, `external/bargraph/*.o`, `external/bargraph/.built`, `external/bargraph/.depend`, `external/bargraph/Make.dep`, and any leftover `etctmp` / `etctmp.c` even when `nuttx/.config` is absent.
 
 ##### 2. `xiao-rp2350-bargraph/board/include/board.h` (Create)
 
@@ -338,7 +339,7 @@ All files below are created inside `/home/brett/Documents/GitHub/nuttxspace/xiao
         *   Drivers: `CONFIG_ANALOG=y`, `CONFIG_ADC=y`, `CONFIG_RP23XX_ADC=y`, `CONFIG_RP23XX_ADC_CHANNEL0=y`, `CONFIG_USERLED=y`, `CONFIG_USERLED_LOWER=y` (`CONFIG_BARGRAPH=y` is added in Phase 3 once `external/bargraph/Kconfig` exists; `CONFIG_ADC_NPOLLWAITERS` defaults to `2`).
         *   ROMFS & RAMLOG: `CONFIG_FS_ROMFS=y`, `CONFIG_ETC_ROMFS=y`, `# CONFIG_NSH_DISABLESCRIPT is not set`, `CONFIG_RAMLOG=y`, `CONFIG_RAMLOG_SYSLOG=y`, `CONFIG_RAMLOG_BUFSIZE=4096`. (`CONFIG_RP23XX_ROMFS_ROMDISK_DEVNAME` remains unset so only `CONFIG_ETC_ROMFS` / `nx_romfsetc()` mounts `/etc`.)
 
-*   **Phase 1 Checkpoint**: Running `cd nuttx && ./tools/configure.sh -e -l ../xiao-rp2350-bargraph/board/configs/bargraph` configures `nuttx/.config` (verify `CONFIG_ARCH_BOARD_CUSTOM=y`, `CONFIG_RP23XX_ADC=y`, `CONFIG_USERLED=y`, `CONFIG_ETC_ROMFS=y`, and `CONFIG_RAMLOG_SYSLOG=y`).
+*   **Phase 1 Checkpoint**: Running `cd nuttx && ./tools/configure.sh -e -l ../xiao-rp2350-bargraph/board/configs/bargraph` on Linux (or `./tools/configure.sh -e -m ../xiao-rp2350-bargraph/board/configs/bargraph KCONFIG_LIB=` on macOS `Darwin`) configures `nuttx/.config` (verify `CONFIG_ARCH_BOARD_CUSTOM=y`, `CONFIG_RP23XX_ADC=y`, `CONFIG_USERLED=y`, `CONFIG_ETC_ROMFS=y`, and `CONFIG_RAMLOG_SYSLOG=y`).
 
 #### Phase 2: Board Bringup, Analog Pad `IE` Fix, 6-LED Driver, and ROMFS Startup Script
 
@@ -462,17 +463,17 @@ All files below are created inside `/home/brett/Documents/GitHub/nuttxspace/xiao
 ### Verification Plan
 
 *   **Host Prerequisite Check**:
-    *   Verify `arm-none-eabi-gcc`, `genromfs`, `xxd`, and `picotool` (or `$PICO_SDK_PATH`) are installed on the Linux host (all four are required to compile and package `nuttx.uf2`; at flash time, either `picotool load` or `BOOTSEL` UF2 drag-and-drop can be used).
+    *   Verify `arm-none-eabi-gcc`, `kconfig-conf` (plus `kconfig-tweak`), `genromfs`, `xxd`, and `picotool` (or `$PICO_SDK_PATH`) are installed on the Linux or macOS host (all are required to configure, compile, and package `nuttx.uf2`; at flash time, either `picotool load` or `BOOTSEL` UF2 drag-and-drop can be used).
 *   **Host Unit Check (Quantizer & Decoder)**:
     *   Run `make -C /home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph test` to exercise `quantize_level()` across all 7 levels (`0..6`), ascending/descending `±24` hysteresis boundaries (`585 ± 24`, `3510 ± 24`, `0`, `4095`), multi-step jumps (`0 -> 4095` and `4095 -> 0` in one call), `decode_adc_sample()` (`am_data < 0` rejection and `am_data >> 19` scaling), and `level_to_led_mask()`.
-*   **Compilation / Build**: Run `make -C /home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph` and verify:
+*   **Compilation / Build**: Run `make -C /home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph` on either Linux or macOS (`HOST_FLAG` auto-selects `-l` vs `-m` and passes `KCONFIG_LIB=`) and verify:
     1. `../apps/external` resolves to `../xiao-rp2350-bargraph/external`, and `git status` inside both `nuttx/` and `apps/` reports zero modified or untracked files.
     2. `../nuttx/nuttx.uf2` builds with zero compiler errors/warnings in `xiao-rp2350-bargraph/`, and linker output stays within `memmap_default.ld` limits.
     3. Generated ROMFS image includes `/etc/init.d/rcS`.
 *   **Hardware / Integration Verification (On XIAO RP2350 Breadboard)**:
     1. Flash `nuttx.uf2` via `BOOTSEL` (`picotool load -f ../nuttx/nuttx.uf2 -x` or UF2 drag-and-drop).
     2. **Autonomous Boot & Quantizer Tracking (CUJ 1)**: Power the board from a 5 V supply with no host serial terminal open. Rotate the potentiometer on `D0` from `0 V` to `3.3 V` and back, verifying 0 to 6 LEDs (`D3`, `D4`, `D5`, `D8`, `D9`, `D10`) step monotonically across all 7 states (`0x00`..`0x3f`) and back down with no flicker near stationary threshold boundaries.
-    3. **USB-C NSH, IRQ Reduction, & Lifecycle (CUJ 2)**: Plug into the Linux host, open `/dev/ttyACM0`, press Enter 3 times to reach `nsh>`, and verify:
+    3. **USB-C NSH, IRQ Reduction, & Lifecycle (CUJ 2)**: Plug into the Linux or macOS host, open `/dev/ttyACM0` (Linux) or `/dev/cu.usbmodem*` (macOS), press Enter 3 times to reach `nsh>`, and verify:
        * `dmesg` shows no boot or driver errors and displays the `bargraph: daemon started` log entry.
        * `cat /proc/interrupts` sampled twice 1 second apart shows an ADC FIFO IRQ count delta of `20–200` interrupts/second (consistent with 20 Hz `open`/`poll`/`read`/`close` cycles) rather than continuous free-running FIFO interrupts (up to the 500 kSPS hardware conversion ceiling).
        * `ps` shows `bargraph_daemon` running with peak stack usage `<= 1536` bytes out of `2048` bytes (`>= 512` bytes free headroom); running `bargraph` a second time prints `"bargraph: daemon already running"` without spawning a duplicate.

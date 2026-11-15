@@ -12,7 +12,7 @@ By the end, you will have:
 *   A custom, **out-of-tree** NuttX board definition and user-space C daemon that never touches a single tracked file inside the upstream `nuttx/` or `apps/` git submodules.
 *   An autonomous firmware image that boots straight into a 20 Hz potentiometer-to-LED bar graph the instant it gets power—even with no laptop attached.
 *   An interactive POSIX-style shell (`nsh>`) over USB-C where you can run `dmesg`, `ps`, `cat /proc/interrupts`, `kill -15`, and trigger hardware fault-blink modes on demand.
-*   Native Linux host unit tests for your quantiser and ADC decoding math, compiled and verified with `gcc -Wall -Wextra -Werror` before flashing a single byte to silicon.
+*   Native Linux and macOS host unit tests for your quantiser and ADC decoding math, compiled and verified with `gcc -Wall -Wextra -Werror` before flashing a single byte to silicon.
 
 And, along the way, I am not going to pretend everything worked on the first try. Turns out, building this clean little bar graph exposed **four genuinely nasty driver and boot-ordering traps** inside upstream NuttX's RP2350 support. Seeing how those traps work—and how we engineered around them purely from user-space and out-of-tree board code—is where the real learning happens.
 
@@ -100,30 +100,40 @@ Remember that distinction—because two of our biggest hardware traps live right
 
 ## Part 2: Setting Up the Host Toolchain & Workspace (Starting from Zero)
 
-Before writing custom firmware, we need a Linux host environment capable of compiling ARM Cortex-M33 bare-metal code, assembling Kconfig menus, packaging an embedded ROM filesystem, and converting an ELF binary into a RP2350 `.uf2` bootloader image.
+Before writing custom firmware, we need a Linux or macOS host environment capable of compiling ARM Cortex-M33 bare-metal code, assembling Kconfig menus, packaging an embedded ROM filesystem, and converting an ELF binary into a RP2350 `.uf2` bootloader image.
 
-### 1. Host Prerequisites (Fedora 44 Example)
+### 1. Host Prerequisites (Fedora 44 & macOS)
 
-Here is the exact toolset documented in [`TODO.md`](../designs/TODO.md) for Fedora 44 (on Debian/Ubuntu, package names map closely to `gcc-arm-none-eabi`, `genromfs`, `xxd`, `kconfig-frontends`, `picocom`, and `libusb-1.0-0-dev`):
+Here is the exact toolset documented in [`TODO.md`](../designs/TODO.md) for Fedora 44 and macOS (on Debian/Ubuntu, package names map closely to `gcc-arm-none-eabi`, `genromfs`, `xxd`, `kconfig-frontends`, `picocom`, and `libusb-1.0-0-dev`):
 
 1. **Core host compiler, parser generators, and Kconfig dependencies**:
    ```bash
+   # Fedora 44
    sudo dnf install gcc gcc-c++ make bison flex gperf gettext texinfo \
      ncurses-devel genromfs xxd picocom cmake libusb1-devel
+
+   # macOS (Homebrew + Xcode Command Line Tools, which already provide clang/gcc, make, and xxd)
+   brew tap discoteq/discoteq
+   brew tap px4/px4
+   brew install flock genromfs cmake libusb picocom
    ```
-   *(Why `genromfs` and `xxd`? Microcontrollers don't have a hard drive! To embed our `/etc/init.d/rcS` boot script inside flash memory, NuttX builds a tiny read-only ROMFS image with `genromfs` and converts the raw binary blob into a C byte array `etctmp.c` with `xxd` so it links straight into the kernel.)*
+   *(On macOS, `genromfs` comes from the `px4/px4` tap, `flock`—used by NuttX `apps/` build locking on macOS—comes from `discoteq/discoteq`, and `minicom` or `tio` are also popular alternatives to `picocom` for USB serial consoles. Why `genromfs` and `xxd`? Microcontrollers don't have a hard drive! To embed our `/etc/init.d/rcS` boot script inside flash memory, NuttX builds a tiny read-only ROMFS image with `genromfs` and converts the raw binary blob into a C byte array `etctmp.c` with `xxd` so it links straight into the kernel.)*
 
 2. **ARM Bare-Metal Cross-Compiler (`arm-none-eabi-*`)**:
    ```bash
+   # Fedora 44
    sudo dnf install arm-none-eabi-gcc-cs arm-none-eabi-gcc-cs-c++ \
      arm-none-eabi-binutils-cs arm-none-eabi-newlib
+
+   # macOS (Homebrew)
+   brew install --cask gcc-arm-embedded
    ```
 
 3. **Kconfig Frontends (`kconfig-conf`, `kconfig-tweak`, `kconfig-mconf`)**:
-   NuttX uses Linux-style Kconfig menus (`make menuconfig` and `tools/configure.sh`). Make sure `kconfig-conf`, `kconfig-tweak`, and `kconfig-mconf` are installed on your `PATH` (for example under `/usr/local/bin/` from Apache NuttX's `kconfig-frontends` build, or via your distro's `kconfig-frontends` package).
+   NuttX uses Linux-style Kconfig menus (`make menuconfig` and `tools/configure.sh`). Make sure `kconfig-conf`, `kconfig-tweak`, and `kconfig-mconf` are installed on your `PATH` (for example under `/usr/local/bin/` from Apache NuttX's `kconfig-frontends` build, or via your distro's `kconfig-frontends` package). On macOS, passing `KCONFIG_LIB=` in our Makefile wrapper ensures `nuttx/tools/Unix.mk` uses `kconfig-conf` rather than `kconfiglib`'s bash process substitution (`2> >(...)`), which fails under macOS's default `/bin/sh`.
 
 4. **`picotool` (for RP2350 `.uf2` packaging & flashing)**:
-   NuttX's RP2350 build rules invoke `picotool` to convert the compiled `nuttx` ELF into `nuttx.uf2` (because `CONFIG_RP23XX_UF2_BINARY=y` is enabled by default). Build and install it from Raspberry Pi's official repos:
+   NuttX's RP2350 build rules invoke `picotool` to convert the compiled `nuttx` ELF into `nuttx.uf2` (because `CONFIG_RP23XX_UF2_BINARY=y` is enabled by default). On macOS you can install it directly with `brew install picotool`; on Linux (or to build from source), build and install it from Raspberry Pi's official repos:
    ```bash
    git clone https://github.com/raspberrypi/pico-sdk.git /tmp/pico-sdk
    git clone https://github.com/raspberrypi/picotool.git /tmp/picotool
@@ -160,24 +170,33 @@ Let's configure and build the upstream `xiao-rp2350:usbnsh` target inside `nuttx
 
 ```bash
 cd nuttx
+# On Linux:
 ./tools/configure.sh -e -l xiao-rp2350:usbnsh
 make -j$(nproc)
+
+# On macOS (pass -m and KCONFIG_LIB= to force kconfig-conf under /bin/sh):
+./tools/configure.sh -e -m xiao-rp2350:usbnsh KCONFIG_LIB=
+make -j$(sysctl -n hw.ncpu)
 ```
 
 If that finishes cleanly, you will see `nuttx.uf2` waiting in `nuttx/`. Now let's flash it onto the bare XIAO RP2350 (don't wire anything up yet—just the board and a USB-C cable):
 
 1.  **Enter `BOOTSEL` mode**: Hold down the tiny **B** (`BOOT`) button on the XIAO RP2350 while plugging in the USB-C cable (or hold **B**, tap **R** `RESET`, then release **B**).
-2.  The RP2350 wakes up in its ROM bootloader and mounts on your Linux machine as a USB flash drive labelled **`RP2350`**.
+2.  The RP2350 wakes up in its ROM bootloader and mounts on your Linux or macOS machine as a USB flash drive labelled **`RP2350`**.
 3.  **Flash the firmware**: Either drag and drop `nuttx/nuttx.uf2` onto the `RP2350` volume, or use `picotool`:
     ```bash
     picotool load -f nuttx.uf2 -x
     ```
     (`-x` automatically reboots the chip out of `BOOTSEL` mode into your newly flashed firmware.)
 
-Now open your serial terminal against `/dev/ttyACM0` (Wait a couple of seconds after reboot for USB enumeration, and if you get permission denied, ensure your user is in the `dialout` group or run `sudo picocom`):
+Now open your serial terminal against `/dev/ttyACM0` on Linux or `/dev/cu.usbmodem*` on macOS (wait a couple of seconds after reboot for USB enumeration; on Linux, if you get permission denied, ensure your user is in the `dialout` group or run `sudo picocom`):
 
 ```bash
+# Linux:
 picocom -b 115200 /dev/ttyACM0
+
+# macOS (replace * with the enumerated modem device suffix):
+picocom -b 115200 /dev/cu.usbmodem*
 ```
 
 You will see... **a completely blank screen.**
@@ -772,7 +791,7 @@ CFLAGS += ${INCDIR_PREFIX}$(TOPDIR)$(DELIM)arch$(DELIM)$(CONFIG_ARCH)$(DELIM)src
 
 ## Part 6: Pure-C Logic & Host Unit Testing (`bargraph_logic.h` & `tests/`)
 
-Now, before we even think about writing OS task management or hardware device loops, let's follow good software engineering hygiene: **separate pure math and decoding logic from NuttX headers so we can unit-test it natively on Linux with `gcc`.**
+Now, before we even think about writing OS task management or hardware device loops, let's follow good software engineering hygiene: **separate pure math and decoding logic from NuttX headers so we can unit-test it natively on Linux or macOS with `gcc`.**
 
 Flashing a microcontroller just to debug an off-by-one bug in a threshold array is slow and unnecessary. Putting pure functions in [`xiao-rp2350-bargraph/external/bargraph/bargraph_logic.h`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/external/bargraph/bargraph_logic.h) lets us test the *exact* production inline functions on our host machine in milliseconds.
 
@@ -1023,7 +1042,7 @@ int main(void)
 }
 ```
 
-Compile and run it right on your Linux laptop:
+Compile and run it right on your Linux or macOS laptop:
 
 ```bash
 gcc -Wall -Wextra -Werror -Ixiao-rp2350-bargraph/external/bargraph \
@@ -1586,6 +1605,12 @@ CONFIG_USERLED_LOWER=y
 
 Remember earlier how `apps/` generates composite `Kconfig` files? Look closely at the `setup:` rule in [`xiao-rp2350-bargraph/Makefile`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/Makefile). Because `apps/Makefile` caches `apps/Kconfig` and `apps/Make.defs` ignores `external/` until `external/Kconfig` is rebuilt, our `setup` target links `../apps/external -> ../xiao-rp2350-bargraph/external` and automatically clears stale `Kconfig` files whenever you first set up the link or edit `external/bargraph/Kconfig`.
 
+To make the build wrapper work cleanly on both Linux and macOS hosts without changing any files inside `nuttx/`, the Makefile handles three cross-host details:
+
+1.  **Automatic Host Detection (`HOST_FLAG`)**: `HOST_FLAG := $(if $(filter Darwin,$(shell uname -s)),-m,-l)` detects `Darwin` via `uname -s` so `nuttx/tools/configure.sh` receives `-m` on macOS instead of hardcoding `-l` for Linux.
+2.  **Forced `kconfig-conf` via `KCONFIG_LIB=`**: Passing `KCONFIG_LIB=` to `tools/configure.sh` and `$(MAKE) -C "$(NUTTX_DIR)" olddefconfig` instructs `nuttx/tools/Unix.mk` to use `kconfig-conf` instead of `kconfiglib`'s bash process substitution (`2> >(...)`), which fails under macOS's default `/bin/sh`.
+3.  **Unconditional Out-of-Tree Cleanup (`clean` / `distclean`)**: Both `clean` and `distclean` remove out-of-tree artifacts under `external/bargraph/` (`*.o`, `.built`, and for `distclean`, `.depend` and `Make.dep`) even when `nuttx/.config` is not yet present—avoiding stale host-path dependency issues when moving between `/home/...` on Linux and `/Users/...` on macOS.
+
 Create [`xiao-rp2350-bargraph/Makefile`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/Makefile):
 
 ```makefile
@@ -1600,12 +1625,13 @@ EXT_TARGET := ../xiao-rp2350-bargraph/external
 BOARD_CONF := ../xiao-rp2350-bargraph/board/configs/bargraph
 COMMON_DIR := $(NUTTX_DIR)/boards/arm/rp23xx/common
 TEST_BIN   := tests/test_bargraph_logic
+HOST_FLAG  := $(if $(filter Darwin,$(shell uname -s)),-m,-l)
 
 .PHONY: all setup configure test clean distclean
 
 all: setup
 	@if [ ! -f "$(NUTTX_DIR)/.config" ]; then \
-		cd "$(NUTTX_DIR)" && ./tools/configure.sh -e -l "$(BOARD_CONF)"; \
+		cd "$(NUTTX_DIR)" && ./tools/configure.sh -e $(HOST_FLAG) "$(BOARD_CONF)" KCONFIG_LIB=; \
 	fi
 	$(MAKE) -C "$(NUTTX_DIR)"
 
@@ -1623,11 +1649,11 @@ setup: external/Makefile
 		rm -f "$(APPS_DIR)/Kconfig" external/Kconfig; \
 	fi
 	@if [ -f "$(NUTTX_DIR)/.config" ]; then \
-		$(MAKE) -C "$(NUTTX_DIR)" olddefconfig; \
+		$(MAKE) -C "$(NUTTX_DIR)" olddefconfig KCONFIG_LIB=; \
 	fi
 
 configure: setup
-	cd "$(NUTTX_DIR)" && ./tools/configure.sh -e -l "$(BOARD_CONF)"
+	cd "$(NUTTX_DIR)" && ./tools/configure.sh -e $(HOST_FLAG) "$(BOARD_CONF)" KCONFIG_LIB=
 
 test: $(TEST_BIN)
 	./$(TEST_BIN)
@@ -1639,7 +1665,7 @@ clean:
 	@if [ -f "$(NUTTX_DIR)/Make.defs" ] && [ -f "$(NUTTX_DIR)/.config" ]; then \
 		$(MAKE) -C "$(NUTTX_DIR)" clean; \
 	fi
-	rm -rf "$(COMMON_DIR)/etctmp" "$(COMMON_DIR)/etctmp.c" "$(TEST_BIN)"
+	rm -rf "$(COMMON_DIR)/etctmp" "$(COMMON_DIR)/etctmp.c" "$(TEST_BIN)" external/bargraph/*.o external/bargraph/.built
 
 distclean:
 	@if [ -f "$(NUTTX_DIR)/Make.defs" ] && [ -f "$(NUTTX_DIR)/.config" ]; then \
@@ -1648,7 +1674,7 @@ distclean:
 	@if [ -L "$(EXT_LINK)" ]; then \
 		rm -f "$(EXT_LINK)"; \
 	fi
-	rm -f external/Kconfig external/.kconfig "$(APPS_DIR)/Kconfig" "$(TEST_BIN)"
+	rm -f external/Kconfig external/.kconfig "$(APPS_DIR)/Kconfig" "$(TEST_BIN)" external/bargraph/*.o external/bargraph/.built external/bargraph/.depend external/bargraph/Make.dep
 	rm -rf "$(COMMON_DIR)/etctmp" "$(COMMON_DIR)/etctmp.c"
 ```
 
@@ -1684,7 +1710,7 @@ Now let's run the full build-and-verify loop from the `nuttxspace/` workspace ro
    *   Park the knob near a step boundary—the `±24`-count hysteresis keeps the edge LED rock steady with zero flicker.
 
 5. **Verify Journey 2 — Interactive USB-C NuttShell & Interrupt Check**:
-   Plug the running board into your Linux host, open `picocom -b 115200 /dev/ttyACM0`, and press `Enter` three times to reach `nsh>`. Then try these diagnostics:
+   Plug the running board into your Linux or macOS host, open `picocom -b 115200 /dev/ttyACM0` (or `/dev/cu.usbmodem*` on macOS, using `minicom`/`tio` if preferred), and press `Enter` three times to reach `nsh>`. Then try these diagnostics:
    ```text
    nsh> dmesg
    ```
@@ -1707,7 +1733,7 @@ Now let's run the full build-and-verify loop from the `nuttxspace/` workspace ro
    ```text
    nsh> bargraph
    ```
-   The bar graph springs back to life immediately—and unplugging/replugging USB-C re-enumerates `/dev/ttyACM0` cleanly because `bargraph_daemon` redirected stdio to `/dev/null`.
+   The bar graph springs back to life immediately—and unplugging/replugging USB-C re-enumerates `/dev/ttyACM0` (or `/dev/cu.usbmodem*` on macOS) cleanly because `bargraph_daemon` redirected stdio to `/dev/null`.
 
 6. **Verify Journey 3 — Hardware Fault Blink Indication**:
    Let's trigger the headless error path safely from `nsh>`:
