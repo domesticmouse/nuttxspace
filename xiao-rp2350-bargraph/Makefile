@@ -9,12 +9,13 @@ EXT_TARGET := ../xiao-rp2350-bargraph/external
 BOARD_CONF := ../xiao-rp2350-bargraph/board/configs/bargraph
 COMMON_DIR := $(NUTTX_DIR)/boards/arm/rp23xx/common
 TEST_BIN   := tests/test_bargraph_logic
+HOST_FLAG  := $(if $(filter Darwin,$(shell uname -s)),-m,-l)
 
 .PHONY: all setup configure test clean distclean
 
 all: setup
 	@if [ ! -f "$(NUTTX_DIR)/.config" ]; then \
-		cd "$(NUTTX_DIR)" && ./tools/configure.sh -e -l "$(BOARD_CONF)"; \
+		cd "$(NUTTX_DIR)" && ./tools/configure.sh -e $(HOST_FLAG) "$(BOARD_CONF)" KCONFIG_LIB=; \
 	fi
 	$(MAKE) -C "$(NUTTX_DIR)"
 
@@ -32,11 +33,11 @@ setup: external/Makefile
 		rm -f "$(APPS_DIR)/Kconfig" external/Kconfig; \
 	fi
 	@if [ -f "$(NUTTX_DIR)/.config" ]; then \
-		$(MAKE) -C "$(NUTTX_DIR)" olddefconfig; \
+		$(MAKE) -C "$(NUTTX_DIR)" olddefconfig KCONFIG_LIB=; \
 	fi
 
 configure: setup
-	cd "$(NUTTX_DIR)" && ./tools/configure.sh -e -l "$(BOARD_CONF)"
+	cd "$(NUTTX_DIR)" && ./tools/configure.sh -e $(HOST_FLAG) "$(BOARD_CONF)" KCONFIG_LIB=
 
 test: $(TEST_BIN)
 	./$(TEST_BIN)
@@ -48,7 +49,7 @@ clean:
 	@if [ -f "$(NUTTX_DIR)/Make.defs" ] && [ -f "$(NUTTX_DIR)/.config" ]; then \
 		$(MAKE) -C "$(NUTTX_DIR)" clean; \
 	fi
-	rm -rf "$(COMMON_DIR)/etctmp" "$(COMMON_DIR)/etctmp.c" "$(TEST_BIN)"
+	rm -rf "$(COMMON_DIR)/etctmp" "$(COMMON_DIR)/etctmp.c" "$(TEST_BIN)" external/bargraph/*.o external/bargraph/.built
 
 distclean:
 	@if [ -f "$(NUTTX_DIR)/Make.defs" ] && [ -f "$(NUTTX_DIR)/.config" ]; then \
@@ -57,5 +58,5 @@ distclean:
 	@if [ -L "$(EXT_LINK)" ]; then \
 		rm -f "$(EXT_LINK)"; \
 	fi
-	rm -f external/Kconfig external/.kconfig "$(APPS_DIR)/Kconfig" "$(TEST_BIN)"
+	rm -f external/Kconfig external/.kconfig "$(APPS_DIR)/Kconfig" "$(TEST_BIN)" external/bargraph/*.o external/bargraph/.built external/bargraph/.depend external/bargraph/Make.dep
 	rm -rf "$(COMMON_DIR)/etctmp" "$(COMMON_DIR)/etctmp.c"

@@ -6,5 +6,5 @@
 #
 
 menu "External"
-source "/home/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/external/bargraph/Kconfig"
+source "/Users/brett/Documents/GitHub/nuttxspace/xiao-rp2350-bargraph/external/bargraph/Kconfig"
 endmenu # External
