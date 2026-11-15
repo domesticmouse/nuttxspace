@@ -60,14 +60,25 @@ which kconfig-conf kconfig-tweak kconfig-mconf
     - ROMFS & UF2: `brew install genromfs picotool` (`/usr/bin/xxd` is built into macOS)
     - Kconfig frontends: verify `kconfig-conf`, `kconfig-tweak`, and `kconfig-mconf` are on `PATH` (for example in `/usr/local/bin` or Homebrew).
   - **NuttX macOS build gotcha**: On macOS, `nuttx/tools/configure.sh` expects `-m` (not `-l`), and `nuttx/tools/Unix.mk` defaults to `kconfiglib` unless `KCONFIG_LIB=` is passed—which can fail under macOS `/bin/sh` (`2> >(...)` process substitution). Watch whether Vanilla discovers `-m` and `KCONFIG_LIB=` cleanly or burns turns debugging `configure.sh`.
+  - **AGY terminal sandbox allowlist**: Because `agy`, `kconfig-conf`, `kconfig-tweak`, and `kconfiglib` (`olddefconfig`) live under `/Users/brett/.local`, configure `read_file(/Users/brett/.local)` and `read_file(/Users/brett/.cargo)` using literal absolute paths (without `~` or `/**`, which the sandbox parser rejects) so they run cleanly inside the default sandbox.
 - **Fedora 44 (`Linux`)**:
   - Follow [`docs/designs/TODO.md`](docs/designs/TODO.md): `gcc`, `cpp`, `make`, `bison`, `flex`, `gperf`, `gettext`, `texinfo`, `ncurses-devel`, `/usr/local/bin/kconfig-conf`, `kconfig-tweak`, `kconfig-mconf`, `genromfs`, `xxd`, `picocom`, `arm-none-eabi-gcc-cs`, `arm-none-eabi-gcc-cs-c++`, `arm-none-eabi-binutils-cs`, `arm-none-eabi-newlib`, `cmake`, `libusb1-devel`, and `picotool`.
 
 ### Checklist
 
-- [ ] `asciinema`, `agy`, and `uv` all execute cleanly from the target terminal shell (`PATH` includes `~/.local/bin`).
-- [ ] `arm-none-eabi-gcc`, `genromfs`, `xxd`, `picotool`, and `kconfig-conf` are on `PATH`.
-- [ ] You have confirmed the baseline terminal window works at `120x36` (`--window-size 120x36`).
+- [x] `asciinema`, `agy`, and `uv` all execute cleanly from the target terminal shell (`PATH` includes `~/.local/bin`). *(Verified 2026-11-15: `asciinema 3.2.1`, `agy 1.5.9`, `uv 0.13.8`, `Python 3.15.2` inside default sandbox.)*
+- [x] `arm-none-eabi-gcc`, `genromfs`, `xxd`, `picotool`, and `kconfig-conf` are on `PATH`. *(Verified 2026-11-15: `arm-none-eabi-gcc 15.3.1`, `GNU Make 3.81`, `Apple clang 21.0.0`, `bison 2.3`, `flex 2.6.4`, `gperf 3.0.3`, `genromfs 0.5.2`, `/usr/bin/xxd`, `picotool v2.3.1`; `kconfig-conf`, `kconfig-tweak`, and `olddefconfig` verified in `/Users/brett/.local/bin`. Note: `kconfig-mconf` is not installed, while `kconfiglib`'s `menuconfig` is in `/Users/brett/.local/bin` and automated builds only need `kconfig-conf`/`kconfig-tweak`/`olddefconfig`.)*
+- [x] You have confirmed the baseline terminal window works at `120x36` (`--window-size 120x36`). *(Verified 2026-11-15: `asciinema rec -i 2.0 --window-size 120x36` tested cleanly.)*
+
+#### Pre-Flight Verification Status (2026-11-15, macOS Sandbox)
+
+| Component | Verified Value / Path | Status |
+| :--- | :--- | :---: |
+| **Recording & Agent** | `asciinema 3.2.1`, `agy 1.5.9`, `uv 0.13.8`, `Python 3.15.2` | PASS |
+| **Cross-Toolchain & Build** | `arm-none-eabi-gcc 15.3.1`, `GNU Make 3.81`, `Apple clang 21.0.0`, `bison 2.3`, `flex 2.6.4`, `gperf 3.0.3` | PASS |
+| **ROMFS & UF2** | `genromfs 0.5.2`, `/usr/bin/xxd`, `picotool v2.3.1` | PASS |
+| **Kconfig Frontends** | `kconfig-conf`, `kconfig-tweak`, `olddefconfig` in `/Users/brett/.local/bin` (`kconfig-mconf` not installed; `menuconfig` via `kconfiglib` present) | PASS |
+| **Sandbox Allowlist** | `read_file(/Users/brett/.local)` and `read_file(/Users/brett/.cargo)` verified inside default sandbox | PASS |
 
 ---
 
