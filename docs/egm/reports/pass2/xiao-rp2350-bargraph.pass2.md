@@ -33,7 +33,7 @@ This design solves these problems entirely within an out-of-tree directory (`xia
 *   **Stable 50 Hz Potentiometer Sensing**: Sample `D0/A0` (`GPIO26`, `ADC0`) every 20 ms using demand-driven NVIC IRQ gating (`up_disable_irq(RP23XX_ADC_IRQ_FIFO)` during sleep, `ANIOC_RESET_FIFO` + `up_enable_irq(RP23XX_ADC_IRQ_FIFO)` during a 5-sample read where the 1st latched sample is discarded and the 4 fresh samples are averaged), a Q4 integer exponential moving average filter (`alpha = 1/4`, `filtered = (ema_q4 + 8) >> 4`), endpoint deadbands (`<= 32` clamped to `0`, `>= 4063` clamped to `4095`), and RP2350-E9 digital pad isolation (`IE=0`, `PUE=0`, `PDE=0`, `ISO=0`, `OD=1`).
 *   **Proportional 6-Segment Hardware PWM Display**: Drive `D1`–`D6` (`PWM5B`, `PWM6A`, `PWM2B`, `PWM3A`, `PWM3B`, `PWM0A`) at `1000 Hz` with `uint16_t`-safe duty cycles (`0..65535`), keeping lower segments at `65535` (100%), linearly interpolating the active segment across `0..65535`, and setting upper segments to `0` (0%).
 *   **Interactive USB-C NSH Coexistence and CLI Control**: Provide the `bargraph` built-in command over the USB-C CDC/ACM NSH console supporting `start`, `stop`, `status`, `test`, `set <0..100>`, and `resume` with deterministic synchronization against `bargraphd`.
-*   **Complete Breadboard & EGM Documentation**: Provide a reproducible 400-tie-point breadboard layout, bill of materials, and electrical current budget. Author Elephant/Goldfish Memory (EGM) `README.md` contracts for every directory in `xiao-rp2350-bargraph/`, following the workspace non-leaf blueprint format ([`README.md`](../../README.md): `Overview`, `Subdirectories & Boundaries`, `Invariants`, `Side Effects`, `Verification`) and leaf contract format ([`nuttx/boards/arm/rp23xx/xiao-rp2350/src/README.md`](../../nuttx/boards/arm/rp23xx/xiao-rp2350/src/README.md): `Overview`, `Interface`, `Invariants`, `Side Effects`, `Verification` with `[file:symbol]` citations).
+*   **Complete Breadboard & EGM Documentation**: Provide a reproducible 400-tie-point breadboard layout, bill of materials, and electrical current budget. Author Elephant/Goldfish Memory (EGM) `README.md` contracts for every directory in `xiao-rp2350-bargraph/`, following the workspace non-leaf blueprint format ([`README.md`](../../README.md): `Overview`, `Subdirectories & Boundaries`, `Invariants`, `Side Effects`, `Verification`) and leaf contract format ([`nuttx/boards/arm/rp23xx/xiao-rp2350/src/README.md`](../../../../nuttx/boards/arm/rp23xx/xiao-rp2350/src/README.md): `Overview`, `Interface`, `Invariants`, `Side Effects`, `Verification` with `[file:symbol]` citations).
 
 ## Non-Goals
 
@@ -366,10 +366,10 @@ stateDiagram-v2
 
 ## Additional Resources
 
-*   [`nuttx/arch/arm/src/rp23xx/rp23xx_pwm.c`](../../nuttx/arch/arm/src/rp23xx/rp23xx_pwm.c) — RP2350 PWM lower-half driver (`setup_period()`, `setup_pulse()`, `pwm_stop()`, `pwm_shutdown()`, `uint16_t` duty calculation).
-*   [`nuttx/arch/arm/src/rp23xx/rp23xx_adc.c`](../../nuttx/arch/arm/src/rp23xx/rp23xx_adc.c) — RP2350 ADC lower-half driver (`my_reset()`, `interrupt_handler()`, `get_next_channel()`, `<< 19` sample shift).
-*   [`nuttx/boards/arm/rp23xx/common/src/rp23xx_common_bringup.c`](../../nuttx/boards/arm/rp23xx/common/src/rp23xx_common_bringup.c) — Common RP23xx peripheral bringup (`rp23xx_pwmdev_initialize()`, `rp23xx_adc_setup()`).
-*   [`apps/nshlib/nsh_usbconsole.c`](../../apps/nshlib/nsh_usbconsole.c) — USB CDC/ACM console startup sequence (`nsh_waitusbready()`).
+*   [`nuttx/arch/arm/src/rp23xx/rp23xx_pwm.c`](../../../../nuttx/arch/arm/src/rp23xx/rp23xx_pwm.c) — RP2350 PWM lower-half driver (`setup_period()`, `setup_pulse()`, `pwm_stop()`, `pwm_shutdown()`, `uint16_t` duty calculation).
+*   [`nuttx/arch/arm/src/rp23xx/rp23xx_adc.c`](../../../../nuttx/arch/arm/src/rp23xx/rp23xx_adc.c) — RP2350 ADC lower-half driver (`my_reset()`, `interrupt_handler()`, `get_next_channel()`, `<< 19` sample shift).
+*   [`nuttx/boards/arm/rp23xx/common/src/rp23xx_common_bringup.c`](../../../../nuttx/boards/arm/rp23xx/common/src/rp23xx_common_bringup.c) — Common RP23xx peripheral bringup (`rp23xx_pwmdev_initialize()`, `rp23xx_adc_setup()`).
+*   [`apps/nshlib/nsh_usbconsole.c`](../../../../apps/nshlib/nsh_usbconsole.c) — USB CDC/ACM console startup sequence (`nsh_waitusbready()`).
 *   Raspberry Pi RP2350 Datasheet — Section 12.4 (ADC & Erratum RP2350-E9 Pad Leakage) and Section 12.5 (PWM Slices & Counter Compare Registers).
 
 ## Future Improvements
@@ -400,7 +400,7 @@ stateDiagram-v2
 #### 3. `xiao-rp2350-bargraph/README.md` (Create)
 
 *   **Type / Scope**: Project Root EGM Blueprint & Hardware Assembly Guide
-*   **Rationale**: Documents the top-level boundaries between [`board`](./xiao-rp2350-bargraph/board/README.md) and [`apps`](./xiao-rp2350-bargraph/apps/README.md), the bill of materials, the 400-tie-point breadboard layout, pinout table, current budget, build/flash commands (`nuttx.uf2`), and NSH CLI usage.
+*   **Rationale**: Documents the top-level boundaries between `board` (`./xiao-rp2350-bargraph/board/README.md`) and `apps` (`./xiao-rp2350-bargraph/apps/README.md`), the bill of materials, the 400-tie-point breadboard layout, pinout table, current budget, build/flash commands (`nuttx.uf2`), and NSH CLI usage.
 *   **Proposed Changes**:
     *   Include `## Overview`, `## Subdirectories & Boundaries` linking to `./board/README.md` and `./apps/README.md`, `## Hardware Bill of Materials & Breadboard Wiring`, `## Invariants` (explicitly documenting the zero-submodule-modification invariant and the intentional `CONFIG_BUILD_FLAT=y` exception to [`README.md`](../../README.md#L16) for NVIC `RP23XX_ADC_IRQ_FIFO` gating in `bargraphd` and `bargraph_autostart()` invocation from `rp23xx_bringup()`), `## Side Effects`, and `## Verification`.
 

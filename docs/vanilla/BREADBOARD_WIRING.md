@@ -1,6 +1,6 @@
 # Seeed Studio XIAO RP2350 Bar-Graph Breadboard Wiring Guide
 
-This document provides the complete parts list, pin mapping, and hole-by-hole breadboard wiring instructions matching the out-of-tree Apache NuttX firmware in [`xiao-rp2350-bargraph/`](README.md) and the accompanying breadboard diagram in [`breadboard_circuit.svg`](breadboard_circuit.svg).
+This document provides the complete parts list, pin mapping, and hole-by-hole breadboard wiring instructions matching the out-of-tree Apache NuttX firmware in [`xiao-rp2350-bargraph/`](xiao-rp2350-bargraph/README.md) and the accompanying breadboard diagram in [`breadboard_circuit.svg`](breadboard_circuit.svg).
 
 ![Breadboard Circuit Diagram](breadboard_circuit.svg)
 
@@ -26,7 +26,7 @@ This document provides the complete parts list, pin mapping, and hole-by-hole br
 
 ## 2. Firmware-to-Hardware Pin Mapping
 
-Defined in [`board/include/board.h`](board/include/board.h) and [`board/src/rp23xx_userleds.c`](board/src/rp23xx_userleds.c):
+Defined in [`board/include/board.h`](xiao-rp2350-bargraph/board/include/board.h) and [`board/src/rp23xx_userleds.c`](xiao-rp2350-bargraph/board/src/rp23xx_userleds.c):
 
 | Circuit Function | XIAO Pin | RP2350 GPIO | NuttX Device / Bitmask | Turn-On Threshold (Raw / %) | Breadboard Hole (XIAO) |
 | :--- | :---: | :---: | :--- | :---: | :---: |

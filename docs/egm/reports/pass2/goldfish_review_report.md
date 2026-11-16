@@ -7,7 +7,7 @@ Status: resolved
 ## Prioritized Findings & AI Suggestions
 
 ### [Issue 1 (`CA-01`)] [`egm-design` / `egm-codebase-details` / `egm-implementation-readiness`] - Severity: Major
-*   **Affected Scope:** [Lines 243-252](docs/designs/xiao-rp2350-bargraph.md#L243-L252) (`### 4.1 ADC Subsystem Mitigations (GPIO26 / ADC0)`) and [Lines 668-674](docs/designs/xiao-rp2350-bargraph.md#L668-L674) (`#### 28. xiao-rp2350-bargraph/apps/bargraph/bargraph_main.c`)
+*   **Affected Scope:** [Lines 243-252](../../designs/xiao-rp2350-bargraph.md#L243-L252) (`### 4.1 ADC Subsystem Mitigations (GPIO26 / ADC0)`) and [Lines 668-674](../../designs/xiao-rp2350-bargraph.md#L668-L674) (`#### 28. xiao-rp2350-bargraph/apps/bargraph/bargraph_main.c`)
 *   **Discrepancy Description:** Section 4.1 states that on each 50 Hz burst, `bargraphd` unmasks `RP23XX_ADC_IRQ_FIFO`, reads `5` `struct adc_msg_s` samples (`25` bytes), and immediately calls `up_disable_irq(RP23XX_ADC_IRQ_FIFO)`. However, in `nuttx/drivers/analog/adc.c` (`adc_read()`, lines 270–408), `read()` blocks on `nxsem_wait(&fifo->af_sem)` only while the upper-half software FIFO is empty (`fifo->af_head == fifo->af_tail`). As soon as the first pending ADC FIFO interrupt fires and `adc_receive()` enqueues 1 sample and posts `af_sem`, `adc_read()` wakes up, copies only the currently buffered sample(s) (`1` `struct adc_msg_s` = `5` bytes if the 2nd conversion is still in flight), and returns `nread = 5` rather than waiting for all `25` bytes. Calling `up_disable_irq(RP23XX_ADC_IRQ_FIFO)` after a single `read()` call would therefore mask the IRQ before `msgs[1..4]` are acquired. Additionally, line 673 states "validates `msgs[i].am_data >= 0` for `i = 1..4`" without specifying the fallback behavior if a conversion error bit (`am_data < 0`) occurs on one or more samples.
 *   **Rationale:** Specify in Section 4.1 (lines 245, 249) and Section 28 (line 672) that `bargraphd` loops on `read()` (accumulating `sizeof(struct adc_msg_s)` = `5`-byte increments, retrying on `EINTR` and always masking `RP23XX_ADC_IRQ_FIFO` before returning on error) until all `5` `struct adc_msg_s` entries (`25` bytes total) have been collected before calling `up_disable_irq(RP23XX_ADC_IRQ_FIFO)`, and specify that valid samples (`am_data >= 0`) in `msgs[1..4]` are averaged (or if all 4 fresh samples have `am_data < 0`, the previous `filtered_adc` reading is retained).
 *   ***AI Suggestion:*** PROPOSE FIX
@@ -19,7 +19,7 @@ Status: resolved
 ---
 
 ### [Issue 2 (`CA-02`)] [`egm-zoom-out`] - Severity: Major
-*   **Affected Scope:** [Lines 209-229](docs/designs/xiao-rp2350-bargraph.md#L209-L229) (`### 3. Boot Sequence`), [Lines 242-247](docs/designs/xiao-rp2350-bargraph.md#L242-L247) (`### 4.1.3 Demand-Driven NVIC IRQ Gating`), and [Lines 400-406, 511-533, 668-674](docs/designs/xiao-rp2350-bargraph.md#L400-L674) (Target Files `#3`, `#16`, `#18`, `#28`)
+*   **Affected Scope:** [Lines 209-229](../../designs/xiao-rp2350-bargraph.md#L209-L229) (`### 3. Boot Sequence`), [Lines 242-247](../../designs/xiao-rp2350-bargraph.md#L242-L247) (`### 4.1.3 Demand-Driven NVIC IRQ Gating`), and [Lines 400-406, 511-533, 668-674](../../designs/xiao-rp2350-bargraph.md#L400-L674) (Target Files `#3`, `#16`, `#18`, `#28`)
 *   **Discrepancy Description:** The top-level workspace blueprint (`README.md#L16`) and `nuttx/INVIOLABLES.md#L26-L41` define a strict Global Invariant on Kernel/User-Space Separation. Even in `CONFIG_BUILD_FLAT=y`, having user-space code in `xiao-rp2350-bargraph/apps/bargraph/bargraph_main.c` include `<nuttx/irq.h>` and `<arch/rp23xx/irq.h>` to call privileged NVIC functions `up_enable_irq(RP23XX_ADC_IRQ_FIFO)` and `up_disable_irq(RP23XX_ADC_IRQ_FIFO)` directly—and having board-level kernel code (`rp23xx_bringup.c`) directly call a custom application symbol `bargraph_autostart()`—blurs the kernel/user-space boundary.
 *   **Rationale:** Explicitly document in Section 4.1.3 and `xiao-rp2350-bargraph/README.md` (`## Invariants`) why flat-build NVIC gating from `bargraphd` and calling `bargraph_autostart()` from `rp23xx_bringup.c` are intentional `CONFIG_BUILD_FLAT=y` exceptions to the workspace's Kernel/User-Space Separation invariant required to keep `nuttx/` and `apps/` unmodified.
 *   ***AI Suggestion:*** PROPOSE FIX
@@ -31,7 +31,7 @@ Status: resolved
 ---
 
 ### [Issue 3 (`CA-03`)] [`egm-implementation-readiness` / `egm-codebase-details`] - Severity: Nit
-*   **Affected Scope:** [Lines 408-567](docs/designs/xiao-rp2350-bargraph.md#L408-L567) (Target Files `#4`, `#6`, `#7`, `#14`, `#19`, `#23`)
+*   **Affected Scope:** [Lines 408-567](../../designs/xiao-rp2350-bargraph.md#L408-L567) (Target Files `#4`, `#6`, `#7`, `#14`, `#19`, `#23`)
 *   **Discrepancy Description:** While Target Files `#3` (`xiao-rp2350-bargraph/README.md`), `#9` (`board/include/README.md`), and `#11` (`board/scripts/README.md`) explicitly list their required EGM sections and `[file:symbol]` citations, the remaining `README.md` entries in `### Target Files to Create/Modify` (`#4`, `#6`, `#7`, `#14`, `#19`, `#23`) omit explicit section headers and `[file:symbol]` citation lists matching the workspace blueprint contract (`README.md`) and leaf component contract (`nuttx/boards/arm/rp23xx/xiao-rp2350/src/README.md`).
 *   **Rationale:** Explicitly specify the 5 required EGM sections (`Overview`, `Subdirectories & Boundaries` or `Interface`, `Invariants`, `Side Effects`, `Verification`) and the exact `[file:symbol]` citations for Target Files `#4`, `#6`, `#7`, `#14`, `#19`, and `#23` so every `README.md` in `xiao-rp2350-bargraph/` can be authored deterministically.
 *   ***AI Suggestion:*** PROPOSE FIX
@@ -43,7 +43,7 @@ Status: resolved
 ---
 
 ### [Issue 4 (`CA-04`)] [`egm-comprehension` / `egm-zoom-out`] - Severity: Nit
-*   **Affected Scope:** [Lines 642-692](docs/designs/xiao-rp2350-bargraph.md#L642-L692) (`#### 28. xiao-rp2350-bargraph/apps/bargraph/bargraph_main.c`)
+*   **Affected Scope:** [Lines 642-692](../../designs/xiao-rp2350-bargraph.md#L642-L692) (`#### 28. xiao-rp2350-bargraph/apps/bargraph/bargraph_main.c`)
 *   **Discrepancy Description:** While the sequence diagram (line 221), CLI table (line 317), and `bargraph_main.c` rationale (line 645) state that `bargraph_autostart()` and `bargraph start` spawn `bargraphd` via `task_create()`, the `Proposed Changes` list for `bargraph_main.c` (lines 646–700) does not explicitly state whether `bargraph_autostart()` blocks on `done_cond` like `bargraph start` or how it passes `CONFIG_BARGRAPH_PRIORITY` and `CONFIG_BARGRAPH_STACKSIZE` to `task_create()`.
 *   **Rationale:** Specify a single internal helper (`bargraph_start_daemon()`) called by both `bargraph_autostart()` and `bargraph start` that spawns `bargraphd` via `task_create("bargraphd", CONFIG_BARGRAPH_PRIORITY, CONFIG_BARGRAPH_STACKSIZE, bargraphd_daemon, NULL)` under `g_bargraph.lock` and waits on `done_cond` until `running` is true or `init_err < 0`.
 *   ***AI Suggestion:*** PROPOSE FIX
@@ -55,7 +55,7 @@ Status: resolved
 ---
 
 ### [Issue 5 (`CA-05`)] [`egm-design` / `egm-zoom-out`] - Severity: Nit
-*   **Affected Scope:** [Lines 289-323](docs/designs/xiao-rp2350-bargraph.md#L289-L323) (`### 5. Daemon State Machine & IPC Synchronization`)
+*   **Affected Scope:** [Lines 289-323](../../designs/xiao-rp2350-bargraph.md#L289-L323) (`### 5. Daemon State Machine & IPC Synchronization`)
 *   **Discrepancy Description:** The `stateDiagram-v2` (lines 289–303) defines transitions out of `TEST` for sweep completion (`TEST --> SENSING`, `TEST --> MANUAL`) and `bargraph stop` (`TEST --> STOPPED`), while the CLI table (lines 313–323) states that `bargraph test` restores `prev_mode` (`SENSING` or `MANUAL`). It does not explicitly state what happens if `bargraph set <0..100>`, `bargraph resume`, or a second `bargraph test` is invoked (e.g., if `bargraph test &` was backgrounded in NSH) while `mode == BARGRAPH_MODE_TEST`.
 *   **Rationale:** Note in Section 5 that `prev_mode` is captured only when transitioning into `TEST` from `SENSING` or `MANUAL` (never overwriting `prev_mode` with `BARGRAPH_MODE_TEST`), and that issuing `bargraph set <0..100>` or `bargraph resume` during an active `TEST` sweep aborts the sweep (`test_requested = false`, broadcasting `done_cond`) and transitions directly to `MANUAL` or `SENSING`.
 *   ***AI Suggestion:*** PROPOSE FIX
@@ -67,7 +67,7 @@ Status: resolved
 ---
 
 ### [Issue 6 (`CA-06`)] [`egm-zoom-out`] - Severity: Nit
-*   **Affected Scope:** [Lines 119-120](docs/designs/xiao-rp2350-bargraph.md#L119-L120) (`### 1. System Architecture`) and [Lines 590-641](docs/designs/xiao-rp2350-bargraph.md#L590-L641) (`#### 27. xiao-rp2350-bargraph/apps/bargraph/bargraph_internal.h`)
+*   **Affected Scope:** [Lines 119-120](../../designs/xiao-rp2350-bargraph.md#L119-L120) (`### 1. System Architecture`) and [Lines 590-641](../../designs/xiao-rp2350-bargraph.md#L590-L641) (`#### 27. xiao-rp2350-bargraph/apps/bargraph/bargraph_internal.h`)
 *   **Discrepancy Description:** `xiao-rp2350-bargraph/apps/bargraph/` has only a single C source file (`bargraph_main.c`). Creating `bargraph_internal.h` without documenting why a separate header is used for a single-TU app appears redundant unless its purpose for host-side pure math verification (`comprehension_report.md` #2) is stated explicitly.
 *   **Rationale:** Either fold `bargraph_internal.h` into `bargraph_main.c`, or if `bargraph_internal.h` is retained so the host-side math verification step can cleanly include the pure math/filter declarations and constants, state that rationale explicitly in Target File `#27`.
 *   ***AI Suggestion:*** PROPOSE FIX
@@ -79,7 +79,7 @@ Status: resolved
 ---
 
 ### [Issue 7 (`CA-07`)] [`egm-zoom-out`] - Severity: Nit
-*   **Affected Scope:** [Lines 455-471](docs/designs/xiao-rp2350-bargraph.md#L455-L471) (Target Files `#9` and `#10`: `xiao-rp2350-bargraph/board/include/README.md` and `board.h`)
+*   **Affected Scope:** [Lines 455-471](../../designs/xiao-rp2350-bargraph.md#L455-L471) (Target Files `#9` and `#10`: `xiao-rp2350-bargraph/board/include/README.md` and `board.h`)
 *   **Discrepancy Description:** Target File `#10` proposes defining `BARGRAPH_ADC_DEVPATH "/dev/adc0"`, `BARGRAPH_ADC_GPIO 26`, and `BARGRAPH_LED1_GPIO 27` through `BARGRAPH_LED6_GPIO 0` in `board/include/board.h`. However, all PWM and ADC pin assignments are already defined by `CONFIG_RP23XX_PWM*` and `CONFIG_RP23XX_ADC_CHANNEL0` in `defconfig` and consumed by `rp23xx_common_bringup.c`, while `bargraph_main.c` opens `/dev/pwm*` and `/dev/adc0` by VFS device path and never manipulates LED GPIO pins directly.
 *   **Rationale:** Keep `board.h` minimal—matching `nuttx/boards/arm/rp23xx/xiao-rp2350/include/board.h` minus the unused bus headers—and rely on the Kconfig symbols for PWM GPIO routing, only defining `BARGRAPH_ADC_GPIO 26` (used by `rp23xx_bringup.c` for `RP23XX_PADS_BANK0_GPIO`).
 *   ***AI Suggestion:*** PROPOSE FIX
@@ -91,7 +91,7 @@ Status: resolved
 ---
 
 ### [Issue 8 (`CA-08`)] [`egm-style` / `egm-zoom-out`] - Severity: Nit
-*   **Affected Scope:** [Line 36](docs/designs/xiao-rp2350-bargraph.md#L36) (`## Goals`) and [Lines 268-274](docs/designs/xiao-rp2350-bargraph.md#L268-L274) (`### 4.2 Hardware PWM Subsystem Mitigations`)
+*   **Affected Scope:** [Line 36](../../designs/xiao-rp2350-bargraph.md#L36) (`## Goals`) and [Lines 268-274](../../designs/xiao-rp2350-bargraph.md#L268-L274) (`### 4.2 Hardware PWM Subsystem Mitigations`)
 *   **Discrepancy Description:** Line 36 (`Complete Breadboard & EGM Documentation`) is a single 115-word sentence with nested em-dashes and parentheticals, and lines 269–273 combine upper-half contract rules, `memcpy()` details, lower-half register bitfields, and slice channel assignments into a single multi-clause sentence.
 *   **Rationale:** Break line 36 and lines 269–273 into shorter sentences and clarify that populating `channels[0].channel = 1` and `channels[1].channel = 2` satisfies the `nuttx/include/nuttx/timers/pwm.h` contract and `pwm_dump()` debug logging while `drivers/timers/pwm.c` copies `struct pwm_info_s` verbatim via `memcpy()`.
 *   ***AI Suggestion:*** PROPOSE FIX
@@ -103,7 +103,7 @@ Status: resolved
 ---
 
 ### [Issue 9 (`CA-09`)] [`egm-zoom-out`] - Severity: Nit
-*   **Affected Scope:** [Lines 649-689](docs/designs/xiao-rp2350-bargraph.md#L649-L689) (`#### 28. xiao-rp2350-bargraph/apps/bargraph/bargraph_main.c`)
+*   **Affected Scope:** [Lines 649-689](../../designs/xiao-rp2350-bargraph.md#L649-L689) (`#### 28. xiao-rp2350-bargraph/apps/bargraph/bargraph_main.c`)
 *   **Discrepancy Description:** Target File `#28` in the `Detailed Implementation Plan` repeats line-by-line C expressions (`*ema_q4 = *ema_q4 - (*ema_q4 >> 2) + ((uint32_t)raw_avg << 2)`, exact integer rounding expressions, etc.) that duplicate the mathematical specifications already presented in Sections 4.1.4, 4.1.5, and 4.2.3.
 *   **Rationale:** Reference the mathematical transfer function and Q4 EMA equations already defined in Sections 4.1.4, 4.1.5, and 4.2.3 rather than repeating raw C shift/rounding expressions inline in Target File `#28`.
 *   ***AI Suggestion:*** PROPOSE FIX
@@ -115,7 +115,7 @@ Status: resolved
 ---
 
 ### [Issue 10 (`CA-10`)] [`egm-style` / `egm-implementation-readiness`] - Severity: Nit
-*   **Affected Scope:** [Lines 708-712](docs/designs/xiao-rp2350-bargraph.md#L708-L712) (`### Verification Plan` -> `Out-of-Tree Configuration & Firmware Build`)
+*   **Affected Scope:** [Lines 708-712](../../designs/xiao-rp2350-bargraph.md#L708-L712) (`### Verification Plan` -> `Out-of-Tree Configuration & Firmware Build`)
 *   **Discrepancy Description:** Line 710 specifies `./tools/configure.sh -l ../xiao-rp2350-bargraph/board/configs/bargraph` (which forces `CONFIG_HOST_LINUX=y`) paired on line 711 with `make -j$(sysctl -n hw.ncpu)` (which uses macOS `sysctl`). In `nuttx/tools/configure.sh` and `nuttx/tools/sethost.sh` (lines 87–114), omitting `-l` auto-detects the host OS (`Darwin` -> `CONFIG_HOST_MACOS=y`, `Linux` -> `CONFIG_HOST_LINUX=y`).
 *   **Rationale:** Omit `-l` in `./tools/configure.sh ../xiao-rp2350-bargraph/board/configs/bargraph` and use portable job parallelism (`make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)`) so the verification snippet works cleanly on both macOS and Linux hosts.
 *   ***AI Suggestion:*** PROPOSE FIX
@@ -127,7 +127,7 @@ Status: resolved
 ---
 
 ### [Issue 11 (`CA-11`)] [`egm-comprehension` / `egm-zoom-out`] - Severity: Nit
-*   **Affected Scope:** [Lines 716-717](docs/designs/xiao-rp2350-bargraph.md#L716-L717) (`### Verification Plan` -> `Host-Side Pure Math & Transfer Function Unit Verification`)
+*   **Affected Scope:** [Lines 716-717](../../designs/xiao-rp2350-bargraph.md#L716-L717) (`### Verification Plan` -> `Host-Side Pure Math & Transfer Function Unit Verification`)
 *   **Discrepancy Description:** The verification step specifies testing the transfer function, `>> 19` shift extraction, Q4 EMA filter, and deadband clamping on the host, but does not state how a reader executes this check (e.g., whether it is run via an ephemeral host `cc` one-liner against `bargraph_compute_duties()`/`bargraph_filter_adc()`).
 *   **Rationale:** Specify in `Verification Plan` that the pure helper functions (`bargraph_compute_duties()` and `bargraph_filter_adc()`) are verified via an ephemeral host `cc` invocation targeting `/tmp` (removed immediately after execution) so the repository tree remains strictly focused on the target firmware.
 *   ***AI Suggestion:*** PROPOSE FIX

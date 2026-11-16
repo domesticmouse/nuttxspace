@@ -414,7 +414,7 @@ struct bargraph_state_s
 #### 2. `xiao-rp2350-bargraph/README.md` (Create)
 
 *   **Type / Scope**: Project Root EGM Blueprint & Hardware Assembly Guide
-*   **Rationale**: Documents the top-level boundaries between [`board`](./xiao-rp2350-bargraph/board/README.md) and [`apps`](./xiao-rp2350-bargraph/apps/README.md), the bill of materials, the 400-tie-point breadboard layout, pinout table, current budget, build/flash commands (`nuttx.uf2`), and NSH CLI usage.
+*   **Rationale**: Documents the top-level boundaries between `board` (`./xiao-rp2350-bargraph/board/README.md`) and `apps` (`./xiao-rp2350-bargraph/apps/README.md`), the bill of materials, the 400-tie-point breadboard layout, pinout table, current budget, build/flash commands (`nuttx.uf2`), and NSH CLI usage.
 *   **Proposed Changes**:
     *   Include `## Overview`, `## Subdirectories & Boundaries` linking to `./board/README.md` and `./apps/README.md`, `## Hardware Bill of Materials & Breadboard Wiring`, `## Invariants`, `## Side Effects`, and `## Verification`.
 
@@ -568,7 +568,7 @@ struct bargraph_state_s
 *   **Type / Scope**: External Applications Root EGM Blueprint Documentation
 *   **Rationale**: Documents the out-of-tree application container linked at `apps/external` and links to `./bargraph/README.md`.
 *   **Proposed Changes**:
-    *   Describe the `apps/external` symlink discovery mechanism, `Kconfig` inclusion, and [`bargraph`](./xiao-rp2350-bargraph/apps/bargraph/README.md) subcomponent.
+    *   Describe the `apps/external` symlink discovery mechanism, `Kconfig` inclusion, and `bargraph` (`./xiao-rp2350-bargraph/apps/bargraph/README.md`) subcomponent.
 
 #### 22. `xiao-rp2350-bargraph/apps/Kconfig` (Create)
 

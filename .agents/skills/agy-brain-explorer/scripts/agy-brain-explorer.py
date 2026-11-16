@@ -1918,7 +1918,7 @@ def export_sessions_to_dir(
             f"| {idx:02d} | `{created_str}` | {s_link} | {steps_cnt} | {f_link} | {req_cell} |"
         )
         index_rows.append(
-            f"| {idx:02d} | `{created_str}` | {s_link} | {steps_cnt} | [{filename}](file://{file_path}) | {req_cell} |"
+            f"| {idx:02d} | `{created_str}` | {s_link} | {steps_cnt} | [{filename}]({filename}) | {req_cell} |"
         )
 
     readme_path = out_dir / "README.md"

@@ -1,12 +1,12 @@
 # Goldfish Annotated Review Report
 
 **Status:** `resolved`
-**Target:** [`docs/designs/xiao-rp2350-bargraph.md`](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md) (`full file`: Lines 1–727)
+**Target:** [`docs/designs/xiao-rp2350-bargraph.md`](../../designs/xiao-rp2350-bargraph.md) (`full file`: Lines 1–727)
 
 ## Prioritized Findings & AI Suggestions
 
 ### [Issue B-1] [`egm-zoom-out` / `egm-inventive-catalyst` / `egm-design` / `egm-codebase-details`] - Severity: Blocker
-*   **Affected Scope:** [Lines 25–662](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L25-L662) (`## The Problem`, `## Goals`, `### 3. Boot Sequence`, `### 4.1 ADC Subsystem Mitigations`, `## Non-Functional Requirements`, `### Additional Resources`, Target Files #13, #17, #30)
+*   **Affected Scope:** [Lines 25–662](../../designs/xiao-rp2350-bargraph.md#L25-L662) (`## The Problem`, `## Goals`, `### 3. Boot Sequence`, `### 4.1 ADC Subsystem Mitigations`, `## Non-Functional Requirements`, `### Additional Resources`, Target Files #13, #17, #30)
 *   **Discrepancy Description:** The design states that `nuttx/arch/arm/src/rp23xx/rp23xx_adc.c` runs the ADC in continuous free-running mode (`ADC_CS_START_MANY`) and that writing `putreg32(0x00ffff00, RP23XX_ADC_DIV)` in `rp23xx_bringup.c` paces conversions to `~732.42 Hz`. Inspection of `rp23xx_adc.c` (lines 169–320) shows that the driver never sets `RP23XX_ADC_CS_START_MANY`; instead, `interrupt_handler()` (line 234) unconditionally calls `get_next_channel()`, which writes single-shot `RP23XX_ADC_CS_START_ONCE` (line 304) even when `au_receive()` returns `-ENOMEM` on a full software FIFO. On RP2350 hardware, `RP23XX_ADC_DIV` only paces free-running `START_MANY` conversions and has no effect on `START_ONCE` triggers (`2 µs`/sample), leaving the `500,000 IRQ/s` interrupt storm active while `/dev/adc0` is open. Additionally, the ISR in `rp23xx_adc.c` is `interrupt_handler()` (not `adc_interrupt()`), and `remove_device(dev)` is called from `my_shutdown()` / `my_rxint(dev, false)` (lines 538, 563) while `interrupt_handler()` checks `g_active_count == 0` (line 176).
 *   **Rationale:** Keeping `/dev/adc0` open with `RP23XX_ADC_IRQ_FIFO` enabled in the NVIC starves the CPU with `500,000 IRQ/s` regardless of `RP23XX_ADC_DIV`. Gating `RP23XX_ADC_IRQ_FIFO` via `up_disable_irq(RP23XX_ADC_IRQ_FIFO)` / `up_enable_irq(RP23XX_ADC_IRQ_FIFO)` (`<nuttx/irq.h>` and `<arch/rp23xx/irq.h>`) around each 50 Hz burst in `bargraphd` (`CONFIG_BUILD_FLAT=y`) eliminates background interrupts during the 20 ms sleep window and reduces total ADC interrupts to `250 IRQ/s` (`5` samples read in `~10 µs` per 50 Hz cycle: 1 stale sample latched at the end of the prior burst discarded + 4 fresh samples averaged).
 *   ***AI Suggestion:*** PROPOSE FIX
@@ -18,7 +18,7 @@
 ---
 
 ### [Issue B-2] [`egm-codebase-details` / `egm-implementation-readiness`] - Severity: Blocker
-*   **Affected Scope:** [Lines 253–254](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L253-L254), [Line 662](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L662) (`### 4.1 ADC Subsystem Mitigations`, Target File #30 `bargraph_main.c`)
+*   **Affected Scope:** [Lines 253–254](../../designs/xiao-rp2350-bargraph.md#L253-L254), [Line 662](../../designs/xiao-rp2350-bargraph.md#L662) (`### 4.1 ADC Subsystem Mitigations`, Target File #30 `bargraph_main.c`)
 *   **Discrepancy Description:** Line 254 defines the Q4 EMA recurrence as $\text{ema\_q4} \leftarrow \text{ema\_q4} - (\text{ema\_q4} \gg 2) + (\text{raw\_avg} \ll 2)$ and extracts $\text{filtered} = \text{ema\_q4} \gg 2$. At steady state for a constant input $R$, $\text{ema\_q4} / 4 = 4 R \implies \text{ema\_q4} = 16 R = R \ll 4$. Shifting right by `2` (`ema_q4 >> 2`) produces $4 R \in [0, 16380]$ instead of $R \in [0, 4095]$. Additionally, first-sample seeding of `ema_q4` is not specified.
 *   **Rationale:** With `filtered = ema_q4 >> 2`, all 6 LEDs saturate at 100% duty when the potentiometer reaches 25% of travel. Extracting `filtered = (ema_q4 + 8) >> 4` and seeding `ema_q4 = raw_avg << 4` on the first sample restores unity DC gain across `0..4095`.
 *   ***AI Suggestion:*** PROPOSE FIX
@@ -30,7 +30,7 @@
 ---
 
 ### [Issue B-3] [`egm-design` / `egm-codebase-details` / `egm-implementation-readiness`] - Severity: Blocker
-*   **Affected Scope:** [Line 260](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L260), [Line 457](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L457), [Line 464](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L464) (`### 4.2 Hardware PWM Subsystem Mitigations`, Target File #7 `defconfig`)
+*   **Affected Scope:** [Line 260](../../designs/xiao-rp2350-bargraph.md#L260), [Line 457](../../designs/xiao-rp2350-bargraph.md#L457), [Line 464](../../designs/xiao-rp2350-bargraph.md#L464) (`### 4.2 Hardware PWM Subsystem Mitigations`, Target File #7 `defconfig`)
 *   **Discrepancy Description:**
     1. Lines 260 and 457 specify `CONFIG_PWM_MULTICHAN=y` in `defconfig`, which does not exist in `nuttx/drivers/timers/Kconfig` and causes `olddefconfig` (`nuttx/tools/Unix.mk:725-734`) to abort with `exit 1` on unknown symbol warnings.
     2. Line 464 specifies `CONFIG_ADC=y` without `CONFIG_ANALOG=y`. Because `config ADC` is inside `if ANALOG` (`nuttx/drivers/analog/Kconfig:6-20`), `olddefconfig` drops `CONFIG_ADC=y` unless `CONFIG_ANALOG=y` is set.
@@ -44,7 +44,7 @@
 ---
 
 ### [Issue B-4] [`egm-codebase-details` / `egm-design` / `egm-style`] - Severity: Blocker
-*   **Affected Scope:** [Lines 21–24](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L21-L24), [Lines 236–237](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L236-L237), [Lines 266–270](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L266-L270), [Lines 279–280](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L279-L280), [Line 364](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L364) (`## The Problem`, `### 4.1 ADC Subsystem Mitigations`, `### 4.2 Hardware PWM Subsystem Mitigations`, `### Alternative C`)
+*   **Affected Scope:** [Lines 21–24](../../designs/xiao-rp2350-bargraph.md#L21-L24), [Lines 236–237](../../designs/xiao-rp2350-bargraph.md#L236-L237), [Lines 266–270](../../designs/xiao-rp2350-bargraph.md#L266-L270), [Lines 279–280](../../designs/xiao-rp2350-bargraph.md#L279-L280), [Line 364](../../designs/xiao-rp2350-bargraph.md#L364) (`## The Problem`, `### 4.1 ADC Subsystem Mitigations`, `### 4.2 Hardware PWM Subsystem Mitigations`, `### Alternative C`)
 *   **Discrepancy Description:**
     1. `my_reset()` in `rp23xx_adc.c:466-483` loops unconditionally over all 4 ADC GPIOs (`26..29`), setting them to `RP23XX_GPIO_FUNC_NULL` during `adc_register()`. Meanwhile, `rp23xx_pwm_initialize()` does not mux GPIOs during `rp23xx_common_bringup()`; `pwm_setup()` (`rp23xx_pwm.c:214-222`) sets `RP23XX_GPIO_FUNC_PWM` later when `bargraphd` opens `/dev/pwm5` and `/dev/pwm6`. Disabling `CONFIG_RP23XX_ADC_CHANNEL1..3` and `TEMPERATURE` is required so `get_next_channel()` (`rp23xx_adc.c:267`) only samples channel 0 instead of round-robin multiplexing channels 1–4 into `/dev/adc0`.
     2. `nuttx/drivers/timers/pwm.c` copies `struct pwm_info_s` via `memcpy` without inspecting `channel`; the `channel == 0` (skip) / `-1` (terminate) sentinel is the contract in `nuttx/include/nuttx/timers/pwm.h:67-70`.
@@ -62,19 +62,19 @@
 ---
 
 ### [Issue M-1] [`egm-comprehension`] - Severity: Major
-*   **Affected Scope:** [Line 36](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L36), [Lines 409–600](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L409-L600) (`## Goals`, `## Detailed Implementation Plan`)
+*   **Affected Scope:** [Line 36](../../designs/xiao-rp2350-bargraph.md#L36), [Lines 409–600](../../designs/xiao-rp2350-bargraph.md#L409-L600) (`## Goals`, `## Detailed Implementation Plan`)
 *   **Discrepancy Description:** The document refers to "EGM `README.md` contracts", "Top-Level Workspace EGM Blueprint Documentation", "Leaf EGM Documentation", and `[file:symbol]` citations without defining what "EGM" stands for or linking to existing workspace exemplars.
 *   **Rationale:** A reader unfamiliar with EGM (Elephant / Goldfish Memory) directory `README.md` contracts needs an inline definition and links to the workspace's non-leaf and leaf `README.md` exemplars.
 *   ***AI Suggestion:*** PROPOSE FIX
 *   ***Justification:*** Defining EGM on first mention in `## Goals` (line 36) and linking to `../../README.md` and `../../nuttx/boards/arm/rp23xx/xiao-rp2350/src/README.md` makes the document self-contained.
 *   ***Proposed Edit:***
     *   Location: Line 36 and `## Detailed Implementation Plan` intro
-    *   Change: Define EGM (Elephant / Goldfish Memory) directory `README.md` contracts (non-leaf blueprints with `Overview`, `Subdirectories & Boundaries`, `Invariants`, `Side Effects`, `Verification`; leaf contracts with `Overview`, `Interface`, `Invariants`, `Side Effects`, `Verification`; and `[file:symbol]` citation syntax) and link to [README.md](file:///Users/brett/Documents/GitHub/nuttxspace-egm/README.md) and [nuttx/boards/arm/rp23xx/xiao-rp2350/src/README.md](file:///Users/brett/Documents/GitHub/nuttxspace-egm/nuttx/boards/arm/rp23xx/xiao-rp2350/src/README.md).
+    *   Change: Define EGM (Elephant / Goldfish Memory) directory `README.md` contracts (non-leaf blueprints with `Overview`, `Subdirectories & Boundaries`, `Invariants`, `Side Effects`, `Verification`; leaf contracts with `Overview`, `Interface`, `Invariants`, `Side Effects`, `Verification`; and `[file:symbol]` citation syntax) and link to [README.md](../../README.md) and [nuttx/boards/arm/rp23xx/xiao-rp2350/src/README.md](../../../../nuttx/boards/arm/rp23xx/xiao-rp2350/src/README.md).
 
 ---
 
 ### [Issue M-2] [`egm-design` / `egm-zoom-out` / `egm-implementation-readiness`] - Severity: Major
-*   **Affected Scope:** [Lines 141–150](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L141-L150), [Line 384](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L384), [Line 496](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L496), [Line 585](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L585) (`### 1. System Architecture`, Target File #11 `board/scripts/Make.defs`, Target File #23 `apps/Makefile`)
+*   **Affected Scope:** [Lines 141–150](../../designs/xiao-rp2350-bargraph.md#L141-L150), [Line 384](../../designs/xiao-rp2350-bargraph.md#L384), [Line 496](../../designs/xiao-rp2350-bargraph.md#L496), [Line 585](../../designs/xiao-rp2350-bargraph.md#L585) (`### 1. System Architecture`, Target File #11 `board/scripts/Make.defs`, Target File #23 `apps/Makefile`)
 *   **Discrepancy Description:** During `make distclean`, `nuttx/tools/Unix.mk` runs `$(MAKE) clean_context` after `subdir_distclean`, which re-includes `Make.defs` before deleting `Make.defs`. An unguarded `$(shell ln -s ...)` in `board/scripts/Make.defs` immediately recreates `apps/external` during `clean_context`, leaving `apps/external` behind to pollute subsequent in-tree configurations. Additionally, building `apps/external` generates `.depend`, `Make.dep`, `.built`, and `*.o` inside `xiao-rp2350-bargraph/apps/` unless ignored by a `.gitignore` or cleaned.
 *   **Rationale:** Guarding the `$(shell ...)` symlink creation against `distclean`/`clean_context`/`apps_distclean`, removing `$(APPDIR)/external` during `distclean` in `xiao-rp2350-bargraph/apps/Makefile`, and adding `xiao-rp2350-bargraph/.gitignore` keeps both submodules and the superproject clean.
 *   ***AI Suggestion:*** PROPOSE FIX
@@ -86,7 +86,7 @@
 ---
 
 ### [Issue M-3] [`egm-zoom-out` / `egm-implementation-readiness`] - Severity: Major
-*   **Affected Scope:** [Line 23](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L23), [Lines 108–110](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L108-L110), [Lines 279–280](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L279-L280), [Lines 511–520](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L511-L520), [Lines 545–565](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L545-L565), [Lines 658–659](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L658-L659) (`### 1. System Architecture`, `### 4.2 Hardware PWM Subsystem Mitigations`, Target Files #13, #14, #18, #19, #20, #30)
+*   **Affected Scope:** [Line 23](../../designs/xiao-rp2350-bargraph.md#L23), [Lines 108–110](../../designs/xiao-rp2350-bargraph.md#L108-L110), [Lines 279–280](../../designs/xiao-rp2350-bargraph.md#L279-L280), [Lines 511–520](../../designs/xiao-rp2350-bargraph.md#L511-L520), [Lines 545–565](../../designs/xiao-rp2350-bargraph.md#L545-L565), [Lines 658–659](../../designs/xiao-rp2350-bargraph.md#L658-L659) (`### 1. System Architecture`, `### 4.2 Hardware PWM Subsystem Mitigations`, Target Files #13, #14, #18, #19, #20, #30)
 *   **Discrepancy Description:**
     1. `rp23xx_autoleds.c`, `rp23xx_userleds.c`, and `rp23xx_gpio.c` (~750 lines) are unused when `CONFIG_ARCH_LEDS`, `CONFIG_USERLED`, and `CONFIG_DEV_GPIO` are disabled, and `rp23xx_gpio.c` from `xiao-rp2350` hardcodes `GPIO26..28` (`D0..D2`), colliding with `ADC0`, `LED1`, and `LED2`.
     2. In `rp23xx_pwm.c`, `pwm_stop()` (`PWMIOC_STOP`) only clears `RP23XX_PWM_EN` (leaving the pad frozen while open), whereas `close(fd)` invokes `pwm_shutdown()` (`rp23xx_pwm.c:249-318`), which calls `pwm_stop()`, configures `pin[0]` and `pin[1]` as outputs driven low (`0`), switches their mux to `RP23XX_GPIO_FUNC_SIO`, and zeros `priv->duty[]`.
@@ -100,7 +100,7 @@
 ---
 
 ### [Issue M-4] [`egm-codebase-details` / `egm-implementation-readiness` / `egm-style` / `egm-comprehension`] - Severity: Major
-*   **Affected Scope:** [Lines 426–434](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L426-L434), [Lines 449–466](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L449-L466), [Lines 474–482](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L474-L482), [Lines 535–544](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L535-L544), [Line 679](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L679) (Target Files #3, #4, #7, #9, #17, and `### Verification Plan`)
+*   **Affected Scope:** [Lines 426–434](../../designs/xiao-rp2350-bargraph.md#L426-L434), [Lines 449–466](../../designs/xiao-rp2350-bargraph.md#L449-L466), [Lines 474–482](../../designs/xiao-rp2350-bargraph.md#L474-L482), [Lines 535–544](../../designs/xiao-rp2350-bargraph.md#L535-L544), [Line 679](../../designs/xiao-rp2350-bargraph.md#L679) (Target Files #3, #4, #7, #9, #17, and `### Verification Plan`)
 *   **Discrepancy Description:**
     1. Target File #7 (`defconfig`) does not explicitly state that `CONFIG_ARCH_BOARD="xiao-rp2350"` and `CONFIG_ARCH_BOARD_XIAO_RP2350=y` must be removed from `usbnsh/defconfig`, nor does it specify `CONFIG_NFILE_DESCRIPTORS_PER_BLOCK=12` (needed for 9 open fds in `bargraphd`), `CONFIG_RAW_BINARY=y`, and `CONFIG_RP23XX_UF2_BINARY=y`.
     2. Target File #3 (`board/README.md`, line 426) references `ARCH_BOARD_XIAO_RP2350_BARGRAPH`, whereas Target File #4 (`board/Kconfig`, line 433) hedges with `Define if ARCH_BOARD_CUSTOM block (or empty Kconfig guard)`.
@@ -117,7 +117,7 @@
 ---
 
 ### [Issue M-5] [`egm-implementation-readiness` / `egm-codebase-details` / `egm-zoom-out` / `egm-style`] - Severity: Major
-*   **Affected Scope:** [Lines 303–344](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L303-L344), [Line 526](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L526), [Lines 615–667](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L615-L667) (`### 5. Daemon State Machine & IPC Synchronization`, Target File #15 `rp23xx_pico.h`, Target Files #28, #29, #30 `bargraph_main.c`)
+*   **Affected Scope:** [Lines 303–344](../../designs/xiao-rp2350-bargraph.md#L303-L344), [Line 526](../../designs/xiao-rp2350-bargraph.md#L526), [Lines 615–667](../../designs/xiao-rp2350-bargraph.md#L615-L667) (`### 5. Daemon State Machine & IPC Synchronization`, Target File #15 `rp23xx_pico.h`, Target Files #28, #29, #30 `bargraph_main.c`)
 *   **Discrepancy Description:**
     1. `apps/Application.mk` compiles `MAINSRC = bargraph_main.c` with `-Dmain=bargraph_main`; Target Files #29 and #30 must specify defining `int main(int argc, FAR char *argv[])` in `bargraph_main.c`.
     2. Line 664 contains a self-contradictory hedge `pthread_cond_timedwait() (CLOCK_REALTIME or usleep + mutex lock)`, line 526 hedges `"weak/conditional"`, and line 657 hedges `(when not yet started or on update)`.
@@ -133,7 +133,7 @@
 ---
 
 ### [Issue N-1] [`egm-comprehension`] - Severity: Nit
-*   **Affected Scope:** [Lines 171–185](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L171-L185) (`#### 400-Tie-Point Breadboard Layout`)
+*   **Affected Scope:** [Lines 171–185](../../designs/xiao-rp2350-bargraph.md#L171-L185) (`#### 400-Tie-Point Breadboard Layout`)
 *   **Discrepancy Description:** In the breadboard ASCII diagram, the vertical line descending from `+3.3V Rail (Red +)` on the left connects via `+---` into `Row 7: +---[D2/A2 GPIO28 (7E)]`, visually implying wiring the `3.3V` rail to the `D2` PWM output pin (`7E`) instead of only to Potentiometer Lug 1 (`Row 1`) and `3V3` (`7F` / `7J` on the right).
 *   **Rationale:** Prevents a reader from accidentally shorting the `3.3V` rail to `D2` (`GPIO28`) on the breadboard.
 *   ***AI Suggestion:*** PROPOSE FIX
@@ -145,7 +145,7 @@
 ---
 
 ### [Issue N-2] [`egm-design` / `egm-inventive-catalyst`] - Severity: Nit
-*   **Affected Scope:** [Lines 288–301](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L288-L301), [Line 343](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L343) (`### 5. Daemon State Machine & IPC Synchronization`)
+*   **Affected Scope:** [Lines 288–301](../../designs/xiao-rp2350-bargraph.md#L288-L301), [Line 343](../../designs/xiao-rp2350-bargraph.md#L343) (`### 5. Daemon State Machine & IPC Synchronization`)
 *   **Discrepancy Description:** The Mermaid state diagram omits `TEST --> STOPPED : "bargraph stop"` if `bargraph stop` is invoked while a 2.0-second `TEST` sweep is in progress.
 *   **Rationale:** Adding `TEST --> STOPPED` and checking `stop_requested` on every 20 ms step of the 100-step sweep ensures `bargraph stop` preempts `TEST` within 20 ms.
 *   ***AI Suggestion:*** PROPOSE FIX
@@ -157,7 +157,7 @@
 ---
 
 ### [Issue N-3] [`egm-structural` / `egm-style`] - Severity: Nit
-*   **Affected Scope:** [Lines 7–401](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L7-L401) (`FeatureRange` formatting and prose)
+*   **Affected Scope:** [Lines 7–401](../../designs/xiao-rp2350-bargraph.md#L7-L401) (`FeatureRange` formatting and prose)
 *   **Discrepancy Description:**
     1. Repository file paths in `### Additional Resources` (lines 390–393) are plain inline code spans rather than clickable relative Markdown links.
     2. `### Additional Resources` and `### Future Improvements` are H3 headings preceded by a top-level horizontal rule at line 386, and horizontal rule syntax alternates between `---` and 80-character hyphen lines.

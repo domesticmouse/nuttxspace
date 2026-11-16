@@ -13,9 +13,9 @@ In the upstream `nuttx/` and `apps/` submodules, the default `xiao-rp2350:usbnsh
 The document is self-contained, logically structured, and defines all project-specific concepts (including EGM documentation conventions, RP2350 hardware errata, and NuttX upper/lower-half driver interactions) inline with links to the corresponding files. Only two minor nits were identified:
 
 1. **Severity**: Nit
-   **Affected Scope**: [xiao-rp2350-bargraph.md](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L643-L690) (`#### 28. xiao-rp2350-bargraph/apps/bargraph/bargraph_main.c`, `bargraph_autostart()` implementation details)
+   **Affected Scope**: [xiao-rp2350-bargraph.md](../../designs/xiao-rp2350-bargraph.md#L643-L690) (`#### 28. xiao-rp2350-bargraph/apps/bargraph/bargraph_main.c`, `bargraph_autostart()` implementation details)
    **Discrepancy Description & Rationale**: While the sequence diagram (line 221), CLI table (line 317), and `bargraph_main.c` rationale (line 645) state that `bargraph_autostart()` and `bargraph start` spawn `bargraphd` via `task_create()`, the `Proposed Changes` list for `bargraph_main.c` (lines 646–700) does not explicitly state whether `bargraph_autostart()` blocks on `done_cond` like `bargraph start` or how it passes `CONFIG_BARGRAPH_PRIORITY` and `CONFIG_BARGRAPH_STACKSIZE` to `task_create()`.
 
 2. **Severity**: Nit
-   **Affected Scope**: [xiao-rp2350-bargraph.md](file:///Users/brett/Documents/GitHub/nuttxspace-egm/docs/designs/xiao-rp2350-bargraph.md#L716-L717) (`### Verification Plan`, `Host-Side Pure Math & Transfer Function Unit Verification`)
+   **Affected Scope**: [xiao-rp2350-bargraph.md](../../designs/xiao-rp2350-bargraph.md#L716-L717) (`### Verification Plan`, `Host-Side Pure Math & Transfer Function Unit Verification`)
    **Discrepancy Description & Rationale**: The verification step specifies testing the transfer function, `>> 19` shift extraction, Q4 EMA filter, and deadband clamping on the host, but does not state how a reader executes this check (e.g., whether it is run via an ephemeral host `cc` one-liner against `bargraph_compute_duties()`/`bargraph_filter_adc()`).

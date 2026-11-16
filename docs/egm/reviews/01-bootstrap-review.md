@@ -1,6 +1,6 @@
 # Phase 0 & 1 Review (`01-bootstrap.cast`): EGM Plugin Install & Root Blueprint Bootstrap
 
-> **Presentation Context**: Combined Phase 0 (`/plugin` installation of `egm`) and Phase 1 (`/egm-bootstrap` + `/egm-drift-report` + commit `22e2da7`) recording for Experiment B (`nuttxspace-egm`), packaged as [`recordings/final/01-bootstrap.cast`](../../recordings/final/01-bootstrap.cast) and [`prototypes/01-bootstrap-cast-player.html`](../../prototypes/01-bootstrap-cast-player.html).
+> **Presentation Context**: Combined Phase 0 (`/plugin` installation of `egm`) and Phase 1 (`/egm-bootstrap` + `/egm-drift-report` + commit `22e2da7`) recording for Experiment B (`nuttxspace-egm`), packaged as [`recordings/final/01-bootstrap.cast`](../../../recordings/final/01-bootstrap.cast) and [`prototypes/01-bootstrap-cast-player.html`](../../../prototypes/01-bootstrap-cast-player.html).
 
 ---
 
@@ -15,12 +15,12 @@
 
 ## 2. Recorded Cast & Standalone Player
 
-- **Raw Recording**: [`recordings/raw/00-plugin.cast`](../../recordings/raw/00-plugin.cast) (copied to [`recordings/raw/01-bootstrap.cast`](../../recordings/raw/01-bootstrap.cast)) — `5,142` events, `9m 10.4s` (`550.42s`) raw / `8m 21.0s` (`500.97s`) at `1x` (`idle=2.0s`).
-- **Final Recording**: [`recordings/final/01-bootstrap.cast`](../../recordings/final/01-bootstrap.cast) (`asciicast v3`, `120x36` `xterm-ghostty`, `idle_time_limit=2.0s`)
+- **Raw Recording**: [`recordings/raw/00-plugin.cast`](../../../recordings/raw/00-plugin.cast) (copied to [`recordings/raw/01-bootstrap.cast`](../../../recordings/raw/01-bootstrap.cast)) — `5,142` events, `9m 10.4s` (`550.42s`) raw / `8m 21.0s` (`500.97s`) at `1x` (`idle=2.0s`).
+- **Final Recording**: [`recordings/final/01-bootstrap.cast`](../../../recordings/final/01-bootstrap.cast) (`asciicast v3`, `120x36` `xterm-ghostty`, `idle_time_limit=2.0s`)
   - **Events**: `5,139` total (`5,127` stdout, `0` stdin, `11` `"m"` markers, `1` exit hold of `3.0s`)
   - **Duration**: `8m 13.6s` (`493.63s`) raw / `8m 11.4s` (`491.45s`) at `1x` (`idle=2.0s`) / `98.8s` (`1m 38.8s`) cumulative warped playback across 11 adaptive segments (`>= 2x`, `<= 30s`)
   - **Post-Processing**: Stripped `2` `OSC 7` metadata sequences, trimmed `14` trailing exit-prompt events (`press ctrl+d again to exit` + `Resume with -c ...`), tightened prompt paste/submit and `ask_question` selection delays (`#0029`, `#0070`, `#0072`, `#2272`, `#4070`, `#4171`), and verified `0` remaining exit prompts (`trim-cast.py --info`).
-- **Standalone HTML Player**: [`prototypes/01-bootstrap-cast-player.html`](../../prototypes/01-bootstrap-cast-player.html) (`85,092`-char `EMBEDDED_CAST_GZ_B64`, `112,626` JS chars verified with `node --check`).
+- **Standalone HTML Player**: [`prototypes/01-bootstrap-cast-player.html`](../../../prototypes/01-bootstrap-cast-player.html) (`85,092`-char `EMBEDDED_CAST_GZ_B64`, `112,626` JS chars verified with `node --check`).
 - **Visual / TUI Notes**: All `11` stop-point frames were checked with `pyte` (`uv run --with pyte`), confirming that `#0064` preserves the pasted `/egm-bootstrap` prompt prior to `Enter` and `#4060` captures the settled empty input box after `Loading...` clears.
 
 ### Stop-Point Schedule (`mark-cast.py --list`)
