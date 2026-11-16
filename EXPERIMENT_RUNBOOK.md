@@ -390,7 +390,11 @@ Inside the recorded shell, run `agy` and send these two prompts sequentially:
    ```text
    /egm-bootstrap create the root README.md contract for this workspace and verify submodule boundaries
    ```
-   *(If `/egm-bootstrap` hits a scope confirmation or asks about updating submodule docs, confirm updating **only** the workspace root `README.md`—the `3,242` `nuttx/` and `apps/` contracts are already on `egm`.)*
+   - **If `/egm-bootstrap` hits the >15-subdirectory safety gate** (*"The target directory tree contains more than 15 subdirectories. This is a large execution scope. Do you want to proceed with full-tree bootstrapping?"*), select **`3. Write-in...`** (do **not** pick `1. Yes` or `2. No, abort execution`) and paste:
+     ```text
+     Only generate the workspace root README.md rolling up nuttx/README.md and apps/README.md; do not recurse into nuttx/ or apps/.
+     ```
+     *(The `3,242` `nuttx/` and `apps/` contracts are already complete on `egm`.)*
 
 2. **Prompt 2 (Verify Against Hallucinations):**
    ```text
