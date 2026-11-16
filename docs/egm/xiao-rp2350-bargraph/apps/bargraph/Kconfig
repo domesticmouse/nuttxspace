@@ -1,0 +1,30 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+config BARGRAPH
+	bool "Seeed XIAO RP2350 6-LED PWM Bar Graph"
+	default n
+	---help---
+		Enable the Seeed Studio XIAO RP2350 6-segment hardware PWM LED
+		bar graph background daemon (bargraphd) and NSH control command
+		(bargraph).
+
+if BARGRAPH
+
+config BARGRAPH_PROGNAME
+	string "Program name"
+	default "bargraph"
+	---help---
+		This is the name of the built-in NSH command.
+
+config BARGRAPH_PRIORITY
+	int "Bargraph task priority"
+	default 100
+
+config BARGRAPH_STACKSIZE
+	int "Bargraph stack size"
+	default 2048
+
+endif # BARGRAPH

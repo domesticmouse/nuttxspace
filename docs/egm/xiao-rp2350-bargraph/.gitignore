@@ -1,0 +1,9 @@
+*.o
+*.a
+*.d
+*.tmp
+.built
+.depend
+.kconfig
+Make.dep
+.context

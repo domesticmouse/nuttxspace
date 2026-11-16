@@ -1,0 +1,15 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+if ARCH_BOARD_CUSTOM
+
+config ARCH_BOARD_XIAO_RP2350_BARGRAPH
+	bool
+	default y
+	---help---
+		Out-of-tree Seeed Studio XIAO RP2350 6-segment PWM LED bar graph
+		custom board support package.
+
+endif # ARCH_BOARD_CUSTOM
