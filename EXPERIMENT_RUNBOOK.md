@@ -593,7 +593,8 @@ Launch `agy` and execute **Pass 1**:
 
 1. **Prompt (Pass 1 Review):**
    ```text
-   /egm-review @[docs/designs/xiao-rp2350-bargraph.md]
+   /egm-review @docs/designs/xiao-rp2350-bargraph.md
+   GoldfishContext: @README.md, @concepts_brief.md
 
    Instruct all Goldfish reviewer subagents to read the nearest local EGM README.md contracts in nuttx/ and apps/ alongside the referenced .c, .h, .mk, and Kconfig files.
    ```
@@ -602,7 +603,7 @@ Launch `agy` and execute **Pass 1**:
 
 2. **Prompt (Pass 1 Resolution):**
    ```text
-   /egm-resolve @[consolidated_review_report.md] target @[docs/designs/xiao-rp2350-bargraph.md]
+   /egm-resolve @consolidated_review_report.md target @docs/designs/xiao-rp2350-bargraph.md LineRange: full file
    ```
    - Inspect `goldfish_review_report.md`, then reply **`auto accept`** (or **`interactive breakdown`** if you want to highlight critical findings such as Kconfig/ISR bugs on camera).
 
@@ -617,12 +618,13 @@ Launch `agy` and execute **Pass 1**:
    /clear
    ```
    ```text
-   /egm-review @[docs/designs/xiao-rp2350-bargraph.md]
+   /egm-review @docs/designs/xiao-rp2350-bargraph.md
+   GoldfishContext: @README.md, @concepts_brief.md
 
    Instruct all Goldfish reviewer subagents to read the nearest local EGM README.md contracts in nuttx/ and apps/ alongside the referenced .c, .h, .mk, and Kconfig files.
    ```
    - Again select **`Consolidated report with all review rubrics (runs full flow without stopping)`**.
-   - Run `/egm-resolve @[consolidated_review_report.md] target @[docs/designs/xiao-rp2350-bargraph.md]` and reply **`auto accept`** (or resolve any contested findings).
+   - Run `/egm-resolve @consolidated_review_report.md target @docs/designs/xiao-rp2350-bargraph.md LineRange: full file` and reply **`auto accept`** (or resolve any contested findings).
    - *(Optional Pass 3: if Pass 2 still surfaces Blockers/Majors like the `close()` vs. ISR teardown race or blocking `adc_read()`, archive Pass 2's `*_report.md` and `xiao-rp2350-bargraph.pass2.md` into `docs/reports/pass2/` first, then run one more `/clear` -> `/egm-review` -> `/egm-resolve` cycle and archive Pass 3 into `docs/reports/pass3/`.)*
 
 5. **On-Camera Wrap-Up & Commit via `agy` Prompt:**
