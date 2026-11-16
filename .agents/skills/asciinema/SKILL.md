@@ -130,7 +130,7 @@ Before publishing or sharing `.cast` files, strip secrets and credential keystro
 
 1. **Verify stdin is stripped**: Default recordings do not capture keystrokes, but if `-I`/`--stdin` was used, `"i"` events must be deleted.
 2. **Scrub Environment Metadata**: Verify `env` in header line 1 contains only safe values (`TERM`, `SHELL`).
-3. **Strip Linux/systemd OSC Metadata**: `sanitize-cast.py` strips Linux/systemd `OSC 3008` (`machineid`, `bootid`, `user`, `hostname`, `cwd`) and `OSC 7` escape sequences from `"o"` stdout events by default (pass `--keep-osc` to preserve them).
+3. **Strip Linux/systemd OSC Metadata**: `sanitize-cast.py` strips Linux/systemd `OSC 3008` (`machineid`, `bootid`, `user`, `hostname`, `cwd`) and `OSC 7` escape sequences *in-place inside `"o"` stdout event payloads* by default (leaving `""` rather than deleting event lines; pass `--keep-osc` to preserve them). Because event lines are preserved in place, **0-based event indices `#0000..#NNNN` do not shift** between raw and sanitized `.cast` files unless `-I`/`--stdin` `"i"` events were removed.
 4. **Redact Output Patterns**: Replace API keys, tokens, or internal URLs in `"o"` events.
 
 Use the bundled utility script [scripts/sanitize-cast.py](scripts/sanitize-cast.py):
@@ -232,8 +232,8 @@ Before placing or moving a stop point, locate the exact stdout (`"o"`) event ind
 # Search stdout for a pattern and show 2 surrounding events before/after each match
 python3 .agents/skills/asciinema/scripts/mark-cast.py session.cast --search "flutter create" --context 2
 
-# Inspect a specific event range (e.g. events #0..#25) with dt, raw, 1x, code, tags, and ANSI-stripped text
-python3 .agents/skills/asciinema/scripts/mark-cast.py session.cast --inspect 0:25
+# Inspect one or more event ranges (repeatable) with dt, raw, 1x, code, tags, and ANSI-stripped text
+python3 .agents/skills/asciinema/scripts/mark-cast.py session.cast --inspect 0:25 --inspect 65:80
 ```
 
 #### C. Placement Rules: Command-Entry Hold vs. Command-Completion Hold vs. Two-Stop Prompt/Question Hold
@@ -242,7 +242,8 @@ Always place `"m"` markers (`[0.0, "m", "<label>"]` in v3, `[abs_time, "m", "<la
 - **Command-Completion / `/clear` Hold (pause *after* a command or `/clear` finishes running)**: Match the final stdout frame of the command's output (e.g. `"All done!"`, `"root-commit.*Initial scaffold"`, or the fresh `Antigravity CLI` banner redraw after `/clear`).
 - **Two-Stop Interactive Prompt / Question Hold (Before Typing + After Typing Before `Enter`)**:
   1. **Stop 1 — Before Typing (`Q: ...` / `Ready for ...`)**: Match the bottom status/footer of the TUI prompt frame (whether an `ask_user` selector widget with `enter Submit`/`enter Select` or a prose question ending with `? for shortcuts`), right before the first typed/pasted character of the user's response (`dt > 0`).
-  2. **Stop 2 — After Typing, Before `Enter` (`Answer: ...` / `/command`)**: Match the final stdout frame that echoes the user's complete typed/pasted response or slash command in the input box, right before the `Enter` submission event (`\x1b[\d+D\x1b[K` input clear or `Thinking...`/`Generating...` spinner). Always verify that every "after typing" stop point has a matching "before typing" stop point preceding the typing sequence.
+  2. **Stop 2 — After Typing, Before `Enter` (`Answer: ...` / `/command`)**: Match the final stdout frame that echoes the user's complete typed/pasted response or slash command in the input box, right before the `Enter` submission event (`\x1b[\d+D\x1b[K`, `\r\x1b[2C\x1b[K` in `Antigravity CLI 1.5.9`, or `Thinking...`/`Generating...` spinner). Always verify that every "after typing" stop point has a matching "before typing" stop point preceding the typing sequence.
+  - When an `agy` turn finishes or a modal closes (e.g. `Installed plugins`), `agy` may briefly draw a transient `Loading...` line before settling on the final `? for shortcuts` prompt frame (`dt > 1s`); always place the `"Ready for ..."` / completion stop point on the settled `? for shortcuts` frame (not the transient `Loading...` frame), and verify with `uv run --with pyte python3 .agents/skills/asciinema/scripts/mark-cast.py session.cast --render <idx>`.
   - When a synchronized TUI redraw (`\x1b[?2026h`…`\x1b[?2026l`) spans multiple `dt = 0.0` PTY chunks, `mark-cast.py` automatically advances across consecutive `dt = 0.0` `"o"` events so the marker sits after the complete frame flush.
 
 #### D. Move/Replace, Add, or Remove Markers, and Tighten Paste Delays
@@ -262,6 +263,12 @@ python3 .agents/skills/asciinema/scripts/mark-cast.py session.cast \
 python3 .agents/skills/asciinema/scripts/mark-cast.py session.cast \
   --add-pattern "> please fix" "11. Apply Review Fixes" --in-place
 
+# Batch-insert markers by exact 0-based event index in natural chronological order
+# (mark-cast.py inserts in descending index order internally so subsequent indices never shift)
+python3 .agents/skills/asciinema/scripts/mark-cast.py session.cast \
+  --add-event 10 "1. Launch agy" \
+  --add-event 69 "2. Ready for /egm-bootstrap" --in-place
+
 # Auto-inject a batch of markers from a JSON specification file
 python3 .agents/skills/asciinema/scripts/mark-cast.py session.cast \
   --auto-spec markers.json --in-place
@@ -269,7 +276,7 @@ python3 .agents/skills/asciinema/scripts/mark-cast.py session.cast \
 # Remove a specific marker by number or label substring
 python3 .agents/skills/asciinema/scripts/mark-cast.py session.cast --remove 1 --in-place
 
-# Automatically tighten cut-and-paste delays ([REV]/prompt paste -> 1.0s, [UNREV] Enter -> 0.15s, prompt submit -> 0.20s)
+# Automatically tighten cut-and-paste delays ([REV]/prompt paste/ask_question ✓ -> 1.0s, [UNREV] Enter -> 0.15s, prompt submit -> 0.20s)
 python3 .agents/skills/asciinema/scripts/mark-cast.py session.cast \
   --tighten-pastes --in-place --embed-html player.html
 

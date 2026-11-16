@@ -41,7 +41,7 @@ Each HTML player embeds a gzipped, base64-encoded copy (`const EMBEDDED_CAST_GZ_
 When the user reviews a `*-cast-player.html` file and asks to add, move, delete, or rename a stop point, or shorten cut-and-paste / input pauses:
 
 #### Step 1: Inspect Current Markers and Target Events
-List current markers and search the backing `.cast` file:
+List current markers and search the backing `.cast` file (`sanitize-cast.py` strips `OSC 3008`/`OSC 7` in-place inside `"o"` strings so 0-based event indices `#idx` do not shift unless `-I`/`--stdin` `"i"` events are removed):
 
 ```bash
 # List existing markers, event indices, 1x times, and adaptive segment speeds
@@ -51,8 +51,13 @@ python3 .agents/skills/asciinema/scripts/mark-cast.py recordings/final/session.c
 python3 .agents/skills/asciinema/scripts/mark-cast.py recordings/final/session.cast \
   --search "target command or prompt" --context 8
 
-# Inspect exact event boundaries around a candidate index
-python3 .agents/skills/asciinema/scripts/mark-cast.py recordings/final/session.cast --inspect 70:85
+# Inspect exact event boundaries around one or more candidate ranges (repeatable)
+python3 .agents/skills/asciinema/scripts/mark-cast.py recordings/final/session.cast \
+  --inspect 0:20 --inspect 70:85
+
+# Visually confirm candidate stop-point frames with pyte via uv before/after inserting markers
+uv run --with pyte python3 .agents/skills/asciinema/scripts/mark-cast.py recordings/final/session.cast \
+  --render 20 --render 70
 ```
 
 #### Step 2: Apply the Matching Stop-Point Placement Rule
@@ -62,8 +67,8 @@ Place every `"m"` marker **immediately after** the `"o"` stdout event that compl
   Match the command text itself. With bracketed paste, `mark-cast.py` handles both `bash` (GNU Readline `\x08+...` redraw and `\r\n\x1b[?2004l\r...` split) and `zsh` (`[REV]` `\x1b[7m` highlight -> `[UNREV]` `\x1b[27m` Enter redraw and `\x1b[1B\r\x1b[K` cursor-down split), placing the trailing newline/cursor-down into a post-marker `"o"` event (`dt=0.02s`) so the cursor stays on the command line while paused.
 - **B. Two-Stop Pattern for Questions, Typed Prompts, and Slash Commands**:
   Use **two paired stop points** for each question/answer or prompt entry so the presenter can pause on the prompt/question first, step once to reveal the typed response, and step again to submit it:
-  1. **Before Typing (`Q: ...` / `Ready for ...`)**: Place immediately after the stdout frame that finishes rendering the question (whether an interactive `ask_user` widget with `enter Select`/`enter Submit` or a prose question ending at `? for shortcuts`) or empty input box, right before the first keystroke/paste event of the user's answer.
-  2. **After Typing, Before `Enter` (`Answer: ...` / `/command`)**: Place immediately after the stdout frame that finishes echoing the typed/pasted answer or slash command in the input box, right before the `Enter` submission event (`dt` pause followed by input-box clear `\x1b[\d+D\x1b[K`, `Thinking...`, `Generating...`, or autocomplete dismissal).
+  1. **Before Typing (`Q: ...` / `Ready for ...`)**: Place immediately after the stdout frame that finishes rendering the question (whether an interactive `ask_user` widget with `enter Select`/`enter Submit` or a prose question ending at `? for shortcuts`) or empty input box, right before the first keystroke/paste event of the user's answer. Wait past any transient post-response or post-modal `Loading...` clear to the settled `? for shortcuts` frame (`dt > 1s`).
+  2. **After Typing, Before `Enter` (`Answer: ...` / `/command`)**: Place immediately after the stdout frame that finishes echoing the typed/pasted answer or slash command in the input box, right before the `Enter` submission event (`dt` pause followed by input-box clear `\x1b[\d+D\x1b[K` or `\r\x1b[2C\x1b[K` in `Antigravity CLI 1.5.9`, `Thinking...`, `Generating...`, or autocomplete dismissal).
   - **Audit for Unpaired Stops**: Verify every "after typing" stop point has a matching "before typing" stop point immediately before the typing sequence begins (especially prose questions that don't render an `ask_user` selector widget).
 - **C. `/clear` Calls (Before `Enter` + Session Cleared)**:
   Place a stop point after `/clear` is typed in the input box (before pressing `Enter`), and a second stop point (`Session Cleared`) immediately after `/clear` finishes redrawing the fresh CLI banner and empty prompt box. When `/clear` is followed immediately by another typed slash command, the `Session Cleared` stop point also serves as the "before typing" stop point for that next command.
@@ -87,9 +92,15 @@ python3 .agents/skills/asciinema/scripts/mark-cast.py recordings/final/session.c
 ```
 
 ```bash
-# 1. Insert, move, or remove the stop point in the backing .cast file
+# 1. Insert, move, or remove stop points in the backing .cast file
+#    (--add-event accepts natural 1..N chronological order without manual index-shift math)
 python3 .agents/skills/asciinema/scripts/mark-cast.py recordings/final/session.cast \
   --add-pattern "initial prompt text" "3. Initial Prompt" \
+  --in-place
+
+python3 .agents/skills/asciinema/scripts/mark-cast.py recordings/final/session.cast \
+  --add-event 10 "2. Launch agy" \
+  --add-event 69 "3. Ready for Prompt" \
   --in-place
 
 # 2. Relabel markers sequentially (1..N) and re-embed gzip+base64 into the HTML player
@@ -114,9 +125,9 @@ If you maintain a JSON marker specification file for `--auto-spec <json_file>`, 
 Because `asciicast-v3` uses relative event deltas (`dt`) and `prepareCastForPlayer()` dynamically compiles cumulative `asciicast-v2` timestamps and segment speeds, shortening `dt` on individual events never desynchronizes markers.
 
 Default target delays (`--tighten-pastes`):
-- **`1.0s` (`0.5s` at `2x` playback)**: Pre-paste wait before `[REV]` shell pastes, `agy` startup banner settle, `agy` pasted/typed prompt starts, and `/clear` execution.
+- **`1.0s` (`0.5s` at `2x` playback)**: Pre-paste wait before `[REV]` shell pastes, `agy` startup banner settle, `agy` pasted/typed prompt starts (including `Antigravity CLI 1.5.9` `auto · Gemini` footer redraws `\x1b[1K \x1b[33ma\x1b[m\x1b[2A`), `/clear` execution, and `ask_question` `✓ ` selection confirmations.
 - **`0.15s`**: `[REV]` → `[UNREV]` reverse-video highlight redraw when pressing `Enter` on a pasted shell command.
-- **`0.20s`**: Post-marker input-box clear/submit pause (`\x1b[\d+D\x1b[K`) when resuming from an `agy` prompt stop point.
+- **`0.20s`**: Post-marker input-box clear/submit pause (`\x1b[\d+D\x1b[K` or `\r\x1b[2C\x1b[K`) when resuming from an `agy` prompt stop point.
 
 ```bash
 # Automatically tighten all [REV] shell paste delays (1.0s), [UNREV] Enter redraws (0.15s), and agy prompt paste/submit pauses (0.20s)

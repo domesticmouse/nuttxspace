@@ -223,6 +223,12 @@ uv run .agents/skills/agy-brain-explorer/scripts/agy-brain-explorer.py <SESSION>
 
 #### Multi-Take Recording Audit & Cleanup
 When an operator takes multiple attempts to record an `asciinema` `.cast` session in the same project workspace, `~/.gemini/**/brain/` accumulates every aborted or superseded session under that project (including sessions started from subdirectories like `<project>/lib`). Exporting by `--project` will include all takes (`01-...`, `02-...`, etc.). To isolate the canonical session(s):
+0. **Extract Session UUID Directly from `.cast` Exit Output (When Available)**: If the `.cast` recording captures `agy` exit (`Resume with -c or agy --conversation=<UUID>`), locate the exact session UUID directly without scanning directories:
+   ```bash
+   python3 .agents/skills/asciinema/scripts/mark-cast.py recordings/raw/session.cast \
+     --search "agy --conversation="
+   ```
+   You can then read `/Users/<user>/.gemini/antigravity-cli/brain/<UUID>/.system_generated/logs/transcript.jsonl` directly or export that exact session with `uv run .agents/skills/agy-brain-explorer/scripts/agy-brain-explorer.py export <UUID> -o <out_dir>`.
 1. **Correlate Timestamps**: Read the `.cast` header `"timestamp"` (Unix epoch start time) and raw duration (`trim-cast.py <file> --info`), then compare against the `Created (Local)` and `Duration` fields in the exported `README.md` (or `agy-brain-explorer.py --project <proj>`).
 2. **Trash Superseded Takes**: Move earlier aborted or superseded sessions to macOS Trash by short ID:
    ```bash
