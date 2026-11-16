@@ -3,7 +3,7 @@
 Working operator checklist for provisioning, recording, post-processing, trace-exporting, and auditing two head-to-head `asciinema` experiments replicating the XIAO RP2350 potentiometer LED bar-graph build from [`docs/tutorials/egm-replication-tutorial.md`](docs/tutorials/egm-replication-tutorial.md):
 
 - **Experiment A (`nuttxspace-vanilla`)**: Upstream `nuttx` (`master`) and `apps` (`master`) checkouts with no EGM architectural `README.md` contracts, using a straight conversational vibe-coding loop.
-- **Experiment B (`nuttxspace-egm`)**: `nuttx` (`egm`) and `apps` (`egm`) checkouts (`3,242` `README.md` contracts), starting by installing the EGM plugin (`/egm-review` and friends) via AGY's `/plugin` menu, running the full Engineering Guidance Model (EGM) skill flow (`/egm-bootstrap`, `/egm-drift-report`, `/egm-brainstorm`, `/egm-draft`, two passes of Consolidated `/egm-review` + `/egm-resolve`, and implementation), and finishing by installing `/teach-code` (`npx skills add domesticmouse/skills`) to build a hands-on board + firmware tutorial that navigates the comprehension debt of the generated code.
+- **Experiment B (`nuttxspace-egm`)**: `nuttx` (`egm`) and `apps` (`egm`) checkouts (`3,242` `README.md` contracts), starting by installing the EGM plugin (`/egm-review` and friends) via AGY's `/plugin` menu, running the full Engineering Guidance Model (EGM) skill flow (`/egm-bootstrap`, `/egm-drift-report`, `/egm-brainstorm`, `/egm-draft`, two passes of Consolidated `/egm-review` + `/egm-resolve`, and implementation), and finishing by installing `/teach-code` (`npx skills add domesticmouse/skills`) to generate a self-contained, multi-lesson interactive course workspace in `./tutorial/` (compiled to HTML via `build.py` with progressive runnable companion code in `tutorial/apps/`) that walks through hand-building the breadboard circuit, custom NuttX board, and bar-graph application to navigate comprehension debt, ready to copy into `nuttxspace` (`docs/egm/tutorial/`) after recording.
 
 ---
 
@@ -17,9 +17,9 @@ Working operator checklist for provisioning, recording, post-processing, trace-e
 | **Starting Baseline** | Functional requirements only (no prescribed GPIO pins, driver quirks, or Kconfig fixes). | Same functional requirements + EGM phase constraints (`One concern at a time`, read nearest `README.md`). |
 | **Recording Layout** | Single continuous recording:<br>`recordings/raw/vanilla-vibe.cast` -> `recordings/final/vanilla-vibe.cast` and standalone HTML player `prototypes/vanilla-vibe-cast-player.html` | Six separate per-phase recordings:<br>`recordings/raw/01-bootstrap.cast` … `06-teach-code.cast` -> `recordings/final/01-bootstrap.cast` … `06-teach-code.cast` and standalone HTML players `prototypes/01-bootstrap-cast-player.html` … `06-teach-code-cast-player.html` (`01-bootstrap.cast` combines Phase 0 `/plugin` install of `egm` and Phase 1 `/egm-bootstrap` + `/egm-drift-report`; kept separate for presentation slides between steps) |
 | **Terminal Geometry** | `120x36` (`-i 2.0`) | `120x36` (`-i 2.0`) |
-| **Stop Criterion** | `make -C xiao-rp2350-bargraph test` and `make -C xiao-rp2350-bargraph` produce `nuttx/nuttx.uf2` (or hit a terminal blocker), followed by generating a breadboard wiring Markdown file and matching SVG diagram. | Same build/test target after two passes of Consolidated `/egm-review` + `/egm-resolve`, followed by generating a breadboard wiring Markdown file and matching SVG diagram, and then installing `/teach-code` (`npx skills add domesticmouse/skills`) to generate a step-by-step tutorial on building both the breadboard circuit and the firmware code by hand. |
+| **Stop Criterion** | `make -C xiao-rp2350-bargraph test` and `make -C xiao-rp2350-bargraph` produce `nuttx/nuttx.uf2` (or hit a terminal blocker), followed by generating a breadboard wiring Markdown file and matching SVG diagram. | Same build/test target after two passes of Consolidated `/egm-review` + `/egm-resolve`, followed by generating a breadboard wiring Markdown file and matching SVG diagram, and then installing `/teach-code` (`npx skills add domesticmouse/skills`) to generate a full multi-lesson story arc in a separate `tutorial/` directory (`lessons/0001-*.md`..`0005-*.md`, `reference/*.md`, `apps/0001-*`..`0005-*`, compiled to HTML via `build.py --check`) covering hand-building both the breadboard circuit and the resulting NuttX custom board and application code. |
 | **Off-Screen Capture** | Export via `/agy-brain-explorer` in `nuttxspace` (`nuttxspace-vanilla` -> `docs/prompts-vanilla/`) | Export incrementally after each phase via `/agy-brain-explorer` in `nuttxspace` (`nuttxspace-egm` -> `docs/prompts-egm/`, incl. Goldfish subagents) and review before starting the next phase |
-| **Post-Run File Capture** | `docs/vanilla/xiao-rp2350-bargraph/` clean source snapshot + generated breadboard wiring `.md` / `.svg` files + any workspace `.md` or `~/.gemini` brain artifacts (`docs/vanilla/brain/`, if any; Run 1 typically generates zero planning docs). | Incrementally captured & reviewed per phase in `docs/egm/`: root `README.md`, `designs/` (`concepts_brief.md`, `design_draft.md`, `xiao-rp2350-bargraph.md`), `reports/` (`*DRIFT_REPORT.md`, `pass1/*_report.md`, `pass2/*_report.md`), `brain/` artifacts, generated breadboard wiring `.md` / `.svg` files, `tutorials/` (the captured `/teach-code` build-by-hand tutorial), `reviews/` (`01-bootstrap-review.md` … `06-teach-code-review.md` covering what each step achieved and reviewing its generated docs/code), and `docs/egm/xiao-rp2350-bargraph/` clean source snapshot. |
+| **Post-Run File Capture** | `docs/vanilla/xiao-rp2350-bargraph/` clean source snapshot + generated breadboard wiring `.md` / `.svg` files + any workspace `.md` or `~/.gemini` brain artifacts (`docs/vanilla/brain/`, if any; Run 1 typically generates zero planning docs). | Incrementally captured & reviewed per phase in `docs/egm/`: root `README.md`, `designs/` (`concepts_brief.md`, `design_draft.md`, `xiao-rp2350-bargraph.md`), `reports/` (`*DRIFT_REPORT.md`, `pass1/*_report.md`, `pass2/*_report.md`), `brain/` artifacts, generated breadboard wiring `.md` / `.svg` files, `tutorial/` (the self-contained `/teach-code` course directory copied from `nuttxspace-egm/tutorial/`, including `MISSION.md`, `RESOURCES.md`, `NOTES.md`, `index.md`, `build.py`, `assets/`, `reference/`, `learning-records/`, `lessons/`, and per-lesson `apps/`), `reviews/` (`01-bootstrap-review.md` … `06-teach-code-review.md` covering what each step achieved and reviewing its generated docs/code), and `docs/egm/xiao-rp2350-bargraph/` clean source snapshot. |
 | **Post-Run Audit** | AGY comparative audit in `nuttxspace` scoring `nuttxspace-vanilla` against the 10-point hardware/RTOS scorecard and verifying its generated wiring Markdown + SVG. | Compare defect count, trace steps, `README.md` usage, build retries, and generated wiring SVG/guide accuracy against Vanilla. |
 
 ---
@@ -95,7 +95,7 @@ mkdir -p ~/Documents/GitHub/nuttxspace/recordings/raw \
          ~/Documents/GitHub/nuttxspace/prototypes \
          ~/Documents/GitHub/nuttxspace/docs/vanilla \
          ~/Documents/GitHub/nuttxspace/docs/egm \
-         ~/Documents/GitHub/nuttxspace/docs/egm/tutorials \
+         ~/Documents/GitHub/nuttxspace/docs/egm/tutorial \
          ~/Documents/GitHub/nuttxspace/docs/egm/reviews
 ```
 
@@ -316,12 +316,13 @@ Because Recording `01-bootstrap.cast` (originally captured as `recordings/raw/00
    ls -la ~/.gemini/config/plugins
    ```
 
-Also verify that `/teach-code` is **not** already pre-installed in `~/Documents/GitHub/nuttxspace-egm/.agents/skills/teach-code`, `~/.agents/skills/teach-code`, or `~/.gemini/config/skills/teach-code` so `npx skills add domesticmouse/skills` installs it cleanly on camera in `06-teach-code.cast`:
+Also verify that `/teach-code` is **not** already pre-installed in `~/Documents/GitHub/nuttxspace-egm/.agents/skills/teach-code`, `~/.agents/skills/teach-code`, or `~/.gemini/config/skills/teach-code`, and that `~/Documents/GitHub/nuttxspace-egm/tutorial` does not exist yet so `npx skills add domesticmouse/skills` installs it cleanly and `/teach-code` creates `./tutorial/` from scratch on camera in `06-teach-code.cast`:
 
 ```bash
 ls -d ~/Documents/GitHub/nuttxspace-egm/.agents/skills/teach-code \
       ~/.agents/skills/teach-code \
-      ~/.gemini/config/skills/teach-code 2>/dev/null || echo "teach-code absent (ready)"
+      ~/.gemini/config/skills/teach-code \
+      ~/Documents/GitHub/nuttxspace-egm/tutorial 2>/dev/null || echo "teach-code and tutorial/ absent (ready)"
 ```
 
 ### Run 2 Provisioning Verification Checklist
@@ -329,7 +330,7 @@ ls -d ~/Documents/GitHub/nuttxspace-egm/.agents/skills/teach-code \
 - [x] `~/Documents/GitHub/nuttxspace-egm` has clean `git status`, `nuttx` at `egm` (`b047ea1315`), `apps` at `egm` (`f711fe028`), and `3,241` `README.md` files total. *(Verified: provisioned at commit `460f341`, `nuttx` at `b047ea1315`, `apps` at `f711fe028`, `3,241` `README.md` files across `nuttx/` and `apps/`.)*
 - [x] `nuttxspace-egm` does not contain `xiao-rp2350-bargraph/` or `docs/` yet. *(Confirmed absent prior to Phase 1; `docs/reports/` created during Phase 1 commit `22e2da7`, `xiao-rp2350-bargraph/` remains absent.)*
 - [x] The Elephant-Goldfish Model (`egm`) plugin is removed prior to recording (`~/.gemini/config/plugins/egm` absent / not listed as installed in `/plugin`) so `01-bootstrap.cast` can demonstrate adding `/egm-review` and friends from scratch. *(Confirmed `Installed (4)` at start of `01-bootstrap.cast`, then installed `egm` `v0.1.1` on camera -> `Installed (5)`, now active at `~/.gemini/config/plugins/egm`.)*
-- [x] `/teach-code` is not pre-installed in `nuttxspace-egm` so `06-teach-code.cast` can demonstrate installing it via `npx skills add domesticmouse/skills`. *(Verified absent in workspace and global skill directories.)*
+- [x] `/teach-code` is not pre-installed in `nuttxspace-egm` and `~/Documents/GitHub/nuttxspace-egm/tutorial/` does not exist yet so `06-teach-code.cast` can demonstrate installing it via `npx skills add domesticmouse/skills` and creating `./tutorial/` cleanly. *(Verified absent in workspace and global skill directories.)*
 - [x] Note down any existing `nuttxspace-egm` sessions in `~/.gemini` (none should exist before recording). *(Confirmed `0` prior sessions before recording; `1` aborted take `1565d38b` from `15:35` and canonical session `bd1ae202` from `15:51` now exist in `~/.gemini/antigravity-cli/brain/`.)*
 
 ---
@@ -685,7 +686,13 @@ Exit `agy` (`Ctrl+D` twice) and exit the recorded shell (`Ctrl+D` or `exit`) to 
 
 ### 7.6 Recording 6 (`06-teach-code.cast`) — Phase 6: Navigating Comprehension Debt with `/teach-code`
 
-After generating the board bringup, driver glue, and application code, install `/teach-code` from `domesticmouse/skills` and use it to navigate the comprehension debt of AI-generated firmware by producing a step-by-step tutorial on how to construct both the physical breadboard circuit and the NuttX custom board + application code by hand.
+Entering Phase 6, `~/Documents/GitHub/nuttxspace-egm` contains the completed, test-passing firmware and board support package in `xiao-rp2350-bargraph/` (`Makefile`, `board/`, `apps/bargraph/`, pure-C transfer math + host unit tests, `nuttx/nuttx.uf2`, and 9 EGM `README.md` contracts), the Phase 5 breadboard wiring Markdown guide and matching SVG circuit diagram, and the grounded architectural trail (`README.md`, `concepts_brief.md`, Pass 2 hardened `docs/designs/xiao-rp2350-bargraph.md`, and `docs/reports/pass1/*` + `docs/reports/pass2/*`).
+
+Rather than writing a flat, single-file Markdown summary, `/teach-code` (from `domesticmouse/skills`) creates a **self-contained interactive course workspace** inside `./tutorial/` (keeping root project files `README.md`, `nuttx/`, `apps/`, `xiao-rp2350-bargraph/`, and `docs/` untouched) so the entire `tutorial/` directory can be copied cleanly into `~/Documents/GitHub/nuttxspace/docs/egm/tutorial/` after recording:
+
+- **Course scaffolding (`tutorial/`)**: `MISSION.md`, `RESOURCES.md`, `NOTES.md`, `README.md`, `learning-records/0001-*.md`, `.gitignore` (excluding `.venv/`, `_site/`, generated `*.html`, and compiled test binaries), `index.md` (`{{widget:lesson-cards}}`, `{{widget:reference-cards}}`), `build.py` (compiled and validated via `tutorial/.venv/bin/python tutorial/build.py --out-dir tutorial/_site --check`), and shared Tufte dark-mode assets (`assets/style.css` + `assets/course.js` with `@media print` light-mode override, Prism.js `keep-markup`, Mermaid.js, and interactive exercise/quiz widgets).
+- **Reference sheets (`tutorial/reference/`)**: `GLOSSARY.md` (compiled to `reference/glossary.html`) plus quick-lookup hardware/RTOS/driver cheat sheets (`reference/*.md`).
+- **5-Lesson Story Arc (`tutorial/lessons/0001-*.md` … `0005-*.md`) & Progressive Companion Projects (`tutorial/apps/0001-*` … `0005-*`)**: Each lesson uses the Block-by-Block walkthrough pattern (`### Block N: ...` followed by `### Complete ... Listing` synced via `.agents/skills/teach-code/scripts/sync_listing.py`), Tufte sidenotes (`{{sidenote:...}}`), `:::exercise` fill-in-the-blank labs with nested `:::prompts`, `:::verify` terminal gates, and 4-option equal-word-count `:::quiz` checks, backed by a progressively built, host-verified snapshot under `tutorial/apps/000N-*/`.
 
 ```bash
 cd ~/Documents/GitHub/nuttxspace-egm
@@ -697,29 +704,39 @@ asciinema rec -i 2.0 --window-size 120x36 --overwrite \
    ```bash
    npx skills add domesticmouse/skills
    ```
-   *(If `npx skills` prompts interactively for skills, target agent, or scope, select `teach-code` for Antigravity / workspace or global installation.)*
+   *(If `npx skills` prompts interactively for skills, target agent, or scope, select `teach-code` for Antigravity workspace installation into `.agents/skills/teach-code/`.)*
 
 2. **Step 2 — Launch `agy` and invoke `/teach-code`:**
    ```bash
    agy
    ```
-   Paste this prompt verbatim:
+   Paste this prompt verbatim (referencing the Phase 5 implementation, breadboard wiring Markdown/SVG, and hardened design docs):
    ```text
-   /teach-code Build a hands-on tutorial in `docs/tutorials/xiao-rp2350-bargraph.md` that teaches a software engineer how to build both the breadboard circuit and the `xiao-rp2350-bargraph/` custom board and application code by hand from scratch. Walk through the hardware wiring, Kconfig/Makefiles, board bringup, and C daemon incrementally so the reader can navigate the comprehension debt of the generated code.
-   ```
-   *(Answer any interactive `/teach-code` scoping questions if asked—confirming a software-engineer audience, covering both the breadboard wiring and building the code by hand, and writing the tutorial to `docs/tutorials/xiao-rp2350-bargraph.md`.)*
+   /teach-code Use `./tutorial/` as an isolated teaching workspace (leaving root `README.md`, `xiao-rp2350-bargraph/`, `docs/`, `nuttx/`, and `apps/` untouched) so I can copy `tutorial/` into another repository afterward. Ground your teaching in `@xiao-rp2350-bargraph/`, the Phase 5 breadboard wiring Markdown + SVG diagram, `@concepts_brief.md`, and `@docs/designs/xiao-rp2350-bargraph.md`.
 
-3. **Step 3 — On-camera wrap-up & commit via `agy` prompt:**
-   Before exiting `agy`, send this wrap-up prompt (approving `BypassSandbox` for `git commit` if prompted):
+   Build a complete 5-lesson interactive story arc that teaches a software engineer how to hand-build both the breadboard circuit and the resulting out-of-tree NuttX custom board and application from scratch, with progressive runnable companion code in `tutorial/apps/0001-*` through `tutorial/apps/0005-*`, `tutorial/reference/GLOSSARY.md` + cheat sheets, `MISSION.md`, `RESOURCES.md`, `NOTES.md`, `learning-records/`, `index.md`, `build.py`, and Tufte dark-mode `assets/`:
+
+   1. `0001-breadboard-and-transfer-math`: Hand-building the 400-tie-point breadboard circuit (`10 kΩ` potentiometer on `D0/A0` [`GPIO26`] powered from `3V3`, 6 active-high LEDs + `330 Ω` resistors on `D1`–`D6` [`GPIO27, 28, 5, 6, 7, 0` -> `PWM5B, PWM6A, PWM2B, PWM3A, PWM3B, PWM0A`], `~3.94 mA/LED` budget) and writing the pure-C transfer/filter module (`>> 19` 12-bit ADC extraction, Q4 EMA filter, `<= 32` / `>= 4063` endpoint deadbands, and `0..65535` 6-segment PWM duty interpolation avoiding `b16ONE` `uint16_t` truncation) with host unit tests (`-Wall -Wextra -Werror`).
+   2. `0002-out-of-tree-board-and-kconfig`: Hand-building the out-of-tree NuttX custom board (`board/Kconfig`, `board/include/board.h`, `board/scripts/Make.defs` with the git-ignored `apps/external -> ../xiao-rp2350-bargraph/apps` symlink hook, `memmap_default.ld`, `board/src/Make.defs`, `rp23xx_boardinitialize.c`, `rp23xx_autoleds.c`, `rp23xx_userleds.c`, `rp23xx_gpio.c`, and `configs/bargraph/defconfig` setting `CONFIG_ARCH_BOARD_CUSTOM=y`, `CONFIG_BOARD_LATE_INITIALIZE=y`, `CONFIG_ANALOG=y`, dual `CONFIG_PWM_NCHANNELS=2` + `CONFIG_RP23XX_PWM_NCHANNELS=2`, `-1` unused sibling PWM pins, and `CONFIG_RP23XX_ADC_CHANNEL0=y` only so `rp23xx_adc.c:my_reset()` never clobbers `D1`/`D2` PWM muxing).
+   3. `0003-rp2350-bringup-and-hardware-mitigations`: Hand-building `rp23xx_bringup.c` and `rp23xx_pico.h`: why `nsh_waitusbready()` blocks USB-C NSH until a host attaches, registering `/dev/adc0` and `/dev/pwm0,2,3,5,6` via `rp23xx_common_bringup()`, isolating `GPIO26` against Erratum RP2350-E9 digital pad leakage (`OD=1`, `IE=PUE=PDE=ISO=0`), pacing `RP23XX_ADC_DIV = 0x00FFFF00` (`~732.42 Hz`, cutting the `500 kS/s` IRQ storm by `99.85%`), and invoking `bargraph_autostart()`.
+   4. `0004-bargraphd-daemon-adc-and-pwm-ioctls`: Hand-building the out-of-tree application build wiring (`apps/Kconfig`, `apps/Makefile` omitting `MENUDESC` so `distclean` never deletes `apps/Kconfig`, `apps/Make.defs`, `apps/bargraph/Kconfig`, `Makefile`, `Make.defs`) and the 50 Hz `bargraphd` daemon: keeping `/dev/adc0` open across ticks to avoid the `remove_device()` close race, flushing stale FIFO samples with `ANIOC_RESET_FIFO`, reading 4-sample bursts, populating two-channel `struct pwm_info_s` (`channels[0].channel = 1`, `channels[1].channel = 2`) across `/dev/pwm5,6,2,3,0`, and zeroing duties (`2 ms` settle) before `PWMIOC_STOP`.
+   5. `0005-nsh-cli-ipc-and-firmware-build`: Hand-building the `bargraph` USB-C NSH command (`start`, `stop`, `status`, `set <0..100>`, `resume`, `test`), `struct bargraph_state_s` (`pthread_mutex_t` + `wake_cond` + `done_cond`) state machine (`SENSING`, `MANUAL`, `TEST`, `STOPPED`), and top-level `Makefile` (`make test` and `make` producing `nuttx/nuttx.uf2` with clean `nuttx/` and `apps/` submodules).
+
+   Keep code blocks concise and clean (no license banners), use Block-by-Block walkthroughs followed by `Complete ... Listing` blocks verified with `sync_listing.py --check`, and validate the entire course with `tutorial/.venv/bin/python tutorial/build.py --out-dir tutorial/_site --check`.
+   ```
+   *(If `/teach-code` asks interactive mission or scoping questions one at a time, confirm: software-engineer audience; building both the breadboard circuit and the full out-of-tree NuttX board + application code by hand from scratch; self-contained `./tutorial/` workspace ready to copy out; and full 5-lesson story arc validated with `sync_listing.py --check` and `build.py --check`.)*
+
+3. **Step 3 — On-camera verification, wrap-up & commit via `agy` prompt:**
+   Once all 5 lessons, reference sheets, and progressive `tutorial/apps/0001-*`..`0005-*` directories are generated and checked, send this wrap-up prompt inside `agy` (approving `BypassSandbox` for `git commit` if prompted):
    ```text
-   Stage `docs/tutorials/` (and `.agents/` if modified) and `git commit` the hand-built board and code tutorial.
+   Run `tutorial/.venv/bin/python .agents/skills/teach-code/scripts/sync_listing.py --root tutorial --check` and `tutorial/.venv/bin/python tutorial/build.py --out-dir tutorial/_site --check`, remove temporary `tutorial/_site/`, verify `tutorial/.gitignore` excludes `.venv/`, `_site/`, generated `*.html`, and compiled test binaries, stage `tutorial/` (plus `.agents/` and `skills-lock.json` if added), and `git commit` the hand-built board and firmware course.
    ```
    Exit `agy` (`Ctrl+D` twice) and exit the recorded shell (`Ctrl+D` or `exit`) to save `06-teach-code.cast`.
 
 **Post-Phase 6 Capture & Review Gate (run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0106) before final Run 2 reconciliation):**
-- **Cast & Player**: Sanitize, trim, and mark `recordings/raw/06-teach-code.cast` -> `recordings/final/06-teach-code.cast` (verifying `npx skills add domesticmouse/skills` and `/teach-code` output) and build `prototypes/06-teach-code-cast-player.html`.
-- **AGY Trace**: Export Phase 6 `/teach-code` trace(s) to `docs/prompts-egm/` and inspect which generated board/code/wiring files it read.
-- **Docs, Code & Slide Review**: Capture `docs/tutorials/*` -> `docs/egm/tutorials/`; review the generated hand-built board + code tutorial for technical accuracy, safety rules (`3V3`, series resistors, pin choices), and completeness in `docs/egm/reviews/06-teach-code-review.md` before final Run 2 reconciliation.
+- **Cast & Player**: Sanitize, trim, and mark `recordings/raw/06-teach-code.cast` -> `recordings/final/06-teach-code.cast` (verifying `npx skills add domesticmouse/skills`, `/teach-code` story-arc generation, `sync_listing.py --check`, and `build.py --check`) and build `prototypes/06-teach-code-cast-player.html`.
+- **AGY Trace**: Export Phase 6 `/teach-code` trace(s) to `docs/prompts-egm/` and inspect which generated `xiao-rp2350-bargraph/` files, breadboard wiring SVG/Markdown files, and design docs it read.
+- **Docs, Code & Slide Review**: Copy `tutorial/` -> `docs/egm/tutorial/` (excluding `.venv/`, `_site/`, and compiled binaries) and verify `build.py --check`; review the 5-lesson story arc, companion `tutorial/apps/*` code, hardware safety rules (`3V3`, `330 Ω` resistors, `GPIO26` E9 pad isolation, pin choices), quizzes, and interactive exercises for accuracy and completeness in `docs/egm/reviews/06-teach-code-review.md` before final Run 2 reconciliation.
 
 ### Run 2 Recording & Per-Phase Review Checklist
 
@@ -727,7 +744,7 @@ asciinema rec -i 2.0 --window-size 120x36 --overwrite \
 - [ ] All 6 raw `.cast` files (`01-bootstrap.cast` through `06-teach-code.cast`) exist in `~/Documents/GitHub/nuttxspace/recordings/raw/` and were kept **separate**, with each phase producing `recordings/final/0X-*.cast`, `prototypes/0X-*-cast-player.html`, and `docs/egm/reviews/0X-*-review.md` immediately after recording.
 - [ ] `make -C xiao-rp2350-bargraph test` and `make -C xiao-rp2350-bargraph` both succeeded in `nuttxspace-egm`, producing `nuttx/nuttx.uf2`.
 - [ ] A breadboard wiring Markdown file (with parts list and wiring description) and matching SVG diagram were generated in Phase 5 after code generation.
-- [ ] `06-teach-code.cast` captures installing `/teach-code` via `npx skills add domesticmouse/skills` and generating the build-by-hand board + code tutorial in `nuttxspace-egm` (`docs/tutorials/`), captured into `docs/egm/tutorials/`.
+- [ ] `06-teach-code.cast` captures installing `/teach-code` via `npx skills add domesticmouse/skills`, generating the 5-lesson build-by-hand board + firmware course in `nuttxspace-egm/tutorial/` (`lessons/0001-*.md`..`0005-*.md`, `reference/*.md`, `apps/0001-*`..`0005-*`, `build.py`), and passing `sync_listing.py --check` + `build.py --check`, captured cleanly into `docs/egm/tutorial/`.
 - [ ] `git -C nuttx status -s` and `git -C apps status -s` show zero modified tracked files.
 
 ---
@@ -747,7 +764,7 @@ Unlike Run 1 (which typically produces only C/Makefile/Kconfig implementation fi
 | **Phase 3 (`03-draft.cast`)** (`/egm-draft`) | `design_draft.md`, `docs/designs/xiao-rp2350-bargraph.v0-draft.md`, `docs/designs/xiao-rp2350-bargraph.md` | `docs/egm/designs/` | Review the initial 4-section spec and verify upstream NuttX grounding in the Phase 3 trace before adversarial review. |
 | **Phase 4 (`04-review.cast`)** (`/egm-review` + `/egm-resolve`, Pass 1 & Pass 2) | `docs/reports/pass1/*_report.md`, `docs/reports/pass2/*_report.md`, `goldfish_review_report.md`, `docs/designs/xiao-rp2350-bargraph.md` | `docs/egm/reports/pass1/`, `docs/egm/reports/pass2/`, `docs/egm/designs/xiao-rp2350-bargraph.md` | Audit Pass 1/Pass 2 Goldfish traces (`README.md` reads) and verify all critical traps (`CON-1`..`CON-10`) are resolved in the spec before C implementation. |
 | **Phase 5 (`05-implement.cast`)** (Implementation) | `xiao-rp2350-bargraph/` + generated wiring `.md`/`.svg` (in `xiao-rp2350-bargraph/`, `docs/`, or root) | `docs/egm/xiao-rp2350-bargraph/` (and `docs/egm/` for root/docs wiring files) | Review generated C code, Kconfig, Makefile, host tests, build/test trace steps, and breadboard SVG/Markdown wiring accuracy. |
-| **Phase 6 (`06-teach-code.cast`)** (`/teach-code`) | `docs/tutorials/*.md` (e.g., `docs/tutorials/xiao-rp2350-bargraph.md`) | `docs/egm/tutorials/` | Review `/teach-code` trace and verify the build-by-hand board + firmware tutorial accurately explains the generated code and hardware safety rules. |
+| **Phase 6 (`06-teach-code.cast`)** (`/teach-code`) | `tutorial/` (`MISSION.md`, `RESOURCES.md`, `NOTES.md`, `README.md`, `index.md`, `build.py`, `assets/`, `reference/*.md`, `learning-records/*.md`, `lessons/0001-*.md`..`0005-*.md`, `apps/0001-*`..`0005-*`) | `docs/egm/tutorial/` | Review `/teach-code` trace, verify `sync_listing.py --check` and `build.py --check` pass cleanly, and confirm the 5-lesson story arc and runnable `tutorial/apps/*` snapshots accurately explain hand-building the breadboard circuit, custom board, RP2350 hardware mitigations, and NuttX application. |
 | **All Phases (`01`–`06`)** (Presentation Reviews & Players) | `recordings/raw/0X-*.cast` + exported traces + generated artifacts | `recordings/final/0X-*.cast`, `prototypes/0X-*-cast-player.html`, `docs/egm/reviews/0X-*-review.md` | Separate per-step recordings, standalone HTML players, and slide-ready achievement + doc/code reviews for every step. |
 | **Optional / Brain Artifacts** | `TODO.md`, `~/.gemini/**/brain/<session-id>/*.md` (`implementation_plan.md`, `task.md`, `walkthrough.md`) | `docs/egm/designs/TODO.md`, `docs/egm/brain/` | Inspect any supplemental checklists or Antigravity session brain artifacts produced during the phase. |
 
@@ -770,7 +787,7 @@ Paste this prompt (replacing `<0X-phase>` and `<Phase N>` with the phase you jus
    - Flag any aborted or superseded takes from this phase and ask confirmation before moving them to Trash.
    - Export the matched parent + subagent traces incrementally into `docs/prompts-egm/` and refresh `docs/prompts-egm/README.md`.
 2. **Capture This Phase's Generated Docs & Code into `docs/egm/`**:
-   - Copy any new or updated artifacts produced in `<Phase N>` from `~/Documents/GitHub/nuttxspace-egm` (and `~/.gemini/**/brain/` session `.md` artifacts) into `docs/egm/` per the Section 8.1 mapping (`README.md`, `designs/`, `reports/pass1/`, `reports/pass2/`, clean `xiao-rp2350-bargraph/` without build objects/binaries while preserving `board/src/etc/init.d/`, breadboard wiring `.md`/`.svg`, and `docs/tutorials/` -> `docs/egm/tutorials/`).
+   - Copy any new or updated artifacts produced in `<Phase N>` from `~/Documents/GitHub/nuttxspace-egm` (and `~/.gemini/**/brain/` session `.md` artifacts) into `docs/egm/` per the Section 8.1 mapping (`README.md`, `designs/`, `reports/pass1/`, `reports/pass2/`, clean `xiao-rp2350-bargraph/` without build objects/binaries while preserving `board/src/etc/init.d/`, breadboard wiring `.md`/`.svg`, and `tutorial/` -> `docs/egm/tutorial/` excluding `tutorial/.venv/`, `tutorial/_site/`, and compiled host test binaries, then running `build.py --check` if local HTML preview is desired).
 3. **Clean, Mark & Build Standalone HTML Player for `<0X-phase>`**:
    - Sanitize (`sanitize-cast.py`), trim (`trim-cast.py`), tighten pastes (`--tighten-pastes`), and place numbered `"m"` stop points (`mark-cast.py`) on `recordings/raw/<0X-phase>.cast` into `recordings/final/<0X-phase>.cast` (using `uv run --with pyte` `--render` if any mid-stream strip/verification is needed).
    - Scaffold `prototypes/<0X-phase>-cast-player.html` from `.agents/skills/cast-player-html/resources/cast-player-template.html`, update its title/header, embed `EMBEDDED_CAST_GZ_B64` via `mark-cast.py --embed-html`, and verify `trim-cast.py --info`, `mark-cast.py --list`, and `node --check`.
@@ -779,18 +796,28 @@ Paste this prompt (replacing `<0X-phase>` and `<Phase N>` with the phase you jus
      - **What This Step Achieved**: Concise summary of the phase goal, user prompts/gates, and concrete outputs.
      - **Recorded Cast & Player**: `recordings/final/<0X-phase>.cast` and `prototypes/<0X-phase>-cast-player.html`, raw vs. 1x duration, stop-point list, and any visual/TUI redraw notes.
      - **AGY Trace Telemetry**: Parent + subagent session count, total steps, `read_file` calls, `nuttx/`/`apps/` `README.md` contract reads, and command outcomes.
-     - **Review of Generated Docs & Code**: Technical review of the docs, specs, review reports, C code, wiring SVG/Markdown, or `/teach-code` tutorial generated in this step (strengths, defects/gaps spotted, and whether we are ready for the next phase or should retake).
+     - **Review of Generated Docs & Code**: Technical review of the docs, specs, review reports, C code, wiring SVG/Markdown, or `/teach-code` course (`tutorial/`) generated in this step (strengths, defects/gaps spotted, and whether we are ready for the next phase or should retake).
 ```
 
 ### 8.3 Full-Run Batch Reconciliation & Tutorial Capture Check
 
-Once all six phases (`01-bootstrap.cast` through `06-teach-code.cast`) have passed their per-phase Section 8.2 reviews, verify that all separate final casts, standalone HTML players, presentation reviews, and the generated `/teach-code` tutorial are cleanly captured in `~/Documents/GitHub/nuttxspace`:
+Once all six phases (`01-bootstrap.cast` through `06-teach-code.cast`) have passed their per-phase Section 8.2 reviews, copy the self-contained `/teach-code` course directory cleanly into `~/Documents/GitHub/nuttxspace/docs/egm/tutorial/` (if not already synced during Phase 6 capture), build/check the copied HTML site locally, and verify all final casts, standalone HTML players, and presentation reviews exist in `~/Documents/GitHub/nuttxspace`:
 
 ```bash
-mkdir -p ~/Documents/GitHub/nuttxspace/docs/egm/tutorials
-cp -R ~/Documents/GitHub/nuttxspace-egm/docs/tutorials/* \
-  ~/Documents/GitHub/nuttxspace/docs/egm/tutorials/
-ls -lh ~/Documents/GitHub/nuttxspace/docs/egm/tutorials/
+mkdir -p ~/Documents/GitHub/nuttxspace/docs/egm/tutorial
+rsync -a --delete \
+  --exclude='.venv/' --exclude='_site/' --exclude='__pycache__/' \
+  --exclude='*.html' --exclude='*.o' \
+  ~/Documents/GitHub/nuttxspace-egm/tutorial/ \
+  ~/Documents/GitHub/nuttxspace/docs/egm/tutorial/
+uv venv ~/Documents/GitHub/nuttxspace/docs/egm/tutorial/.venv
+uv pip install --python ~/Documents/GitHub/nuttxspace/docs/egm/tutorial/.venv/bin/python markdown-it-py pyyaml
+~/Documents/GitHub/nuttxspace/docs/egm/tutorial/.venv/bin/python \
+  ~/Documents/GitHub/nuttxspace/docs/egm/tutorial/build.py \
+  --out-dir ~/Documents/GitHub/nuttxspace/docs/egm/tutorial/_site --check
+ls -lh ~/Documents/GitHub/nuttxspace/docs/egm/tutorial/ \
+       ~/Documents/GitHub/nuttxspace/docs/egm/tutorial/lessons/ \
+       ~/Documents/GitHub/nuttxspace/docs/egm/tutorial/apps/
 ls -lh ~/Documents/GitHub/nuttxspace/recordings/final/0*.cast \
        ~/Documents/GitHub/nuttxspace/prototypes/0*-cast-player.html \
        ~/Documents/GitHub/nuttxspace/docs/egm/reviews/
@@ -799,7 +826,7 @@ ls -lh ~/Documents/GitHub/nuttxspace/recordings/final/0*.cast \
 If any cross-phase reconciliation or telemetry rollup across all 6 casts is needed, run one final `/agy-brain-explorer` pass in `~/Documents/GitHub/nuttxspace`:
 
 ```text
-/agy-brain-explorer Reconcile all six separate Run 2 recordings (`01-bootstrap.cast` through `06-teach-code.cast`) against `docs/prompts-egm/`, `docs/egm/`, and `docs/egm/reviews/`, confirm zero unexported sessions or missed artifacts (including `docs/egm/tutorials/`), and print the final Run 2 vs. Run 1 (`docs/prompts-vanilla/` + `docs/vanilla/`) telemetry comparison table.
+/agy-brain-explorer Reconcile all six separate Run 2 recordings (`01-bootstrap.cast` through `06-teach-code.cast`) against `docs/prompts-egm/`, `docs/egm/`, and `docs/egm/reviews/`, confirm zero unexported sessions or missed artifacts (including `docs/egm/tutorial/`), and print the final Run 2 vs. Run 1 (`docs/prompts-vanilla/` + `docs/vanilla/`) telemetry comparison table.
 ```
 
 ### Run 2 Post-Processing Checklist
@@ -809,7 +836,7 @@ If any cross-phase reconciliation or telemetry rollup across all 6 casts is need
 - [ ] All 6 standalone HTML players (`prototypes/01-bootstrap-cast-player.html` through `prototypes/06-teach-code-cast-player.html`) pass `node --check` and open cleanly via `file://` in a browser (`01-bootstrap-cast-player.html` verified).
 - [ ] `docs/egm/reviews/01-bootstrap-review.md` through `docs/egm/reviews/06-teach-code-review.md` exist with step achievements, trace telemetry, and technical reviews of the generated docs/code for presentation slides (`01-bootstrap-review.md` complete).
 - [ ] `docs/prompts-egm/README.md` exists with complete exported traces (including Goldfish subagents and the `/teach-code` session).
-- [ ] `docs/egm/` contains `README.md`, `designs/` (`concepts_brief.md`, `design_draft.md`, `xiao-rp2350-bargraph.v0-draft.md`, `xiao-rp2350-bargraph.md`), `reports/` (`*DRIFT_REPORT.md`, `pass1/`, `pass2/`), `tutorials/` (the captured `/teach-code` tutorial on building both the board and the code by hand), `reviews/`, a clean `xiao-rp2350-bargraph/` source snapshot (with build binaries/objects stripped), and the generated breadboard wiring Markdown and SVG files.
+- [ ] `docs/egm/` contains `README.md`, `designs/` (`concepts_brief.md`, `design_draft.md`, `xiao-rp2350-bargraph.v0-draft.md`, `xiao-rp2350-bargraph.md`), `reports/` (`*DRIFT_REPORT.md`, `pass1/`, `pass2/`), `tutorial/` (the self-contained `/teach-code` course copied from `nuttxspace-egm/tutorial/` covering the 5-lesson build-by-hand board + firmware story arc and runnable `apps/0001-*`..`0005-*`, passing `build.py --check`), `reviews/`, a clean `xiao-rp2350-bargraph/` source snapshot (with build binaries/objects stripped), and the generated breadboard wiring Markdown and SVG files.
 
 ---
 
