@@ -590,60 +590,81 @@ asciinema rec -i 2.0 --window-size 120x36 --overwrite \
 > [!IMPORTANT]
 > **Archive Pass 1 reports before starting Pass 2**: Both `/egm-review` and `/egm-resolve` write fixed filenames in the workspace root (`comprehension_report.md`, `critic_report.md`, `intermediate_zoom_out_report.md`, `zoom_out_report.md`, `implementation_readiness_report.md`, `consolidated_review_report.md`, and `goldfish_review_report.md`). Running Pass 2 without moving Pass 1's reports first overwrites Pass 1's findings in place.
 
-Launch `agy` and execute **Pass 1**:
+Launch `agy` and execute **Pass 1** (note: Pass 1 wrote its stage reports into `~/.gemini/antigravity-cli/brain/1d6e0269-57af-497f-9e2e-3bccc3aa26e5/`, whereas Pass 2 with explicit `GoldfishContext` wrote them into the workspace root):
 
-1. **Prompt (Pass 1 Review):**
+1. **Prompt (Pass 1 Review, `1d6e0269` `Step 0`):**
    ```text
-   /egm-review @docs/designs/xiao-rp2350-bargraph.md
-   GoldfishContext: @README.md, @concepts_brief.md
+   /egm:egm-review @[docs/designs/xiao-rp2350-bargraph.md]
 
    Instruct all Goldfish reviewer subagents to read the nearest local EGM README.md contracts in nuttx/ and apps/ alongside the referenced .c, .h, .mk, and Kconfig files.
    ```
-   - At the preset gate, choose: **`Consolidated report with all review rubrics (runs full flow without stopping)`**.
-   - Wait for Stages 5–9 to finish writing `consolidated_review_report.md` (and individual stage reports).
+   - At the preset gate (`Steps 1–2`), choose: **`Consolidated report with all review rubrics (runs full flow without stopping)`**.
+   - Wait for Stages 5–9 (`10` Goldfish subagents `41a8720d`–`8a1959ce`) to finish writing `consolidated_review_report.md` (and individual stage reports).
 
-2. **Prompt (Pass 1 Resolution):**
+2. **Prompt (Pass 1 Interactive Resolution, `Steps 49–87`):**
    ```text
-   /egm-resolve @consolidated_review_report.md target @docs/designs/xiao-rp2350-bargraph.md LineRange: full file
+   /egm:egm-resolve @[consolidated_review_report.md] target @[docs/designs/xiao-rp2350-bargraph.md]
    ```
-   - Inspect `goldfish_review_report.md`, then reply **`auto accept`** (or **`interactive breakdown`** if you want to highlight critical findings such as Kconfig/ISR bugs on camera).
+   - Reply **`interactive`** (`Step 53`) to walk through all `12` findings item-by-item (`4` Blockers `B-1..B-4`, `5` Majors `M-1..M-5`, `3` Nits `N-1..N-3`), replying **`accept`** to each (`Steps 55, 57, 59, 61, 63, 65, 67, 69, 71, 73, 75, 77`), expanding the spec to `727` lines.
 
-3. **Archive Pass 1 Reports Before Pass 2:**
-   Send a brief follow-up prompt in `agy` to snapshot Pass 1 before clearing context:
+3. **Archive Pass 1 Reports Before Pass 2 (`Steps 88–91`):**
+   Send a follow-up prompt in `agy` to snapshot Pass 1 before clearing context:
    ```text
    Archive the Pass 1 reports (`*_report.md`) and a snapshot of the Pass 1 resolved design spec (`xiao-rp2350-bargraph.pass1.md`) into `docs/reports/pass1/` before starting Pass 2 so Pass 2 does not overwrite them.
    ```
 
-4. **Reset Context & Run Pass 2:**
+4. **Reset Context & Run Pass 2 (`d703f3c2`, `Steps 0–59`):**
    ```text
    /clear
    ```
    ```text
-   /egm-review @docs/designs/xiao-rp2350-bargraph.md
+   /egm:egm-review @docs/designs/xiao-rp2350-bargraph.md
    GoldfishContext: @README.md, @concepts_brief.md
 
    Instruct all Goldfish reviewer subagents to read the nearest local EGM README.md contracts in nuttx/ and apps/ alongside the referenced .c, .h, .mk, and Kconfig files.
    ```
-   - Again select **`Consolidated report with all review rubrics (runs full flow without stopping)`**.
-   - Run Pass 2 resolution:
+   - Again select **`Consolidated report with all review rubrics (runs full flow without stopping)`** (`Steps 1–2`; spawns `6` Goldfish subagents `e5ea88c2`–`6c5a9959` and writes stage reports in the workspace root).
+   - Run Pass 2 resolution (`Steps 41–59`):
      ```text
-     /egm-resolve @consolidated_review_report.md target @docs/designs/xiao-rp2350-bargraph.md LineRange: full file
+     /egm:egm-resolve @consolidated_review_report.md target @docs/designs/xiao-rp2350-bargraph.md LineRange: full file
      ```
-     Then reply **`auto accept`** (or resolve any contested findings).
-   - *(Optional Pass 3: if Pass 2 still surfaces Blockers/Majors like the `close()` vs. ISR teardown race or blocking `adc_read()`, archive Pass 2's `*_report.md` and `xiao-rp2350-bargraph.pass2.md` into `docs/reports/pass2/` first, then run one more `/clear` -> `/egm-review` -> `/egm-resolve` cycle and archive Pass 3 into `docs/reports/pass3/`.)*
+     Then reply **`auto`** (`Step 45`) to batch-apply all `11` findings (`0` Blockers, `2` Majors `CA-01..CA-02`, `9` Nits `CA-03..CA-11`), bringing `docs/designs/xiao-rp2350-bargraph.md` to `705` lines (`70,598` bytes).
 
-5. **On-Camera Wrap-Up & Commit via `agy` Prompt:**
-   Before exiting `agy`, archive Pass 2's reports and resolved spec snapshot and commit (approving `BypassSandbox` for `git commit` if prompted):
+5. **On-Camera Wrap-Up & Commit via `agy` Prompt (`Steps 60–67`):**
+   Before exiting `agy`, archive Pass 2's reports and resolved spec snapshot and commit (creating commit `25cbb9f`):
    ```text
    Archive the Pass 2 reports (`*_report.md`) and a snapshot of the Pass 2 resolved design spec (`xiao-rp2350-bargraph.pass2.md`) into `docs/reports/pass2/`, stage `docs/designs/xiao-rp2350-bargraph.md` and `docs/reports/`, and `git commit`.
    ```
 
 Exit `agy` (`Ctrl+D` twice) and exit the recorded shell (`Ctrl+D` or `exit`) to finish `04-review.cast`.
 
-**Post-Phase 4 Capture & Review Gate (run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0106) before Phase 5):**
-- **Cast & Player**: Sanitize, trim, and mark `recordings/raw/04-review.cast` -> `recordings/final/04-review.cast` (verifying `/clear` boundary and resolution prompts) and build `prototypes/04-review-cast-player.html`.
-- **AGY Trace**: Export Phase 4 parent + Pass 1 / Pass 2 Goldfish reviewer traces to `docs/prompts-egm/` and audit `README.md` contract reads and per-persona findings.
-- **Docs, Code & Slide Review**: Capture `docs/reports/pass1/*`, `docs/reports/pass2/*`, and the updated `docs/designs/xiao-rp2350-bargraph.md` -> `docs/egm/`; review all accepted/rejected dispositions and confirm critical RTOS/hardware traps (`CON-1`..`CON-10`) are fixed in `docs/egm/reviews/04-review-review.md` before writing C code.
+**Post-Phase 4 Capture & Review Gate (verified 2026-11-16 before Phase 5):**
+- [x] **Cast & Player**: Sanitized (`2` `OSC 7` sequences stripped), trimmed (`15` trailing exit events stripped + `3.0s` hold), tightened (`--tighten-pastes` + `--set-dt` across `33` boundary deltas), and marked (`24` sequential `"m"` stop points) from `recordings/raw/04-review.cast` -> `recordings/final/04-review.cast` (`62m 13.1s` raw / `58m 29.7s` 1x / `277.3s` warped) and `prototypes/04-review-cast-player.html` (`node --check` passed).
+- [x] **AGY Trace**: Exported Phase 4 Pass 1 (`1d6e0269` + `10` subagents) and Pass 2 (`d703f3c2` + `6` subagents) traces (`05`–`22`) to `docs/prompts-egm/` and refreshed `docs/prompts-egm/README.md` (`0` Phase 4 aborted takes; `146` `README.md` reads across `28` unique contracts).
+- [x] **Docs, Code & Slide Review**: Captured `docs/reports/pass1/*` (`8` files), `docs/reports/pass2/*` (`8` files), and hardened `docs/designs/xiao-rp2350-bargraph.md` (`705` lines) -> `docs/egm/`; reviewed all `12` Pass 1 items (`B-1..B-4`, `M-1..M-5`, `N-1..N-3`) and `11` Pass 2 items (`CA-01..CA-11`) in `docs/egm/reviews/04-review-review.md`.
+
+#### Phase 4 Trace & Recording Cross-Check Summary (2026-11-16)
+
+- **AGY Sessions**: `18` total sessions (`2` parent sessions + `16` Goldfish subagents), `1,002` combined steps, `725` combined tool calls (`0` aborted takes):
+  - **Pass 1 (`1d6e0269-57af-497f-9e2e-3bccc3aa26e5`, `19:53`–`20:51+11:00`, `0:57:55`)**: `92` parent steps (`16` user turns at Steps `0, 49, 53, 55, 57, 59, 61, 63, 65, 67, 69, 71, 73, 75, 77, 88`, `1` `ask_question` gate at Step `1`) + `10` subagents (`41a8720d`, `d804d17e`, `cb3c670d`, `f5dcb2e5`, `63c8ee4f`, `2318c8b4`, `3f25f8ad`, `ddf355f7`, `3de8074a`, `8a1959ce` = `571` subagent steps) = `663` Pass 1 steps, `491` tool calls (`read_file`: `453`, `invoke_subagent`: `10`, `send_message`: `10`, `write_file`: `7`, `edit_file`: `4`, `manage_subagents`: `3`, `search_web`: `2`, `ask_question`: `1`, `run_command`: `1`).
+  - **Pass 2 (`d703f3c2-42d4-4d78-b6a5-ebe3d0962c3a`, `20:52`–`21:16+11:00`, `0:24:12`)**: `68` parent steps (`4` user turns at Steps `0, 41, 45, 60`, `1` `ask_question` gate at Step `1`) + `6` subagents (`e5ea88c2`, `065b532c`, `813acbd6`, `82c6c621`, `ca2b90ea`, `6c5a9959` = `271` subagent steps) = `339` Pass 2 steps, `234` tool calls (`read_file`: `200`, `edit_file`: `10`, `write_file`: `7`, `invoke_subagent`: `6`, `send_message`: `6`, `run_command`: `3`, `ask_question`: `1`, `manage_subagents`: `1`).
+- **Contract Usage**: `146` `README.md` `read_file` calls (`104` in Pass 1 + `42` in Pass 2) covering `28` unique `README.md` contracts (`1` root `README.md`, `19` in `nuttx/`, `8` in `apps/`).
+- **Cast ↔ Trace Correlation (`recordings/final/04-review.cast`, `24` stop points, `277.3s` warped playback)**:
+
+| Stop # | Final Cast Event | Time (`raw` / `1x`) | Trace Step(s) | Milestone |
+| :---: | :---: | :--- | :--- | :--- |
+| **1** | `#0010` | `2.32s` / `2.32s` | *(pre-session)* | `agy` typed on shell command line (`1. Launch agy`) |
+| **2–3** | `#0036`, `#0040` | `5.52s`–`6.74s` / `5.52s`–`6.74s` | `1d6e0269 Step 0` | Ready prompt and Pass 1 `/egm-review` submitted |
+| **4** | `#0203` | `22.81s` / `22.81s` | `1d6e0269 Steps 1–2` | Pass 1 `Q1`: Select Consolidated review execution mode |
+| **5–6** | `#11496`, `#11507` | `1316.10s`–`1316.95s` / `1179.43s`–`1180.28s` | `1d6e0269 Steps 48–49` | Pass 1 review complete & `/egm-resolve` prompt entered |
+| **7–8** | `#13233`, `#13246` | `1477.65s`–`1480.54s` / `1340.98s`–`1343.87s` | `1d6e0269 Steps 50–54` | Pass 1 audit findings compiled & `interactive` reply |
+| **9–10** | `#14010`, `#14019` | `1514.70s`–`1517.70s` / `1378.04s`–`1381.03s` | `1d6e0269 Steps 54–55` | Item 1/12 (`B-1`) NVIC IRQ gating & `accept` (Items 1–12) |
+| **11–12** | `#25826`, `#25842` | `2346.58s`–`2347.95s` / `2209.92s`–`2211.28s` | `1d6e0269 Steps 87–88` | Pass 1 all 12 items resolved & archive Pass 1 prompt |
+| **13–15** | `#26319`, `#26333`, `#26342` | `2384.15s`–`2385.17s` / `2247.48s`–`2248.51s` | `1d6e0269 Step 91` -> `/clear` | Pass 1 archived to `docs/reports/pass1/`, `/clear`, fresh prompt |
+| **16–17** | `#26345`, `#27047` | `2386.37s`–`2456.34s` / `2249.71s`–`2319.68s` | `d703f3c2 Steps 0–2` | Pass 2 `/egm-review` (`GoldfishContext`) & Consolidated mode |
+| **18–19** | `#33140`, `#33143` | `3297.18s`–`3298.38s` / `3074.73s`–`3075.93s` | `d703f3c2 Steps 40–41` | Pass 2 review complete & `/egm-resolve` prompt entered |
+| **20–21** | `#34725`, `#34732` | `3446.99s`–`3448.75s` / `3224.55s`–`3226.30s` | `d703f3c2 Steps 42–45` | Pass 2 audit findings (`11` items) & `auto` reply |
+| **22–24** | `#36828`, `#36831`, `#37818` | `3648.44s`–`3730.11s` / `3426.00s`–`3507.66s` | `d703f3c2 Steps 59–67` | Pass 2 resolved, archived to `docs/reports/pass2/`, committed (`25cbb9f`) |
 
 ---
 
@@ -716,10 +737,10 @@ asciinema rec -i 2.0 --window-size 120x36 --overwrite \
 
    Build a complete 5-lesson interactive story arc that teaches a software engineer how to hand-build both the breadboard circuit and the resulting out-of-tree NuttX custom board and application from scratch, with progressive runnable companion code in `tutorial/apps/0001-*` through `tutorial/apps/0005-*`, `tutorial/reference/GLOSSARY.md` + cheat sheets, `MISSION.md`, `RESOURCES.md`, `NOTES.md`, `learning-records/`, `index.md`, `build.py`, and Tufte dark-mode `assets/`:
 
-   1. `0001-breadboard-and-transfer-math`: Hand-building the 400-tie-point breadboard circuit (`10 kΩ` potentiometer on `D0/A0` [`GPIO26`] powered from `3V3`, 6 active-high LEDs + `330 Ω` resistors on `D1`–`D6` [`GPIO27, 28, 5, 6, 7, 0` -> `PWM5B, PWM6A, PWM2B, PWM3A, PWM3B, PWM0A`], `~3.94 mA/LED` budget) and writing the pure-C transfer/filter module (`>> 19` 12-bit ADC extraction, Q4 EMA filter, `<= 32` / `>= 4063` endpoint deadbands, and `0..65535` 6-segment PWM duty interpolation avoiding `b16ONE` `uint16_t` truncation) with host unit tests (`-Wall -Wextra -Werror`).
-   2. `0002-out-of-tree-board-and-kconfig`: Hand-building the out-of-tree NuttX custom board (`board/Kconfig`, `board/include/board.h`, `board/scripts/Make.defs` with the git-ignored `apps/external -> ../xiao-rp2350-bargraph/apps` symlink hook, `memmap_default.ld`, `board/src/Make.defs`, `rp23xx_boardinitialize.c`, `rp23xx_autoleds.c`, `rp23xx_userleds.c`, `rp23xx_gpio.c`, and `configs/bargraph/defconfig` setting `CONFIG_ARCH_BOARD_CUSTOM=y`, `CONFIG_BOARD_LATE_INITIALIZE=y`, `CONFIG_ANALOG=y`, dual `CONFIG_PWM_NCHANNELS=2` + `CONFIG_RP23XX_PWM_NCHANNELS=2`, `-1` unused sibling PWM pins, and `CONFIG_RP23XX_ADC_CHANNEL0=y` only so `rp23xx_adc.c:my_reset()` never clobbers `D1`/`D2` PWM muxing).
-   3. `0003-rp2350-bringup-and-hardware-mitigations`: Hand-building `rp23xx_bringup.c` and `rp23xx_pico.h`: why `nsh_waitusbready()` blocks USB-C NSH until a host attaches, registering `/dev/adc0` and `/dev/pwm0,2,3,5,6` via `rp23xx_common_bringup()`, isolating `GPIO26` against Erratum RP2350-E9 digital pad leakage (`OD=1`, `IE=PUE=PDE=ISO=0`), pacing `RP23XX_ADC_DIV = 0x00FFFF00` (`~732.42 Hz`, cutting the `500 kS/s` IRQ storm by `99.85%`), and invoking `bargraph_autostart()`.
-   4. `0004-bargraphd-daemon-adc-and-pwm-ioctls`: Hand-building the out-of-tree application build wiring (`apps/Kconfig`, `apps/Makefile` omitting `MENUDESC` so `distclean` never deletes `apps/Kconfig`, `apps/Make.defs`, `apps/bargraph/Kconfig`, `Makefile`, `Make.defs`) and the 50 Hz `bargraphd` daemon: keeping `/dev/adc0` open across ticks to avoid the `remove_device()` close race, flushing stale FIFO samples with `ANIOC_RESET_FIFO`, reading 4-sample bursts, populating two-channel `struct pwm_info_s` (`channels[0].channel = 1`, `channels[1].channel = 2`) across `/dev/pwm5,6,2,3,0`, and zeroing duties (`2 ms` settle) before `PWMIOC_STOP`.
+   1. `0001-breadboard-and-transfer-math`: Hand-building the 400-tie-point breadboard circuit (`10 kΩ` potentiometer on `D0/A0` [`GPIO26`] powered from `3V3`, 6 active-high LEDs + `330 Ω` resistors on `D1`–`D6` [`GPIO27, 28, 5, 6, 7, 0` -> `PWM5B, PWM6A, PWM2B, PWM3A, PWM3B, PWM0A`], `~3.94 mA/LED` budget) and writing the pure-C transfer/filter module (`>> 19` 12-bit ADC extraction, Q4 EMA filter `(ema_q4 + 8) >> 4` with first-sample seeding `ema_q4 = raw_avg << 4`, `<= 32` / `>= 4063` endpoint deadbands, and `0..65535` 6-segment PWM duty interpolation avoiding `b16ONE` `uint16_t` truncation) with host unit tests (`-Wall -Wextra -Werror`).
+   2. `0002-out-of-tree-board-and-kconfig`: Hand-building the out-of-tree NuttX custom board (`board/Kconfig`, `board/include/board.h`, `board/scripts/Make.defs` with the `distclean`-guarded `apps/external -> ../xiao-rp2350-bargraph/apps` symlink hook, `memmap_default.ld`, `board/src/Make.defs` compiling `rp23xx_boardinitialize.c` and `rp23xx_bringup.c` without unused `rp23xx_autoleds.c`/`rp23xx_userleds.c`/`rp23xx_gpio.c`, and `configs/bargraph/defconfig` setting `CONFIG_ARCH_BOARD_CUSTOM=y`, `CONFIG_BOARD_LATE_INITIALIZE=y`, `CONFIG_ANALOG=y`, `CONFIG_PWM_NCHANNELS=2`, `CONFIG_RP23XX_PWM_MULTICHAN=y`, `CONFIG_RP23XX_PWM_NCHANNELS=2`, `CONFIG_NFILE_DESCRIPTORS_PER_BLOCK=12`, `CONFIG_RP23XX_UF2_BINARY=y`, `-1` unused sibling PWM pins, and `CONFIG_RP23XX_ADC_CHANNEL0=y` only so `rp23xx_adc.c:my_reset()`/`get_next_channel()` never interferes with `D1`/`D2` PWM muxing).
+   3. `0003-rp2350-bringup-and-hardware-mitigations`: Hand-building `rp23xx_bringup.c` and `rp23xx_pico.h`: why `nsh_waitusbready()` blocks USB-C NSH until a host attaches, registering `/dev/adc0` and `/dev/pwm0,2,3,5,6` via `rp23xx_common_bringup()`, isolating `GPIO26` against Erratum RP2350-E9 digital pad leakage (`OD=1`, `IE=PUE=PDE=ISO=0`), why `RP23XX_ADC_DIV` has no effect under `rp23xx_adc.c`'s `START_ONCE` loop (setting up demand-driven NVIC `RP23XX_ADC_IRQ_FIFO` gating via `up_disable_irq`/`up_enable_irq` in `bargraphd` to cut background sleep interrupts to zero), and invoking `bargraph_autostart()`.
+   4. `0004-bargraphd-daemon-adc-and-pwm-ioctls`: Hand-building the out-of-tree application build wiring (`apps/Kconfig`, `apps/Makefile` omitting `MENUDESC` so `distclean` never deletes `apps/Kconfig` and cleaning `apps/external` on `distclean`, `apps/Make.defs`, `apps/bargraph/Kconfig`, `Makefile`, `Make.defs`) and the 50 Hz `bargraphd` daemon: keeping `/dev/adc0` open across ticks and masking NVIC `RP23XX_ADC_IRQ_FIFO` (`up_disable_irq`/`up_enable_irq`) around `ANIOC_RESET_FIFO` + a `read()` loop collecting all `5` `5`-byte `struct adc_msg_s` samples across `adc_read()` short reads (discarding the stale latched `msgs[0]` and averaging `msgs[1..4]`), populating two-channel `struct pwm_info_s` (`channels[0].channel = 1`, `channels[1].channel = 2`) across `/dev/pwm5,6,2,3,0`, and zeroing duties before `PWMIOC_STOP` + `close(fd)`.
    5. `0005-nsh-cli-ipc-and-firmware-build`: Hand-building the `bargraph` USB-C NSH command (`start`, `stop`, `status`, `set <0..100>`, `resume`, `test`), `struct bargraph_state_s` (`pthread_mutex_t` + `wake_cond` + `done_cond`) state machine (`SENSING`, `MANUAL`, `TEST`, `STOPPED`), and top-level `Makefile` (`make test` and `make` producing `nuttx/nuttx.uf2` with clean `nuttx/` and `apps/` submodules).
 
    Keep code blocks concise and clean (no license banners), use Block-by-Block walkthroughs followed by `Complete ... Listing` blocks verified with `sync_listing.py --check`, and validate the entire course with `tutorial/.venv/bin/python tutorial/build.py --out-dir tutorial/_site --check`.
@@ -740,8 +761,8 @@ asciinema rec -i 2.0 --window-size 120x36 --overwrite \
 
 ### Run 2 Recording & Per-Phase Review Checklist
 
-- [x] `01-bootstrap.cast` captures installing the Elephant-Goldfish Model (`egm`) plugin (`v0.1.1`) via AGY's `/plugin` menu, running `/egm-bootstrap` + `/egm-drift-report`, and moving/committing `README.md` + `docs/reports/2026-11-16_DRIFT_REPORT.md` (`22e2da7`), producing `recordings/final/01-bootstrap.cast`, `prototypes/01-bootstrap-cast-player.html`, and `docs/egm/reviews/01-bootstrap-review.md`.
-- [ ] All 6 raw `.cast` files (`01-bootstrap.cast` through `06-teach-code.cast`) exist in `~/Documents/GitHub/nuttxspace/recordings/raw/` and were kept **separate**, with each phase producing `recordings/final/0X-*.cast`, `prototypes/0X-*-cast-player.html`, and `docs/egm/reviews/0X-*-review.md` immediately after recording.
+- [x] `01-bootstrap.cast` through `04-review.cast` are recorded, captured, and reviewed (`22e2da7`, `9be8815`, `57e1354`, `25cbb9f`), each with its separate `recordings/final/0X-*.cast`, `prototypes/0X-*-cast-player.html`, exported `docs/prompts-egm/` traces, and `docs/egm/reviews/0X-*-review.md`. *(Phases 5–6 pending: `05-implement.cast`, `06-teach-code.cast`.)*
+- [ ] All 6 raw `.cast` files (`01-bootstrap.cast` through `06-teach-code.cast`) exist in `~/Documents/GitHub/nuttxspace/recordings/raw/` and were kept **separate**, with each phase producing `recordings/final/0X-*.cast`, `prototypes/0X-*-cast-player.html`, and `docs/egm/reviews/0X-*-review.md` immediately after recording. (`01`–`04` complete; `05`–`06` pending.)
 - [ ] `make -C xiao-rp2350-bargraph test` and `make -C xiao-rp2350-bargraph` both succeeded in `nuttxspace-egm`, producing `nuttx/nuttx.uf2`.
 - [ ] A breadboard wiring Markdown file (with parts list and wiring description) and matching SVG diagram were generated in Phase 5 after code generation.
 - [ ] `06-teach-code.cast` captures installing `/teach-code` via `npx skills add domesticmouse/skills`, generating the 5-lesson build-by-hand board + firmware course in `nuttxspace-egm/tutorial/` (`lessons/0001-*.md`..`0005-*.md`, `reference/*.md`, `apps/0001-*`..`0005-*`, `build.py`), and passing `sync_listing.py --check` + `build.py --check`, captured cleanly into `docs/egm/tutorial/`.
@@ -831,11 +852,11 @@ If any cross-phase reconciliation or telemetry rollup across all 6 casts is need
 
 ### Run 2 Post-Processing Checklist
 
-- [ ] All 6 raw EGM `.cast` files (`01-bootstrap.cast` through `06-teach-code.cast`) remain **separate** and were each sanitized into `recordings/final/01-bootstrap.cast`–`06-teach-code.cast`, matched to their exact AGY parent/subagent session(s) (`01-bootstrap.cast` verified complete), and reviewed immediately after recording, with any aborted/superseded takes confirmed and trashed cleanly.
-- [ ] All 6 final casts pass `trim-cast.py --info` with zero trailing exit prompts, and `mark-cast.py --list` shows clean, sequentially numbered stop points on each recording (`01-bootstrap.cast` verified: `11` stop points, `0` trailing exit prompts).
-- [ ] All 6 standalone HTML players (`prototypes/01-bootstrap-cast-player.html` through `prototypes/06-teach-code-cast-player.html`) pass `node --check` and open cleanly via `file://` in a browser (`01-bootstrap-cast-player.html` verified).
-- [ ] `docs/egm/reviews/01-bootstrap-review.md` through `docs/egm/reviews/06-teach-code-review.md` exist with step achievements, trace telemetry, and technical reviews of the generated docs/code for presentation slides (`01-bootstrap-review.md` complete).
-- [ ] `docs/prompts-egm/README.md` exists with complete exported traces (including Goldfish subagents and the `/teach-code` session).
+- [ ] All 6 raw EGM `.cast` files (`01-bootstrap.cast` through `06-teach-code.cast`) remain **separate** and were each sanitized into `recordings/final/01-bootstrap.cast`–`06-teach-code.cast`, matched to their exact AGY parent/subagent session(s) (`01-bootstrap.cast` through `04-review.cast` verified complete), and reviewed immediately after recording, with any aborted/superseded takes confirmed and trashed cleanly.
+- [ ] All 6 final casts pass `trim-cast.py --info` with zero trailing exit prompts, and `mark-cast.py --list` shows clean, sequentially numbered stop points on each recording (`01-bootstrap.cast`: `11`, `02-brainstorm.cast`: `19`, `03-draft.cast`: `11`, `04-review.cast`: `24` stop points, `0` trailing exit prompts).
+- [ ] All 6 standalone HTML players (`prototypes/01-bootstrap-cast-player.html` through `prototypes/06-teach-code-cast-player.html`) pass `node --check` and open cleanly via `file://` in a browser (`01-bootstrap` through `04-review` verified).
+- [ ] `docs/egm/reviews/01-bootstrap-review.md` through `docs/egm/reviews/06-teach-code-review.md` exist with step achievements, trace telemetry, and technical reviews of the generated docs/code for presentation slides (`01`–`04` complete).
+- [ ] `docs/prompts-egm/README.md` exists with complete exported traces (`01`–`22` exported covering Phases 1–4 including Goldfish subagents; Phases 5–6 pending).
 - [ ] `docs/egm/` contains `README.md`, `designs/` (`concepts_brief.md`, `design_draft.md`, `xiao-rp2350-bargraph.v0-draft.md`, `xiao-rp2350-bargraph.md`), `reports/` (`*DRIFT_REPORT.md`, `pass1/`, `pass2/`), `tutorial/` (the self-contained `/teach-code` course copied from `nuttxspace-egm/tutorial/` covering the 5-lesson build-by-hand board + firmware story arc and runnable `apps/0001-*`..`0005-*`, passing `build.py --check`), `reviews/`, a clean `xiao-rp2350-bargraph/` source snapshot (with build binaries/objects stripped), and the generated breadboard wiring Markdown and SVG files.
 
 ---

@@ -24,6 +24,12 @@
       "sourceType": "github",
       "skillPath": "skills/cast-player-html/SKILL.md",
       "computedHash": "1fdc0d308a0f4bd3024f4a7cbae9a2f2854da7194e27040c57172f46022718b2"
+    },
+    "teach-code": {
+      "source": "domesticmouse/skills",
+      "sourceType": "github",
+      "skillPath": "skills/teach-code/SKILL.md",
+      "computedHash": "e068bfc7a019d8a212b6bd5edf712116c2d4f26f32cbe7e36262fdbab88da0ab"
     }
   }
 }
