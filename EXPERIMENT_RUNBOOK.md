@@ -519,29 +519,60 @@ asciinema rec -i 2.0 --window-size 120x36 --overwrite \
   ~/Documents/GitHub/nuttxspace/recordings/raw/03-draft.cast
 ```
 
-Launch `agy` and invoke `/egm-draft`:
+Launch `agy` directly inside the recorded shell:
 
-```text
-/egm-draft @[concepts_brief.md] target @[docs/designs/xiao-rp2350-bargraph.md]
+```bash
+agy
 ```
 
-**Interactive Operator Guide for `/egm-draft`:**
-- Confirm ingesting `concepts_brief.md`.
-- Review and approve each of the four sections via the Section Approval Gate (`Overview & Goals`, `Technical Plan`, `Alternatives Considered`, `Detailed Implementation`), which `/egm-draft` writes to `design_draft.md` in the workspace root before promoting the finalized design spec to `docs/designs/xiao-rp2350-bargraph.md`.
-- Confirm saving the finalized design doc to `docs/designs/xiao-rp2350-bargraph.md`.
+Execute these steps sequentially inside `agy`:
 
-Before exiting `agy`, save an untouched pre-review snapshot (`xiao-rp2350-bargraph.v0-draft.md`) alongside `design_draft.md` and commit via this prompt (approving `BypassSandbox` for `git commit` if prompted):
+1. **Step 1 — Opening Prompt (`/egm:egm-draft`, `Step 0`):**
+   ```text
+   /egm:egm-draft @concepts_brief.md target docs/designs/xiao-rp2350-bargraph.md
+   ```
+   *(Typed interactively using `/` slash-command completion and `@concepts_brief.md` file-mention autocomplete, targeting `docs/designs/xiao-rp2350-bargraph.md`.)*
 
-```text
-Save a pre-review copy of `docs/designs/xiao-rp2350-bargraph.md` as `docs/designs/xiao-rp2350-bargraph.v0-draft.md`, stage `design_draft.md` and `docs/designs/`, and `git commit`.
-```
+2. **Step 2 — Context Verification & Four-Section Interactive Approval Gates (`Steps 9–92`):**
+   - **Q1 (`Steps 9–10`)**: Confirm ingested `concepts_brief.md` context -> **`1. Proceed to Step 2 and draft Overview, Goals & Problem Statement in design_draft.md`**.
+   - **Q2 (`Steps 13–14`)**: Review drafted Section 1 in `design_draft.md` -> **`1. Approve Overview & Goals and proceed to next section`**.
+   - **Q3 (`Steps 72–73`)**: Review drafted Section 2 (`39` upstream `nuttx/` + `apps/` reads and `4` `README.md` reads) -> **`1. Approve Technical Plan and proceed to next section`**.
+   - **Q4 (`Steps 76–77`)**: Review drafted Section 3 -> **`1. Approve Alternatives Considered and proceed to next section`**.
+   - **Q5 (`Steps 91–92`)**: Review drafted Section 4 (`30`-file manifest + verification plan) -> **`1. Approve Detailed Implementation and proceed to next section`**.
+   - `/egm-draft` reconciles `design_draft.md` against `concepts_brief.md` (`Steps 93–97`, zero contradictions) and promotes the finalized `693`-line spec to `docs/designs/xiao-rp2350-bargraph.md` (`Steps 98–100`).
 
-Exit `agy` (`Ctrl+D` twice) and exit the recorded shell (`Ctrl+D` or `exit`) to finish `03-draft.cast`.
+3. **Step 3 — On-Camera Pre-Review Snapshot & Commit via `agy` Prompt (`Steps 101–106`):**
+   Send this follow-up prompt inside `agy`:
+   ```text
+   Save a pre-review copy of `docs/designs/xiao-rp2350-bargraph.md` as `docs/designs/xiao-rp2350-bargraph.v0-draft.md`, stage `design_draft.md` and `docs/designs/`, and `git commit`.
+   ```
+   - Approve `BypassSandbox` when `cp ... && git add ... && git commit` prompts (due to `.git/index.lock` inside the sandbox at `Step 102`), creating commit `57e1354` (`docs(designs): add xiao-rp2350-bargraph v0 design draft`).
+   - Exit `agy` (`Ctrl+D` twice) and exit the recorded shell (`Ctrl+D` or `exit`) to finish `03-draft.cast`.
 
-**Post-Phase 3 Capture & Review Gate (run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0106) before Phase 4):**
-- **Cast & Player**: Sanitize, trim, and mark `recordings/raw/03-draft.cast` -> `recordings/final/03-draft.cast` and build `prototypes/03-draft-cast-player.html`.
-- **AGY Trace**: Export Phase 3 trace(s) to `docs/prompts-egm/` and inspect which upstream files and `README.md` contracts grounded the draft.
-- **Docs, Code & Slide Review**: Capture `design_draft.md`, `xiao-rp2350-bargraph.v0-draft.md`, and `xiao-rp2350-bargraph.md` -> `docs/egm/designs/`; review the initial 4-section specification in `docs/egm/reviews/03-draft-review.md` before running adversarial review passes.
+**Post-Phase 3 Capture & Review Gate (verified 2026-11-16 before Phase 4):**
+- [x] **Cast & Player**: Sanitized (`2` `OSC 7` sequences stripped), trimmed (`16` trailing exit events stripped + `3.0s` hold), tightened (`21` autocomplete/typing/gate/submit delays via `--tighten-pastes` + `--set-dt`), and marked (`11` stop points verified with `pyte` + `--inspect`) from `recordings/raw/03-draft.cast` -> `recordings/final/03-draft.cast` (`21m 35.4s` raw / `21m 34.4s` 1x / `200.4s` warped) and `prototypes/03-draft-cast-player.html` (`node --check` passed).
+- [x] **AGY Trace**: Exported canonical session `46e57b63-872a-4bbb-b589-fdbc1a33bb28` to `docs/prompts-egm/04-46e57b63-egm-draft-concepts-brief-md-target-docs.md` and refreshed `docs/prompts-egm/README.md` (`0` Phase 3 subagents; `0` aborted takes).
+- [x] **Docs, Code & Slide Review**: Captured `design_draft.md` (`696` lines), `xiao-rp2350-bargraph.v0-draft.md` (`693` lines), and `xiao-rp2350-bargraph.md` (`693` lines) -> `docs/egm/designs/`; wrote `docs/egm/reviews/03-draft-review.md` reviewing the 30-file manifest, build/`.gitignore` grounding, and open gaps (`Makefile`/host tests `CON-9`, `bargraph stop` `CON-1`, `RP23XX_ADC_DIV` reset check, `CONFIG_ANALOG=y`) ahead of Phase 4 adversarial review.
+
+#### Phase 3 Trace & Recording Cross-Check Summary (2026-11-16)
+
+- **AGY Session**: `46e57b63-872a-4bbb-b589-fdbc1a33bb28` (`antigravity-cli`, `Gemini 4 Argon (Medium)`), active `18:28:29`–`18:58:55+11:00` (`0:30:26`), `107` total steps (`2` user turns at Steps `0` and `101`, `5` `ask_question` gates at Steps `9, 13, 72, 76, 91`), `0` subagents.
+- **Tool Telemetry (`64` tool calls)**: `read_file`: `51` (`45` unique targets: `4` `README.md` contract reads [`README.md`, `nuttx/boards/arm/rp23xx/xiao-rp2350/README.md`, `nuttx/boards/arm/rp23xx/xiao-rp2350/src/README.md`, `apps/examples/hello/README.md`], `4` `concepts_brief.md`/`design_draft.md` reads, `3` `egm-draft` plugin template/instruction reads, `1` `docs/designs/SITEMAP.md` check, and `39` upstream `nuttx/` [`31`] + `apps/` [`8`] C/header/Makefile/Kconfig/ld/`.gitignore` reads), `ask_question`: `5`, `run_command`: `3` (`find` + `cp && git commit` `57e1354`), `edit_file`: `3`, `write_file`: `2`.
+- **Cast ↔ Trace Correlation (`recordings/final/03-draft.cast`, `11` stop points, `200.4s` warped playback)**:
+
+| Stop # | Final Cast Event | Time (`raw` / `1x`) | Trace Step(s) | Milestone |
+| :---: | :---: | :--- | :--- | :--- |
+| **1** | `#0010` | `1.75s` / `1.75s` | *(pre-session)* | `agy` typed on shell command line (`1. Launch agy`) |
+| **2** | `#0019` | `2.65s` / `2.65s` | *(pre-session)* | `Antigravity CLI 1.5.9` ready prompt (`2. Ready for /egm-draft`) |
+| **3** | `#0073` | `11.34s` / `11.34s` | `Step 0` | Typed `/egm:egm-draft @concepts_brief.md target docs/designs/xiao-rp2350-bargraph.md` |
+| **4** | `#0840` | `67.90s` / `67.90s` | `Steps 9–10` | `Q1`: Confirm Context & Start Drafting (`Step 1`) |
+| **5** | `#1766` | `149.80s` / `149.80s` | `Steps 13–14` | `Q2`: Section Approval — Overview & Goals |
+| **6** | `#6477` | `586.53s` / `586.53s` | `Steps 72–73` | `Q3`: Section Approval — Technical Plan |
+| **7** | `#7374` | `662.04s` / `662.04s` | `Steps 76–77` | `Q4`: Section Approval — Alternatives Considered |
+| **8** | `#9259` | `834.69s` / `834.69s` | `Steps 91–92` | `Q5`: Section Approval — Detailed Implementation |
+| **9** | `#13145` | `1211.60s` / `1211.60s` | `Steps 98–100` | Draft Reconciled & Promoted (`docs/designs/xiao-rp2350-bargraph.md`) |
+| **10** | `#13147` | `1212.60s` / `1212.60s` | `Step 101` | Prompt: Save `v0-draft` Snapshot & Commit |
+| **11** | `#14004` | `1292.42s` / `1292.42s` | `Steps 102–106` | Design Spec & `v0-draft` Snapshot Committed (`57e1354`) |
 
 ---
 
