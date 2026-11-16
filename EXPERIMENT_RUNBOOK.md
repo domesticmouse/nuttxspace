@@ -624,7 +624,11 @@ Launch `agy` and execute **Pass 1**:
    Instruct all Goldfish reviewer subagents to read the nearest local EGM README.md contracts in nuttx/ and apps/ alongside the referenced .c, .h, .mk, and Kconfig files.
    ```
    - Again select **`Consolidated report with all review rubrics (runs full flow without stopping)`**.
-   - Run `/egm-resolve @consolidated_review_report.md target @docs/designs/xiao-rp2350-bargraph.md LineRange: full file` and reply **`auto accept`** (or resolve any contested findings).
+   - Run Pass 2 resolution:
+     ```text
+     /egm-resolve @consolidated_review_report.md target @docs/designs/xiao-rp2350-bargraph.md LineRange: full file
+     ```
+     Then reply **`auto accept`** (or resolve any contested findings).
    - *(Optional Pass 3: if Pass 2 still surfaces Blockers/Majors like the `close()` vs. ISR teardown race or blocking `adc_read()`, archive Pass 2's `*_report.md` and `xiao-rp2350-bargraph.pass2.md` into `docs/reports/pass2/` first, then run one more `/clear` -> `/egm-review` -> `/egm-resolve` cycle and archive Pass 3 into `docs/reports/pass3/`.)*
 
 5. **On-Camera Wrap-Up & Commit via `agy` Prompt:**
