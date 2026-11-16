@@ -426,34 +426,88 @@ asciinema rec -i 2.0 --window-size 120x36 --overwrite \
   ~/Documents/GitHub/nuttxspace/recordings/raw/02-brainstorm.cast
 ```
 
-Launch `agy` and paste the **Opening Prompt** (note the fast-path guardrails from [`docs/tutorials/egm-replication-tutorial.md`](docs/tutorials/egm-replication-tutorial.md)):
+Inside the recorded shell, launch `agy` directly:
 
-```text
-/egm-brainstorm I want to build an out-of-tree Apache NuttX application and custom board configuration in a new `xiao-rp2350-bargraph/` directory of this workspace for a Seeed Studio XIAO RP2350 mounted on a breadboard with 1 potentiometer and 6 discrete LEDs acting as a bar graph, with a USB-C NSH console and automatic startup at boot, keeping `nuttx/` and `apps/` unmodified.
-
-Constraints for this session:
-- Ask me one concern at a time.
-- Instruct any research subagents to read nearest EGM README.md contracts before reading .c/.h files.
+```bash
+agy
 ```
 
-**Interactive Operator Guide for `/egm-brainstorm`:**
-- Answer clarifying questions one concern at a time (e.g., breadboard learning exercise, single board for now, 6 discrete LEDs, USB-C console, auto-start at boot, project directory `xiao-rp2350-bargraph/`).
-- At the Readiness Checkpoint Gate, select **`Review with Goldfishes`**.
-- After the 7 Goldfish lenses write `concepts_brief.md`, walk through the surfaced hardware concerns one at a time (pin choices avoiding `GPIO 26–29` `my_reset()` and `UART0`, `open`/`read`/`close` per 50 ms tick vs. 500 kHz IRQ, `rcS` + `task_create()` singleton + RAMLOG `dmesg` + `0x15`/`0x2A` error blink).
-- At Step 4 Handoff Gate, select **`Proceed to egm-draft (Initialize formal design document)`** (or keep `concepts_brief.md` saved for the next session).
+Execute these steps sequentially inside `agy`:
 
-Note that `/egm-brainstorm` writes `concepts_brief.md` in the workspace root (or `docs/designs/concepts_brief.md`). Before exiting `agy`, send this wrap-up prompt (approving `BypassSandbox` for `git commit` if prompted):
+1. **Step 1 — Opening Prompt (`/egm-brainstorm`, `Step 0`):**
+   ```text
+   /egm-brainstorm I want to build an out-of-tree Apache NuttX application and custom board configuration in a new `xiao-rp2350-bargraph/` directory of this workspace for a Seeed Studio XIAO RP2350 mounted on a breadboard with 1 potentiometer and 6 discrete LEDs acting as a bar graph, with a USB-C NSH console and automatic startup at boot, keeping `nuttx/` and `apps/` unmodified.
 
-```text
-Stage `concepts_brief.md` and `git commit` the finalized brainstorm brief.
-```
+   Constraints for this session:
+   - Ask me one concern at a time.
+   - Instruct any research subagents to read nearest EGM README.md contracts before reading .c/.h files.
+   ```
 
-Exit `agy` (`Ctrl+D` twice) and exit the recorded shell (`Ctrl+D` or `exit`) to finish `02-brainstorm.cast`.
+2. **Step 2 — Six-Turn One-Concern-at-a-Time Discovery Q&A (`Steps 11–62`):**
+   - **Q1 — Breadboard Pin Mapping & Reference Voltage (`Steps 11–12`)**:
+     ```text
+     Please layout the connections as you see fit. I'll ask you to design the breadboard layout as part of this exercise.
+     ```
+     *(Agent maps potentiometer wiper to `D0/A0` [`GPIO26`, `ADC0` sweeping `0V–3.3V`] and 6 active-high LEDs to left-header pins `D1`–`D6` [`GPIO27`, `GPIO28`, `GPIO5`, `GPIO6`, `GPIO7`, `GPIO0`].)*
+   - **Q2 — Boot Startup Architecture vs. USB-C NSH Console (`Steps 18–19`)**:
+     ```text
+     Spawn in the background, leaving NSH available for USB-C
+     ```
+   - **Q3 — LED Bar Graph Display Mapping (`Steps 20–21`)**:
+     ```text
+     PWM brighness on active segment
+     ```
+     *(Agent inspects `rp23xx_pwmdev.c`, `rp23xx_pwm.c`, and `Kconfig` to verify all 6 pins map to hardware PWM comparators `PWM5B`, `PWM6A`, `PWM2B`, `PWM3A`, `PWM3B`, `PWM0A`.)*
+   - **Q4 — Interactive NSH Command Interface (`Steps 57–58`)**:
+     ```text
+     bargraph start, stop, and status all sound like good commands to have. Any other options?
+     ```
+   - **Q5 — Candidate Bring-Up Subcommands `test` & `set` (`Steps 59–60`)**:
+     ```text
+     add test and set. Is there a path out of setting the bargraph back to sensing the pot's value?
+     ```
+   - **Q6 — Returning from Manual Override to Potentiometer Sensing (`Steps 61–62`)**:
+     ```text
+     both start resuming and an explicit bargraph resume command. User friendlyness for the win.
+     ```
 
-**Post-Phase 2 Capture & Review Gate (run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0106) before Phase 3):**
-- **Cast & Player**: Sanitize, trim, and mark `recordings/raw/02-brainstorm.cast` -> `recordings/final/02-brainstorm.cast` (verifying two-stop interactive Q&A timing) and build `prototypes/02-brainstorm-cast-player.html`.
-- **AGY Trace**: Export Phase 2 parent + 7 Goldfish subagent traces to `docs/prompts-egm/` and check how many `nuttx/` and `apps/` `README.md` contracts the Goldfishes read.
-- **Docs, Code & Slide Review**: Capture `concepts_brief.md` -> `docs/egm/designs/concepts_brief.md`; review surfaced hardware/RTOS constraints (`CON-*`, pin assignments, daemon lifecycle) in `docs/egm/reviews/02-brainstorm-review.md` before drafting.
+3. **Step 3 — Readiness Checkpoint Gate & 7-Lens Goldfish Synthesis (`Steps 115–123`):**
+   - When `/egm-brainstorm` presents the `ask_question` Readiness Checkpoint Gate with the anchored feature hypothesis, select **`1. Review with Goldfishes`**.
+   - The parent session invokes `egm-synthesizer` (`4e2441cd`), which reads all 7 Goldfish agent definitions (`~/.gemini/agents/egm-*.md` — approve the TUI `ReadFile` prompts when prompted) and `34` unique `README.md` contracts across `nuttx/` and `apps/`, synthesizing all 7 lenses in-process.
+   - The parent writes `concepts_brief.md` (`89` lines) in the workspace root and summarizes the 3 key hardware/driver risks raised by the Goldfish review (`rp23xx_pwm.c` 16-bit `uint16_t` duty truncation & shared `/dev/pwm3` slice, `rp23xx_adc.c` 500 kS/s IRQ storm / `<< 19` shift / `GPIO26` `IE=1` leakage, and `apps/external` symlink discovery).
+
+4. **Step 4 — On-Camera Wrap-Up & Commit via `agy` Prompt (`Steps 124–129`):**
+   Send this follow-up prompt inside `agy`:
+   ```text
+   Stage `concepts_brief.md` and `git commit` the finalized brainstorm brief.
+   ```
+   - Approve `BypassSandbox` when `git add concepts_brief.md && git commit` prompts (due to `.git/index.lock` inside the sandbox), creating commit `9be8815` (`docs: add finalized concepts_brief.md for xiao-rp2350-bargraph`).
+   - When the post-commit handoff prompt appears, press `Ctrl+D` twice to exit `agy`, then press `Ctrl+D` to finish `02-brainstorm.cast`.
+
+**Post-Phase 2 Capture & Review Gate (verified 2026-11-16 before Phase 3):**
+- [x] **Cast & Player**: Sanitized (`2` `OSC 7` sequences stripped), trimmed (`13` trailing exit events stripped + `3.0s` hold), tightened (`30` prompt/submit/typing delays via `--set-dt`), and marked (`19` stop points verified with `pyte` + `--inspect`) from `recordings/raw/02-brainstorm.cast` -> `recordings/final/02-brainstorm.cast` (`41m 31.7s` raw / `24m 40.6s` 1x / `228.0s` warped) and `prototypes/02-brainstorm-cast-player.html` (`node --check` passed).
+- [x] **AGY Trace**: Exported canonical parent `55e0ffc7-6822-426a-8a29-8aed2ac6dbd5` and `egm-synthesizer` subagent `4e2441cd-da92-46e9-9ea7-d2f7e60bb7f9` to `docs/prompts-egm/02-55e0ffc7-egm-brainstorm-i-want-to-build-an.md` and `docs/prompts-egm/03-4e2441cd-none.md`, and refreshed `docs/prompts-egm/README.md` (`0` Phase 2 aborted takes).
+- [x] **Docs, Code & Slide Review**: Captured `concepts_brief.md` -> `docs/egm/designs/concepts_brief.md`; wrote `docs/egm/reviews/02-brainstorm-review.md` reviewing the 7 surfaced hardware/driver traps (`CONFIG_BOARD_LATE_INITIALIZE`, `rp23xx_pwm.c` channel indexing & `uint16_t` truncation, `PWMIOC_STOP` freeze, `my_reset()` conflict + RP2350-E9 `IE` leakage, `RP23XX_ADC_DIV`, `<< 19` shift) and staging open checks for `/egm-draft`.
+
+#### Phase 2 Trace & Recording Cross-Check Summary (2026-11-16)
+
+- **AGY Sessions**: Parent `55e0ffc7-6822-426a-8a29-8aed2ac6dbd5` (`antigravity-cli`, `Gemini 4 Argon (Medium)`, active `17:02`–`17:48+11:00`, `0:46:13`, `130` steps, `8` user turns at Steps `0, 12, 19, 21, 58, 60, 62, 124`, `1` `ask_question` gate at Step `115`, `1` `invoke_subagent` at Step `117`) + `egm-synthesizer` subagent `4e2441cd-da92-46e9-9ea7-d2f7e60bb7f9` (active `17:22`–`17:44+11:00`, `0:21:48`, `213` steps, `1` `send_message` at Step `210`).
+- **Tool Telemetry (`223` combined tool calls)**: `read_file`: `216` (`56` parent + `160` subagent; `49` total `README.md` reads covering `34` unique `README.md` contracts: `1` root, `24` in `nuttx/`, `9` in `apps/`, plus `14` Goldfish lens rubric reads), `run_command`: `3` (`git config user.name`, `git add`/`git commit` `9be8815`), `ask_question`: `1`, `invoke_subagent`: `1`, `write_file`: `1` (`concepts_brief.md`), `send_message`: `1`.
+- **Cast ↔ Trace Correlation (`recordings/final/02-brainstorm.cast`, `19` stop points, `228.0s` warped playback)**:
+
+| Stop # | Final Cast Event | Time (`raw` / `1x`) | Trace Step(s) | Milestone |
+| :---: | :---: | :--- | :--- | :--- |
+| **1** | `#0011` | `2.10s` / `2.10s` | *(pre-session)* | `agy` typed on shell command line (`1. Launch agy`) |
+| **2–3** | `#0039`, `#0041` | `5.70s`–`6.70s` / `5.70s`–`6.70s` | `Step 0` | Ready prompt and pasted `/egm-brainstorm` opening prompt |
+| **4–5** | `#4230`, `#4350` | `419.22s`–`441.58s` / `419.22s`–`441.58s` | `Steps 11–12` | `Q1`–`A1` (`Breadboard Pin Mapping & Reference Voltage`) |
+| **6–7** | `#4702`, `#4760` | `466.17s`–`477.71s` / `466.17s`–`477.71s` | `Steps 18–19` | `Q2`–`A2` (`Boot Startup Architecture vs. USB-C NSH`) |
+| **8–9** | `#4873`, `#4906` | `486.33s`–`495.98s` / `486.33s`–`495.98s` | `Steps 20–21` | `Q3`–`A3` (`LED Bar Graph Display Mapping` -> PWM) |
+| **10–11** | `#6711`, `#6802` | `660.16s`–`681.08s` / `660.16s`–`680.48s` | `Steps 57–58` | `Q4`–`A4` (`NSH CLI Subcommands vs. Background Only`) |
+| **12–13** | `#6983`, `#7103` | `690.68s`–`723.61s` / `690.08s`–`720.01s` | `Steps 59–60` | `Q5`–`A5` (`Candidate Subcommands: test & set`) |
+| **14–15** | `#7294`, `#7395` | `735.76s`–`756.47s` / `732.16s`–`752.87s` | `Steps 61–62` | `Q6`–`A6` (`Resume via start vs. Explicit resume`) |
+| **16** | `#9548` | `953.97s` / `950.37s` | `Steps 115–116` | Readiness Checkpoint (`Review with Goldfishes`) |
+| **17–18** | `#11057`, `#11059` | `2357.86s`–`2358.86s` / `1347.78s`–`1348.78s` | `Steps 121–124` | `egm-synthesizer` brief ready & commit prompt entered |
+| **19** | `#12433` | `2488.68s` / `1478.59s` | `Steps 125–129` | `concepts_brief.md` committed (`9be8815`) |
 
 ---
 
