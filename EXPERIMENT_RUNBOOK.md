@@ -15,11 +15,11 @@ Working operator checklist for provisioning, recording, post-processing, trace-e
 | **Why Isolated?** | Must **not** contain `xiao-rp2350-bargraph/` or `docs/` so the agent cannot peek at finished code or prior designs. | Must **not** contain `xiao-rp2350-bargraph/` or `docs/` so every discovery and review finding happens fresh. |
 | **Submodule Branches** | `nuttx` on `master` (`7` READMEs)<br>`apps` on `master` (`7` READMEs) | `nuttx` on `egm` (`2,608` `README.md` contracts)<br>`apps` on `egm` (`634` `README.md` contracts) |
 | **Starting Baseline** | Functional requirements only (no prescribed GPIO pins, driver quirks, or Kconfig fixes). | Same functional requirements + EGM phase constraints (`One concern at a time`, read nearest `README.md`). |
-| **Recording Layout** | Single continuous recording:<br>`recordings/raw/vanilla-vibe.cast` -> `recordings/final/vanilla-vibe.cast` and standalone HTML player `prototypes/vanilla-vibe-cast-player.html` | Seven separate per-phase recordings:<br>`recordings/raw/00-plugin.cast` … `06-teach-code.cast` -> `recordings/final/00-plugin.cast` … `06-teach-code.cast` and standalone HTML players `prototypes/00-plugin-cast-player.html` … `06-teach-code-cast-player.html` (kept separate for presentation slides between steps) |
+| **Recording Layout** | Single continuous recording:<br>`recordings/raw/vanilla-vibe.cast` -> `recordings/final/vanilla-vibe.cast` and standalone HTML player `prototypes/vanilla-vibe-cast-player.html` | Six separate per-phase recordings:<br>`recordings/raw/01-bootstrap.cast` … `06-teach-code.cast` -> `recordings/final/01-bootstrap.cast` … `06-teach-code.cast` and standalone HTML players `prototypes/01-bootstrap-cast-player.html` … `06-teach-code-cast-player.html` (`01-bootstrap.cast` combines Phase 0 `/plugin` install of `egm` and Phase 1 `/egm-bootstrap` + `/egm-drift-report`; kept separate for presentation slides between steps) |
 | **Terminal Geometry** | `120x36` (`-i 2.0`) | `120x36` (`-i 2.0`) |
 | **Stop Criterion** | `make -C xiao-rp2350-bargraph test` and `make -C xiao-rp2350-bargraph` produce `nuttx/nuttx.uf2` (or hit a terminal blocker), followed by generating a breadboard wiring Markdown file and matching SVG diagram. | Same build/test target after two passes of Consolidated `/egm-review` + `/egm-resolve`, followed by generating a breadboard wiring Markdown file and matching SVG diagram, and then installing `/teach-code` (`npx skills add domesticmouse/skills`) to generate a step-by-step tutorial on building both the breadboard circuit and the firmware code by hand. |
 | **Off-Screen Capture** | Export via `/agy-brain-explorer` in `nuttxspace` (`nuttxspace-vanilla` -> `docs/prompts-vanilla/`) | Export incrementally after each phase via `/agy-brain-explorer` in `nuttxspace` (`nuttxspace-egm` -> `docs/prompts-egm/`, incl. Goldfish subagents) and review before starting the next phase |
-| **Post-Run File Capture** | `docs/vanilla/xiao-rp2350-bargraph/` clean source snapshot + generated breadboard wiring `.md` / `.svg` files + any workspace `.md` or `~/.gemini` brain artifacts (`docs/vanilla/brain/`, if any; Run 1 typically generates zero planning docs). | Incrementally captured & reviewed per phase in `docs/egm/`: root `README.md`, `designs/` (`concepts_brief.md`, `design_draft.md`, `xiao-rp2350-bargraph.md`), `reports/` (`*DRIFT_REPORT.md`, `pass1/*_report.md`, `pass2/*_report.md`), `brain/` artifacts, generated breadboard wiring `.md` / `.svg` files, `tutorials/` (the captured `/teach-code` build-by-hand tutorial), `reviews/` (`00-plugin-review.md` … `06-teach-code-review.md` covering what each step achieved and reviewing its generated docs/code), and `docs/egm/xiao-rp2350-bargraph/` clean source snapshot. |
+| **Post-Run File Capture** | `docs/vanilla/xiao-rp2350-bargraph/` clean source snapshot + generated breadboard wiring `.md` / `.svg` files + any workspace `.md` or `~/.gemini` brain artifacts (`docs/vanilla/brain/`, if any; Run 1 typically generates zero planning docs). | Incrementally captured & reviewed per phase in `docs/egm/`: root `README.md`, `designs/` (`concepts_brief.md`, `design_draft.md`, `xiao-rp2350-bargraph.md`), `reports/` (`*DRIFT_REPORT.md`, `pass1/*_report.md`, `pass2/*_report.md`), `brain/` artifacts, generated breadboard wiring `.md` / `.svg` files, `tutorials/` (the captured `/teach-code` build-by-hand tutorial), `reviews/` (`01-bootstrap-review.md` … `06-teach-code-review.md` covering what each step achieved and reviewing its generated docs/code), and `docs/egm/xiao-rp2350-bargraph/` clean source snapshot. |
 | **Post-Run Audit** | AGY comparative audit in `nuttxspace` scoring `nuttxspace-vanilla` against the 10-point hardware/RTOS scorecard and verifying its generated wiring Markdown + SVG. | Compare defect count, trace steps, `README.md` usage, build retries, and generated wiring SVG/guide accuracy against Vanilla. |
 
 ---
@@ -306,7 +306,7 @@ git status
 
 ### 6.2 Pre-Step: Remove the EGM Plugin Before Recording
 
-Because Recording `00-plugin.cast` demonstrates installing the **Elephant-Goldfish Model (`egm`)** plugin (`/egm-bootstrap`, `/egm-drift-report`, `/egm-brainstorm`, `/egm-draft`, `/egm-review`, `/egm-resolve`, `/egm-review-loop`) from AGY's `/plugin` menu on camera, remove any existing global `egm` plugin installation before starting Run 2:
+Because Recording `01-bootstrap.cast` (originally captured as `recordings/raw/00-plugin.cast` and packaged as `01-bootstrap.cast`) demonstrates installing the **Elephant-Goldfish Model (`egm`)** plugin (`/egm-bootstrap`, `/egm-drift-report`, `/egm-brainstorm`, `/egm-draft`, `/egm-review`, `/egm-resolve`, `/egm-review-loop`) from AGY's `/plugin` menu on camera before running `/egm-bootstrap`, remove any existing global `egm` plugin installation before starting Run 2:
 
 1. **Option A — Remove via AGY's `/plugin` menu (recommended before starting the camera):**
    - Launch `agy`, type `/plugin`, select **Elephant-Goldfish Model (`egm`)**, uninstall/remove it, and exit with `/exit`.
@@ -326,57 +326,32 @@ ls -d ~/Documents/GitHub/nuttxspace-egm/.agents/skills/teach-code \
 
 ### Run 2 Provisioning Verification Checklist
 
-- [ ] `~/Documents/GitHub/nuttxspace-egm` has clean `git status`, `nuttx` at `egm` (`b047ea1315`), `apps` at `egm` (`f711fe028`), and `3,242` `README.md` files total.
-- [ ] `nuttxspace-egm` does not contain `xiao-rp2350-bargraph/` or `docs/` yet.
-- [ ] The Elephant-Goldfish Model (`egm`) plugin is removed prior to recording (`~/.gemini/config/plugins/egm` absent / not listed as installed in `/plugin`) so `00-plugin.cast` can demonstrate adding `/egm-review` and friends from scratch.
-- [ ] `/teach-code` is not pre-installed in `nuttxspace-egm` so `06-teach-code.cast` can demonstrate installing it via `npx skills add domesticmouse/skills`.
-- [ ] Note down any existing `nuttxspace-egm` sessions in `~/.gemini` (none should exist before recording).
+- [x] `~/Documents/GitHub/nuttxspace-egm` has clean `git status`, `nuttx` at `egm` (`b047ea1315`), `apps` at `egm` (`f711fe028`), and `3,241` `README.md` files total. *(Verified: provisioned at commit `460f341`, `nuttx` at `b047ea1315`, `apps` at `f711fe028`, `3,241` `README.md` files across `nuttx/` and `apps/`.)*
+- [x] `nuttxspace-egm` does not contain `xiao-rp2350-bargraph/` or `docs/` yet. *(Confirmed absent prior to Phase 1; `docs/reports/` created during Phase 1 commit `22e2da7`, `xiao-rp2350-bargraph/` remains absent.)*
+- [x] The Elephant-Goldfish Model (`egm`) plugin is removed prior to recording (`~/.gemini/config/plugins/egm` absent / not listed as installed in `/plugin`) so `01-bootstrap.cast` can demonstrate adding `/egm-review` and friends from scratch. *(Confirmed `Installed (4)` at start of `01-bootstrap.cast`, then installed `egm` `v0.1.1` on camera -> `Installed (5)`, now active at `~/.gemini/config/plugins/egm`.)*
+- [x] `/teach-code` is not pre-installed in `nuttxspace-egm` so `06-teach-code.cast` can demonstrate installing it via `npx skills add domesticmouse/skills`. *(Verified absent in workspace and global skill directories.)*
+- [x] Note down any existing `nuttxspace-egm` sessions in `~/.gemini` (none should exist before recording). *(Confirmed `0` prior sessions before recording; `1` aborted take `1565d38b` from `15:35` and canonical session `bd1ae202` from `15:51` now exist in `~/.gemini/antigravity-cli/brain/`.)*
 
 ---
 
 ## 7. Run 2 Recording: Full EGM Flow (`nuttxspace-egm`)
 
-Record **seven separate `.cast` files** (`00-plugin.cast` through `06-teach-code.cast`) and keep them **separate** so they can be played individually in a presentation, interspersed with slides covering what each step achieved and reviewing the generated docs and code. Use an **incremental Record -> Capture -> Review loop**—do **not** record all seven phases back-to-back before inspecting outputs.
+Record **six separate `.cast` files** (`01-bootstrap.cast` through `06-teach-code.cast`, where `01-bootstrap.cast` combines Phase 0 `/plugin` installation of `egm` and Phase 1 `/egm-bootstrap` + `/egm-drift-report` + commit) and keep them **separate** so they can be played individually in a presentation, interspersed with slides covering what each step achieved and reviewing the generated docs and code. Use an **incremental Record -> Capture -> Review loop**—do **not** record the phases back-to-back before inspecting outputs.
 
-After each phase finishes and is committed in `~/Documents/GitHub/nuttxspace-egm`, switch to `~/Documents/GitHub/nuttxspace` and run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0006) **before starting the next recording** so you produce and inspect:
+After each phase wraps up and commits via an in-session `agy` prompt in `~/Documents/GitHub/nuttxspace-egm`, switch to `~/Documents/GitHub/nuttxspace` and run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0106) **before starting the next recording** so you produce and inspect:
 1. **The recorded `.cast` and standalone HTML player**: Sanitize, trim, and mark `recordings/raw/0X-<phase>.cast` -> `recordings/final/0X-<phase>.cast` and build `prototypes/0X-<phase>-cast-player.html` (verified with `pyte` `--render` / `node --check` for TUI redraw quirks or stray turns).
 2. **The AGY trace(s)**: Export that phase's parent + Goldfish subagent traces into `docs/prompts-egm/` and audit tool calls / `README.md` contract reads.
 3. **The generated docs, code, and presentation review**: Copy that phase's artifacts into `docs/egm/` and write `docs/egm/reviews/0X-<phase>-review.md` summarizing what the step achieved and reviewing its generated docs/code.
 
 > [!TIP]
-> Before each phase recording, check `git status` is clean, launch `asciinema rec -i 2.0 --window-size 120x36 --overwrite ...`, start `agy`, and end cleanly with `/exit` + shell `exit`.
+> Before each phase recording, launch `asciinema rec -i 2.0 --window-size 120x36 --overwrite ...`, start `agy` directly (without running `git status -sb` on camera), wrap up and `git commit` via an in-session `agy` prompt, and end cleanly with `Ctrl+D` (twice in `agy`) + shell `Ctrl+D`/`exit`.
 
 ---
 
-### 7.1 Recording 0 (`00-plugin.cast`) — Phase 0: Adding `/egm-review` & Friends via AGY's `/plugin` Menu
+### 7.1 Recording 1 (`01-bootstrap.cast`) — Phase 0 & Phase 1: Installing `egm` via `/plugin`, Workspace Bootstrap & Drift Audit
 
-```bash
-cd ~/Documents/GitHub/nuttxspace-egm
-asciinema rec -i 2.0 --window-size 120x36 --overwrite \
-  ~/Documents/GitHub/nuttxspace/recordings/raw/00-plugin.cast
-```
-
-Inside the recorded shell, verify the clean starting state and launch `agy`:
-
-```bash
-git status -sb
-agy
-```
-
-Inside `agy`:
-1. Run `/plugin` to open AGY's interactive plugin manager menu.
-2. Browse/select **Elephant-Goldfish Model** (`egm` / `antigravity-plugins-official/plugin/egm`) and install/enable it on camera.
-3. Verify `/egm-review` and friends (`/egm-bootstrap`, `/egm-drift-report`, `/egm-brainstorm`, `/egm-draft`, `/egm-review`, `/egm-resolve`, `/egm-review-loop`) appear in slash-command completion by typing `/egm`.
-4. Exit `agy` (`/exit` or `Ctrl+D`) and exit the recorded shell (`exit` or `Ctrl+D`) to finish `00-plugin.cast`.
-
-**Post-Phase 0 Capture & Review Gate (run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0006) before Phase 1):**
-- **Cast & Player**: Sanitize, trim, and mark `recordings/raw/00-plugin.cast` -> `recordings/final/00-plugin.cast` and build `prototypes/00-plugin-cast-player.html`; verify `/plugin` installation of `egm` and `/egm-*` slash-command autocomplete render cleanly on camera.
-- **AGY Trace & State**: Check `~/.gemini/**/brain/` for any session entry created for `nuttxspace-egm` during `/plugin` (expect TUI-only setup with zero model turns) and verify `~/.gemini/config/plugins/egm` is installed and active.
-- **Docs, Code & Slide Review**: Confirm `nuttxspace-egm` working tree remains clean (`git status -sb`) and capture the step summary in `docs/egm/reviews/00-plugin-review.md`.
-
----
-
-### 7.2 Recording 1 (`01-bootstrap.cast`) — Phase 1: Workspace Bootstrap & Drift Audit
+> [!NOTE]
+> Originally recorded to `~/Documents/GitHub/nuttxspace/recordings/raw/00-plugin.cast` and copied/packaged into `recordings/raw/01-bootstrap.cast` -> `recordings/final/01-bootstrap.cast` to keep Phase 0 (`/plugin` setup) and Phase 1 (`/egm-bootstrap` + `/egm-drift-report` + commit) together in one combined recording.
 
 ```bash
 cd ~/Documents/GitHub/nuttxspace-egm
@@ -384,42 +359,66 @@ asciinema rec -i 2.0 --window-size 120x36 --overwrite \
   ~/Documents/GitHub/nuttxspace/recordings/raw/01-bootstrap.cast
 ```
 
-Inside the recorded shell, run `agy` and send these two prompts sequentially:
+Inside the recorded shell, launch `agy` directly:
 
-1. **Prompt 1 (Bootstrap Root Blueprint):**
+```bash
+agy
+```
+
+Execute these steps sequentially inside `agy`:
+
+1. **Step 0 — Install the `egm` plugin via `/plugin`:**
+   - Type `/plugin` and press `Enter` to open AGY's interactive plugin manager (`Installed (4)  Discover (83)`).
+   - Press `Tab` to switch to `Discover (83)`, type `egm` to search, select `egm` (*"Develop ideas with context and review documents with fresh eyes."*, `v0.1.1` from `antigravity-plugins-official`), and press `ctrl+s` to install (`Installed (5)`).
+   - Press `esc` twice (`Exit Search` -> `Exit`) to return to the `agy` prompt.
+
+2. **Step 1 — Bootstrap the Root Blueprint (`/egm-bootstrap`):**
    ```text
    /egm-bootstrap create the root README.md contract for this workspace and verify submodule boundaries
    ```
-   - **If `/egm-bootstrap` hits the >15-subdirectory safety gate** (*"The target directory tree contains more than 15 subdirectories. This is a large execution scope. Do you want to proceed with full-tree bootstrapping?"*), select **`3. Write-in...`** (do **not** pick `1. Yes` or `2. No, abort execution`) and paste:
-     ```text
-     Only generate the workspace root README.md rolling up nuttx/README.md and apps/README.md; do not recurse into nuttx/ or apps/.
-     ```
-     *(The `3,242` `nuttx/` and `apps/` contracts are already complete on `egm`.)*
+   - *Observed behavior*: In the initial take (`1565d38b`), `/egm-bootstrap` hit the `>15 subdirectories` safety gate and was aborted; in the canonical take (`bd1ae202`), the agent inspected `.gitmodules`, `apps/README.md`, and `nuttx/README.md` directly, verified all `43` level-1 child contracts (`18` in `nuttx/`, `25` in `apps/`) and cross-submodule build boundaries (`CONFIG_APPS_DIR`, `NUTTX_APPS_DIR`, `APPDIR`, `libapps.a`), and wrote the root `README.md` (`Blueprint / Hay` template) without recursing into `nuttx/` or `apps/`.
+   - *(If `/egm-bootstrap` hits the >15-subdirectory safety gate on another run, select `3. Write-in...` and paste: `Only generate the workspace root README.md rolling up nuttx/README.md and apps/README.md; do not recurse into nuttx/ or apps/.`)*
 
-2. **Prompt 2 (Verify Against Hallucinations):**
+3. **Step 2 — Run Drift Report via `/egm-bootstrap`'s Built-In `ask_question` Gate:**
+   - When `/egm-bootstrap` prompts: *"Do you want to run the EGM Drift Report on the generated contract updates to check for consistency with the codebase?"*, select **`1. (Recommended) Yes, run drift report on modified contracts`**.
+   - The agent reads `egm-drift-report/SKILL.md`, verifies `README.md`, `apps/README.md`, and `nuttx/README.md` against kernel/app sources, patches `OSINIT_HARDWARE` into root `README.md`, and writes `2026-11-16_DRIFT_REPORT.md` (flagging missing `OSINIT_HARDWARE` in `nuttx/README.md:79`).
+
+4. **Step 3 — On-Camera Wrap-Up & Commit via `agy` Prompt:**
+   Send this follow-up prompt inside `agy`:
    ```text
-   /egm-drift-report check the README.md files modified in this session
+   make a docs/reports directory. move the drift report to the docs/reports directory. git commit.
    ```
+   - Approve `BypassSandbox` when `git commit` prompts (due to `.git/index.lock` inside the sandbox), creating commit `22e2da7` (`docs: add root EGM README blueprint and drift report`).
+   - Press `Ctrl+D` twice to exit `agy`, then press `Ctrl+D` (or type `exit`) to finish `01-bootstrap.cast`.
 
-3. **On-camera wrap-up & commit** (either via `agy` or back in the shell):
-   ```bash
-   mkdir -p docs/reports
-   mv -f *DRIFT_REPORT.md docs/reports/ 2>/dev/null || true
-   git add README.md docs/reports
-   git status -s
-   git commit -m "Phase 1: bootstrap root README.md and run drift check"
-   ```
+**Post-Phase 0 & 1 Capture & Review Gate (verified 2026-11-16 before Phase 2):**
+- [x] **Cast & Player**: Sanitized (`2` `OSC 7` sequences stripped), trimmed (`14` trailing exit events stripped + `3.0s` hold), tightened (`--tighten-pastes` + `--set-dt`), and marked (`11` stop points verified with `pyte`) from `recordings/raw/00-plugin.cast` / `recordings/raw/01-bootstrap.cast` -> `recordings/final/01-bootstrap.cast` (`8m 13.6s` raw / `8m 11.4s` 1x) and `prototypes/01-bootstrap-cast-player.html` (`node --check` passed).
+- [x] **AGY Trace**: Exported canonical session `bd1ae202-689a-4b82-a3ae-f4dc54a049e2` to `docs/prompts-egm/01-bd1ae202-egm-bootstrap-create-the-root-readme-md.md` + `docs/prompts-egm/README.md` (`0` subagents; earlier aborted take `1565d38b` flagged).
+- [x] **Docs, Code & Slide Review**: Captured `README.md` -> `docs/egm/README.md` and `docs/reports/2026-11-16_DRIFT_REPORT.md` -> `docs/egm/reports/2026-11-16_DRIFT_REPORT.md`; wrote `docs/egm/reviews/01-bootstrap-review.md` confirming `nuttx/` and `apps/` remain unmodified on `egm` and workspace is ready for Phase 2.
 
-Exit `agy` and exit the shell to finish `01-bootstrap.cast`.
+#### Phase 0 & 1 Trace & Recording Cross-Check Summary (2026-11-16)
 
-**Post-Phase 1 Capture & Review Gate (run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0006) before Phase 2):**
-- **Cast & Player**: Sanitize, trim, and mark `recordings/raw/01-bootstrap.cast` -> `recordings/final/01-bootstrap.cast` and build `prototypes/01-bootstrap-cast-player.html`.
-- **AGY Trace**: Export Phase 1 trace(s) to `docs/prompts-egm/` and inspect tool calls and drift-check behavior.
-- **Docs, Code & Slide Review**: Capture `README.md` -> `docs/egm/README.md` and `docs/reports/*DRIFT_REPORT.md` -> `docs/egm/reports/`; review root `README.md` submodule boundaries and any flagged drift findings in `docs/egm/reviews/01-bootstrap-review.md`.
+- **AGY Session**: `bd1ae202-689a-4b82-a3ae-f4dc54a049e2` (`antigravity-cli`, `Gemini 4 Argon (Medium)`), active `15:51:54`–`16:00:06+11:00` (`0:08:12`), `72` total steps (`2` user turns at Steps `0` and `64`, `1` `ask_question` gate at Steps `45–46`), `0` subagents.
+- **Tool Telemetry (`40` tool calls)**: `run_command`: `19`, `read_file`: `17` (`6` `README.md` reads across `apps/README.md`, `nuttx/README.md`, and root `README.md`, plus `1` `ls -la` verifying all `43` level-1 child `README.md` contracts exist on disk), `write_file`: `2`, `edit_file`: `1`, `ask_question`: `1`.
+- **Cast ↔ Trace Correlation (`recordings/final/01-bootstrap.cast`, `11` stop points, `98.8s` warped playback)**:
+
+| Stop # | Final Cast Event | Time (`raw` / `1x`) | Trace Step(s) | Milestone |
+| :---: | :---: | :--- | :--- | :--- |
+| **1** | `#0010` | `2.10s` / `2.10s` | *(pre-session)* | `agy` typed on shell command line (`1. Launch agy`) |
+| **2** | `#0020` | `4.08s` / `4.08s` | *(pre-session)* | `Antigravity CLI 1.5.9` ready prompt (`2. Ready for /plugin`) |
+| **3** | `#0028` | `5.53s` / `5.53s` | *(pre-session)* | `/plugin` entered in input box (`3. Run /plugin`) |
+| **4** | `#0048` | `10.29s` / `10.29s` | *(pre-session)* | `Discover (83)` search `egm` (`v0.1.1`) selected (`4. Select egm in Discover`) |
+| **5** | `#0056` | `12.33s` / `12.33s` | *(pre-session)* | `egm` installed (`Installed (5)`, `5. egm Plugin Installed`) |
+| **6** | `#0069` | `16.34s` / `16.34s` | *(pre-session)* | Returned from `/plugin` to empty prompt (`6. Ready for /egm-bootstrap`) |
+| **7** | `#0071` | `17.34s` / `17.34s` | `Step 0` | Pasted `/egm-bootstrap` prompt prior to `Enter` (`7. Prompt: /egm-bootstrap`) |
+| **8** | `#2271` | `221.21s` / `221.21s` | `Steps 45–46` | Built-in `ask_question` drift report prompt (`8. Q1: Run EGM Drift Report?`) |
+| **9** | `#4069` | `372.89s` / `372.89s` | `Step 63` | Blueprint + drift summary complete (`9. Ready for Move & Commit Prompt`) |
+| **10** | `#4170` | `400.54s` / `399.36s` | `Step 64` | Typed `make a docs/reports directory...` prompt (`10. Prompt: Move Drift Report & Commit`) |
+| **11** | `#5137` | `490.63s` / `489.45s` | `Steps 65–71` | Moved report & committed `22e2da7` (`11. Root Blueprint & Drift Report Committed`) |
 
 ---
 
-### 7.3 Recording 2 (`02-brainstorm.cast`) — Phase 2: Plain-English Discovery (`/egm-brainstorm`)
+### 7.2 Recording 2 (`02-brainstorm.cast`) — Phase 2: Plain-English Discovery (`/egm-brainstorm`)
 
 ```bash
 cd ~/Documents/GitHub/nuttxspace-egm
@@ -443,22 +442,22 @@ Constraints for this session:
 - After the 7 Goldfish lenses write `concepts_brief.md`, walk through the surfaced hardware concerns one at a time (pin choices avoiding `GPIO 26–29` `my_reset()` and `UART0`, `open`/`read`/`close` per 50 ms tick vs. 500 kHz IRQ, `rcS` + `task_create()` singleton + RAMLOG `dmesg` + `0x15`/`0x2A` error blink).
 - At Step 4 Handoff Gate, select **`Proceed to egm-draft (Initialize formal design document)`** (or keep `concepts_brief.md` saved for the next session).
 
-Note that `/egm-brainstorm` writes `concepts_brief.md` in the workspace root (or `docs/designs/concepts_brief.md`). Exit `agy`, commit it, and exit the shell:
+Note that `/egm-brainstorm` writes `concepts_brief.md` in the workspace root (or `docs/designs/concepts_brief.md`). Before exiting `agy`, send this wrap-up prompt (approving `BypassSandbox` for `git commit` if prompted):
 
-```bash
-[ -f concepts_brief.md ] && git add concepts_brief.md
-[ -f docs/designs/concepts_brief.md ] && git add docs/designs/concepts_brief.md
-git commit -m "Phase 2: finalize brainstorm concepts_brief.md"
+```text
+Stage `concepts_brief.md` and `git commit` the finalized brainstorm brief.
 ```
 
-**Post-Phase 2 Capture & Review Gate (run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0006) before Phase 3):**
+Exit `agy` (`Ctrl+D` twice) and exit the recorded shell (`Ctrl+D` or `exit`) to finish `02-brainstorm.cast`.
+
+**Post-Phase 2 Capture & Review Gate (run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0106) before Phase 3):**
 - **Cast & Player**: Sanitize, trim, and mark `recordings/raw/02-brainstorm.cast` -> `recordings/final/02-brainstorm.cast` (verifying two-stop interactive Q&A timing) and build `prototypes/02-brainstorm-cast-player.html`.
 - **AGY Trace**: Export Phase 2 parent + 7 Goldfish subagent traces to `docs/prompts-egm/` and check how many `nuttx/` and `apps/` `README.md` contracts the Goldfishes read.
 - **Docs, Code & Slide Review**: Capture `concepts_brief.md` -> `docs/egm/designs/concepts_brief.md`; review surfaced hardware/RTOS constraints (`CON-*`, pin assignments, daemon lifecycle) in `docs/egm/reviews/02-brainstorm-review.md` before drafting.
 
 ---
 
-### 7.4 Recording 3 (`03-draft.cast`) — Phase 3: Grounded Technical Spec (`/egm-draft`)
+### 7.3 Recording 3 (`03-draft.cast`) — Phase 3: Grounded Technical Spec (`/egm-draft`)
 
 ```bash
 cd ~/Documents/GitHub/nuttxspace-egm
@@ -477,23 +476,22 @@ Launch `agy` and invoke `/egm-draft`:
 - Review and approve each of the four sections via the Section Approval Gate (`Overview & Goals`, `Technical Plan`, `Alternatives Considered`, `Detailed Implementation`), which `/egm-draft` writes to `design_draft.md` in the workspace root before promoting the finalized design spec to `docs/designs/xiao-rp2350-bargraph.md`.
 - Confirm saving the finalized design doc to `docs/designs/xiao-rp2350-bargraph.md`.
 
-Exit `agy`, save an untouched pre-review snapshot (`xiao-rp2350-bargraph.v0-draft.md`) alongside `design_draft.md` so Pass 1 and Pass 2 changes can be diffed later, commit, and exit the shell:
+Before exiting `agy`, save an untouched pre-review snapshot (`xiao-rp2350-bargraph.v0-draft.md`) alongside `design_draft.md` and commit via this prompt (approving `BypassSandbox` for `git commit` if prompted):
 
-```bash
-cp docs/designs/xiao-rp2350-bargraph.md docs/designs/xiao-rp2350-bargraph.v0-draft.md
-[ -f design_draft.md ] && git add design_draft.md
-git add docs/designs/xiao-rp2350-bargraph.md docs/designs/xiao-rp2350-bargraph.v0-draft.md
-git commit -m "Phase 3: draft technical design spec docs/designs/xiao-rp2350-bargraph.md"
+```text
+Save a pre-review copy of `docs/designs/xiao-rp2350-bargraph.md` as `docs/designs/xiao-rp2350-bargraph.v0-draft.md`, stage `design_draft.md` and `docs/designs/`, and `git commit`.
 ```
 
-**Post-Phase 3 Capture & Review Gate (run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0006) before Phase 4):**
+Exit `agy` (`Ctrl+D` twice) and exit the recorded shell (`Ctrl+D` or `exit`) to finish `03-draft.cast`.
+
+**Post-Phase 3 Capture & Review Gate (run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0106) before Phase 4):**
 - **Cast & Player**: Sanitize, trim, and mark `recordings/raw/03-draft.cast` -> `recordings/final/03-draft.cast` and build `prototypes/03-draft-cast-player.html`.
 - **AGY Trace**: Export Phase 3 trace(s) to `docs/prompts-egm/` and inspect which upstream files and `README.md` contracts grounded the draft.
 - **Docs, Code & Slide Review**: Capture `design_draft.md`, `xiao-rp2350-bargraph.v0-draft.md`, and `xiao-rp2350-bargraph.md` -> `docs/egm/designs/`; review the initial 4-section specification in `docs/egm/reviews/03-draft-review.md` before running adversarial review passes.
 
 ---
 
-### 7.5 Recording 4 (`04-review.cast`) — Phase 4: Two-Pass Consolidated Review & Resolution
+### 7.4 Recording 4 (`04-review.cast`) — Phase 4: Two-Pass Consolidated Review & Resolution
 
 Run **at least two** Consolidated `/egm-review` + `/egm-resolve` passes (resetting context with `/clear` between Pass 1 and Pass 2 so Pass 2 operates like a fresh Elephant on the updated spec).
 
@@ -524,7 +522,7 @@ Launch `agy` and execute **Pass 1**:
    - Inspect `goldfish_review_report.md`, then reply **`auto accept`** (or **`interactive breakdown`** if you want to highlight critical findings such as Kconfig/ISR bugs on camera).
 
 3. **Archive Pass 1 Reports Before Pass 2:**
-   Send a brief follow-up prompt in `agy` (or run a shell escape) to snapshot Pass 1 before clearing context:
+   Send a brief follow-up prompt in `agy` to snapshot Pass 1 before clearing context:
    ```text
    Archive the Pass 1 reports (`*_report.md`) and a snapshot of the Pass 1 resolved design spec (`xiao-rp2350-bargraph.pass1.md`) into `docs/reports/pass1/` before starting Pass 2 so Pass 2 does not overwrite them.
    ```
@@ -542,25 +540,22 @@ Launch `agy` and execute **Pass 1**:
    - Run `/egm-resolve @[consolidated_review_report.md] target @[docs/designs/xiao-rp2350-bargraph.md]` and reply **`auto accept`** (or resolve any contested findings).
    - *(Optional Pass 3: if Pass 2 still surfaces Blockers/Majors like the `close()` vs. ISR teardown race or blocking `adc_read()`, archive Pass 2's `*_report.md` and `xiao-rp2350-bargraph.pass2.md` into `docs/reports/pass2/` first, then run one more `/clear` -> `/egm-review` -> `/egm-resolve` cycle and archive Pass 3 into `docs/reports/pass3/`.)*
 
-Exit `agy`, archive Pass 2's reports and resolved spec snapshot, commit, and exit the shell:
+5. **On-Camera Wrap-Up & Commit via `agy` Prompt:**
+   Before exiting `agy`, archive Pass 2's reports and resolved spec snapshot and commit (approving `BypassSandbox` for `git commit` if prompted):
+   ```text
+   Archive the Pass 2 reports (`*_report.md`) and a snapshot of the Pass 2 resolved design spec (`xiao-rp2350-bargraph.pass2.md`) into `docs/reports/pass2/`, stage `docs/designs/xiao-rp2350-bargraph.md` and `docs/reports/`, and `git commit`.
+   ```
 
-```bash
-mkdir -p docs/reports/pass2
-cp -f *_report.md docs/reports/ 2>/dev/null || true
-mv -f *_report.md docs/reports/pass2/ 2>/dev/null || true
-cp docs/designs/xiao-rp2350-bargraph.md docs/reports/pass2/xiao-rp2350-bargraph.pass2.md
-git add docs/designs/xiao-rp2350-bargraph.md docs/reports
-git commit -m "Phase 4: complete consolidated EGM reviews and resolutions"
-```
+Exit `agy` (`Ctrl+D` twice) and exit the recorded shell (`Ctrl+D` or `exit`) to finish `04-review.cast`.
 
-**Post-Phase 4 Capture & Review Gate (run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0006) before Phase 5):**
+**Post-Phase 4 Capture & Review Gate (run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0106) before Phase 5):**
 - **Cast & Player**: Sanitize, trim, and mark `recordings/raw/04-review.cast` -> `recordings/final/04-review.cast` (verifying `/clear` boundary and resolution prompts) and build `prototypes/04-review-cast-player.html`.
 - **AGY Trace**: Export Phase 4 parent + Pass 1 / Pass 2 Goldfish reviewer traces to `docs/prompts-egm/` and audit `README.md` contract reads and per-persona findings.
 - **Docs, Code & Slide Review**: Capture `docs/reports/pass1/*`, `docs/reports/pass2/*`, and the updated `docs/designs/xiao-rp2350-bargraph.md` -> `docs/egm/`; review all accepted/rejected dispositions and confirm critical RTOS/hardware traps (`CON-1`..`CON-10`) are fixed in `docs/egm/reviews/04-review-review.md` before writing C code.
 
 ---
 
-### 7.6 Recording 5 (`05-implement.cast`) — Phase 5: Firmware Implementation & Verification
+### 7.5 Recording 5 (`05-implement.cast`) — Phase 5: Firmware Implementation & Verification
 
 ```bash
 cd ~/Documents/GitHub/nuttxspace-egm
@@ -568,7 +563,7 @@ asciinema rec -i 2.0 --window-size 120x36 --overwrite \
   ~/Documents/GitHub/nuttxspace/recordings/raw/05-implement.cast
 ```
 
-Launch `agy` and send these two prompts sequentially:
+Launch `agy` and send these prompts sequentially:
 
 1. **Prompt 1 (Firmware Implementation & Build Verification):**
    ```text
@@ -582,23 +577,22 @@ Launch `agy` and send these two prompts sequentially:
    Provide both a Markdown file with a parts list and wiring description, and a matching SVG diagramming the breadboard circuit.
    ```
 
-Once `make -C xiao-rp2350-bargraph test`, `make -C xiao-rp2350-bargraph`, and the generated breadboard wiring Markdown + SVG files are verified on camera, exit `agy`, commit the generated firmware and wiring docs, and exit the shell:
+3. **Prompt 3 (On-Camera Wrap-Up & Commit):**
+   Once `make -C xiao-rp2350-bargraph test`, `make -C xiao-rp2350-bargraph`, and the generated breadboard wiring Markdown + SVG files are verified on camera, send this wrap-up prompt before exiting `agy` (approving `BypassSandbox` for `git commit` if prompted):
+   ```text
+   Verify `git -C nuttx status -s` and `git -C apps status -s` are clean, stage `xiao-rp2350-bargraph/` and the generated breadboard wiring Markdown and SVG files, and `git commit`.
+   ```
 
-```bash
-git status -s
-git add xiao-rp2350-bargraph
-find . -maxdepth 3 \( -name "*.svg" -o -name "*.md" \) -not -path "./nuttx/*" -not -path "./apps/*" -exec git add {} +
-git commit -m "Phase 5: implement xiao-rp2350-bargraph firmware, host tests, and wiring docs"
-```
+Exit `agy` (`Ctrl+D` twice) and exit the recorded shell (`Ctrl+D` or `exit`) to finish `05-implement.cast`.
 
-**Post-Phase 5 Capture & Review Gate (run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0006) before Phase 6):**
+**Post-Phase 5 Capture & Review Gate (run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0106) before Phase 6):**
 - **Cast & Player**: Sanitize, trim, and mark `recordings/raw/05-implement.cast` -> `recordings/final/05-implement.cast` (verifying `make test`, `make`, and wiring SVG/Markdown generation on camera) and build `prototypes/05-implement-cast-player.html`.
 - **AGY Trace**: Export Phase 5 trace(s) to `docs/prompts-egm/` and inspect build retries, test runs, and implementation steps.
 - **Docs, Code & Slide Review**: Capture clean `xiao-rp2350-bargraph/` source snapshot and generated breadboard wiring `.md`/`.svg` -> `docs/egm/`; review the generated C code, Kconfig, Makefile, host unit tests, and wiring diagram against the hardened spec in `docs/egm/reviews/05-implement-review.md` before running `/teach-code`.
 
 ---
 
-### 7.7 Recording 6 (`06-teach-code.cast`) — Phase 6: Navigating Comprehension Debt with `/teach-code`
+### 7.6 Recording 6 (`06-teach-code.cast`) — Phase 6: Navigating Comprehension Debt with `/teach-code`
 
 After generating the board bringup, driver glue, and application code, install `/teach-code` from `domesticmouse/skills` and use it to navigate the comprehension debt of AI-generated firmware by producing a step-by-step tutorial on how to construct both the physical breadboard circuit and the NuttX custom board + application code by hand.
 
@@ -624,24 +618,22 @@ asciinema rec -i 2.0 --window-size 120x36 --overwrite \
    ```
    *(Answer any interactive `/teach-code` scoping questions if asked—confirming a software-engineer audience, covering both the breadboard wiring and building the code by hand, and writing the tutorial to `docs/tutorials/xiao-rp2350-bargraph.md`.)*
 
-3. **Step 3 — On-camera wrap-up & commit in `nuttxspace-egm`:**
-   Exit `agy` (`/exit` or `Ctrl+D`), inspect the generated tutorial, commit, and exit the recorded shell (`exit` or `Ctrl+D`) to save `06-teach-code.cast`:
-   ```bash
-   ls -lh docs/tutorials/
-   git status -s
-   git add docs/tutorials .agents 2>/dev/null || git add docs/tutorials
-   git commit -m "Phase 6: install /teach-code and generate hand-built board and code tutorial"
+3. **Step 3 — On-camera wrap-up & commit via `agy` prompt:**
+   Before exiting `agy`, send this wrap-up prompt (approving `BypassSandbox` for `git commit` if prompted):
+   ```text
+   Stage `docs/tutorials/` (and `.agents/` if modified) and `git commit` the hand-built board and code tutorial.
    ```
+   Exit `agy` (`Ctrl+D` twice) and exit the recorded shell (`Ctrl+D` or `exit`) to save `06-teach-code.cast`.
 
-**Post-Phase 6 Capture & Review Gate (run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0006) before final Run 2 reconciliation):**
+**Post-Phase 6 Capture & Review Gate (run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0106) before final Run 2 reconciliation):**
 - **Cast & Player**: Sanitize, trim, and mark `recordings/raw/06-teach-code.cast` -> `recordings/final/06-teach-code.cast` (verifying `npx skills add domesticmouse/skills` and `/teach-code` output) and build `prototypes/06-teach-code-cast-player.html`.
 - **AGY Trace**: Export Phase 6 `/teach-code` trace(s) to `docs/prompts-egm/` and inspect which generated board/code/wiring files it read.
 - **Docs, Code & Slide Review**: Capture `docs/tutorials/*` -> `docs/egm/tutorials/`; review the generated hand-built board + code tutorial for technical accuracy, safety rules (`3V3`, series resistors, pin choices), and completeness in `docs/egm/reviews/06-teach-code-review.md` before final Run 2 reconciliation.
 
 ### Run 2 Recording & Per-Phase Review Checklist
 
-- [ ] All 7 raw `.cast` files (`00-plugin.cast` through `06-teach-code.cast`) exist in `~/Documents/GitHub/nuttxspace/recordings/raw/` and were kept **separate**, with each phase producing `recordings/final/0X-*.cast`, `prototypes/0X-*-cast-player.html`, and `docs/egm/reviews/0X-*-review.md` immediately after recording.
-- [ ] `00-plugin.cast` captures installing the Elephant-Goldfish Model (`egm`) plugin (`/egm-review` and friends) via AGY's `/plugin` menu.
+- [x] `01-bootstrap.cast` captures installing the Elephant-Goldfish Model (`egm`) plugin (`v0.1.1`) via AGY's `/plugin` menu, running `/egm-bootstrap` + `/egm-drift-report`, and moving/committing `README.md` + `docs/reports/2026-11-16_DRIFT_REPORT.md` (`22e2da7`), producing `recordings/final/01-bootstrap.cast`, `prototypes/01-bootstrap-cast-player.html`, and `docs/egm/reviews/01-bootstrap-review.md`.
+- [ ] All 6 raw `.cast` files (`01-bootstrap.cast` through `06-teach-code.cast`) exist in `~/Documents/GitHub/nuttxspace/recordings/raw/` and were kept **separate**, with each phase producing `recordings/final/0X-*.cast`, `prototypes/0X-*-cast-player.html`, and `docs/egm/reviews/0X-*-review.md` immediately after recording.
 - [ ] `make -C xiao-rp2350-bargraph test` and `make -C xiao-rp2350-bargraph` both succeeded in `nuttxspace-egm`, producing `nuttx/nuttx.uf2`.
 - [ ] A breadboard wiring Markdown file (with parts list and wiring description) and matching SVG diagram were generated in Phase 5 after code generation.
 - [ ] `06-teach-code.cast` captures installing `/teach-code` via `npx skills add domesticmouse/skills` and generating the build-by-hand board + code tutorial in `nuttxspace-egm` (`docs/tutorials/`), captured into `docs/egm/tutorials/`.
@@ -651,7 +643,7 @@ asciinema rec -i 2.0 --window-size 120x36 --overwrite \
 
 ## 8. Run 2 Per-Phase Capture, Review & Standalone Player Workflow
 
-Instead of waiting until all seven recordings are finished—or stitching them into one file—keep all seven recordings (`00-plugin.cast` through `06-teach-code.cast`) **separate** so each recording can be played individually in a presentation alongside slides on what that step achieved and reviews of the generated docs and code. Run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0006) in **`~/Documents/GitHub/nuttxspace`** immediately after **each** phase recording finishes, then run [Section 8.3](#83-full-run-batch-reconciliation--tutorial-capture-check) once all seven phases are done.
+Instead of waiting until all six recordings are finished—or stitching them into one file—keep all six recordings (`01-bootstrap.cast` through `06-teach-code.cast`) **separate** so each recording can be played individually in a presentation alongside slides on what that step achieved and reviews of the generated docs and code. Run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0106) in **`~/Documents/GitHub/nuttxspace`** immediately after **each** phase recording finishes, then run [Section 8.3](#83-full-run-batch-reconciliation--tutorial-capture-check) once all six phases are done.
 
 ### 8.1 Reference Inventory: Useful Files Generated & Reviewed Across Phases 0–6
 
@@ -659,32 +651,31 @@ Unlike Run 1 (which typically produces only C/Makefile/Kconfig implementation fi
 
 | Phase / Skill | Source File(s) in `nuttxspace-egm` | Archive Target in `nuttxspace/` | What to Review After This Phase |
 | :--- | :--- | :--- | :--- |
-| **Phase 0** (`/plugin` menu) | `00-plugin.cast` (`~/.gemini/config/plugins/egm/`) | `recordings/final/00-plugin.cast`, `prototypes/00-plugin-cast-player.html`, `docs/egm/reviews/00-plugin-review.md` | Confirm `00-plugin.cast` cleanly shows installing `egm` via `/plugin` and `/egm-*` autocomplete; verify `~/.gemini/config/plugins/egm` is active. |
-| **Phase 1** (`/egm-bootstrap` + `/egm-drift-report`) | `README.md`, `*DRIFT_REPORT.md` / `docs/reports/*DRIFT_REPORT.md` | `docs/egm/README.md`, `docs/egm/reports/*DRIFT_REPORT.md` | Inspect root `README.md` submodule boundaries, drift audit findings, and Phase 1 AGY trace before brainstorming. |
-| **Phase 2** (`/egm-brainstorm`) | `concepts_brief.md` (or `docs/designs/concepts_brief.md`) | `docs/egm/designs/concepts_brief.md` | Inspect 7 Goldfish subagent traces (`README.md` contract read count) and review surfaced `CON-*` hardware/RTOS constraints. |
-| **Phase 3** (`/egm-draft`) | `design_draft.md`, `docs/designs/xiao-rp2350-bargraph.v0-draft.md`, `docs/designs/xiao-rp2350-bargraph.md` | `docs/egm/designs/` | Review the initial 4-section spec and verify upstream NuttX grounding in the Phase 3 trace before adversarial review. |
-| **Phase 4** (`/egm-review` + `/egm-resolve`, Pass 1 & Pass 2) | `docs/reports/pass1/*_report.md`, `docs/reports/pass2/*_report.md`, `goldfish_review_report.md`, `docs/designs/xiao-rp2350-bargraph.md` | `docs/egm/reports/pass1/`, `docs/egm/reports/pass2/`, `docs/egm/designs/xiao-rp2350-bargraph.md` | Audit Pass 1/Pass 2 Goldfish traces (`README.md` reads) and verify all critical traps (`CON-1`..`CON-10`) are resolved in the spec before C implementation. |
-| **Phase 5** (Implementation) | `xiao-rp2350-bargraph/` + generated wiring `.md`/`.svg` (in `xiao-rp2350-bargraph/`, `docs/`, or root) | `docs/egm/xiao-rp2350-bargraph/` (and `docs/egm/` for root/docs wiring files) | Review generated C code, Kconfig, Makefile, host tests, build/test trace steps, and breadboard SVG/Markdown wiring accuracy. |
-| **Phase 6** (`/teach-code`) | `docs/tutorials/*.md` (e.g., `docs/tutorials/xiao-rp2350-bargraph.md`) | `docs/egm/tutorials/` | Review `/teach-code` trace and verify the build-by-hand board + firmware tutorial accurately explains the generated code and hardware safety rules. |
-| **All Phases (`00`–`06`)** (Presentation Reviews & Players) | `recordings/raw/0X-*.cast` + exported traces + generated artifacts | `recordings/final/0X-*.cast`, `prototypes/0X-*-cast-player.html`, `docs/egm/reviews/0X-*-review.md` | Separate per-step recordings, standalone HTML players, and slide-ready achievement + doc/code reviews for every step. |
+| **Phase 0 & 1 (`01-bootstrap.cast`)** (`/plugin` + `/egm-bootstrap` + `/egm-drift-report`) | `~/.gemini/config/plugins/egm/`, `README.md`, `docs/reports/2026-11-16_DRIFT_REPORT.md` | `recordings/final/01-bootstrap.cast`, `prototypes/01-bootstrap-cast-player.html`, `docs/egm/README.md`, `docs/egm/reports/2026-11-16_DRIFT_REPORT.md`, `docs/egm/reviews/01-bootstrap-review.md` | Confirm `01-bootstrap.cast` cleanly captures installing `egm` (`v0.1.1`) via `/plugin`, root `README.md` submodule boundaries, drift audit findings (`OSINIT_HARDWARE`), commit `22e2da7`, and Phase 1 trace `bd1ae202`. |
+| **Phase 2 (`02-brainstorm.cast`)** (`/egm-brainstorm`) | `concepts_brief.md` (or `docs/designs/concepts_brief.md`) | `docs/egm/designs/concepts_brief.md` | Inspect 7 Goldfish subagent traces (`README.md` contract read count) and review surfaced `CON-*` hardware/RTOS constraints. |
+| **Phase 3 (`03-draft.cast`)** (`/egm-draft`) | `design_draft.md`, `docs/designs/xiao-rp2350-bargraph.v0-draft.md`, `docs/designs/xiao-rp2350-bargraph.md` | `docs/egm/designs/` | Review the initial 4-section spec and verify upstream NuttX grounding in the Phase 3 trace before adversarial review. |
+| **Phase 4 (`04-review.cast`)** (`/egm-review` + `/egm-resolve`, Pass 1 & Pass 2) | `docs/reports/pass1/*_report.md`, `docs/reports/pass2/*_report.md`, `goldfish_review_report.md`, `docs/designs/xiao-rp2350-bargraph.md` | `docs/egm/reports/pass1/`, `docs/egm/reports/pass2/`, `docs/egm/designs/xiao-rp2350-bargraph.md` | Audit Pass 1/Pass 2 Goldfish traces (`README.md` reads) and verify all critical traps (`CON-1`..`CON-10`) are resolved in the spec before C implementation. |
+| **Phase 5 (`05-implement.cast`)** (Implementation) | `xiao-rp2350-bargraph/` + generated wiring `.md`/`.svg` (in `xiao-rp2350-bargraph/`, `docs/`, or root) | `docs/egm/xiao-rp2350-bargraph/` (and `docs/egm/` for root/docs wiring files) | Review generated C code, Kconfig, Makefile, host tests, build/test trace steps, and breadboard SVG/Markdown wiring accuracy. |
+| **Phase 6 (`06-teach-code.cast`)** (`/teach-code`) | `docs/tutorials/*.md` (e.g., `docs/tutorials/xiao-rp2350-bargraph.md`) | `docs/egm/tutorials/` | Review `/teach-code` trace and verify the build-by-hand board + firmware tutorial accurately explains the generated code and hardware safety rules. |
+| **All Phases (`01`–`06`)** (Presentation Reviews & Players) | `recordings/raw/0X-*.cast` + exported traces + generated artifacts | `recordings/final/0X-*.cast`, `prototypes/0X-*-cast-player.html`, `docs/egm/reviews/0X-*-review.md` | Separate per-step recordings, standalone HTML players, and slide-ready achievement + doc/code reviews for every step. |
 | **Optional / Brain Artifacts** | `TODO.md`, `~/.gemini/**/brain/<session-id>/*.md` (`implementation_plan.md`, `task.md`, `walkthrough.md`) | `docs/egm/designs/TODO.md`, `docs/egm/brain/` | Inspect any supplemental checklists or Antigravity session brain artifacts produced during the phase. |
 
-### 8.2 Per-Phase Capture, Trace Export, Standalone Player & Review Prompt (Run After Each Phase 00–06)
+### 8.2 Per-Phase Capture, Trace Export, Standalone Player & Review Prompt (Run After Each Phase 01–06)
 
-After finishing and committing a phase recording (`00-plugin.cast` … `06-teach-code.cast`) in `~/Documents/GitHub/nuttxspace-egm`, launch `agy` inside `~/Documents/GitHub/nuttxspace`:
+After finishing and committing a phase recording (`01-bootstrap.cast` … `06-teach-code.cast`) in `~/Documents/GitHub/nuttxspace-egm`, launch `agy` inside `~/Documents/GitHub/nuttxspace`:
 
 ```bash
 cd ~/Documents/GitHub/nuttxspace
 agy
 ```
 
-Paste this prompt (replacing `<0X-phase>` and `<Phase N>` with the phase you just recorded—for example `00-plugin` / `Phase 0`; approve `BypassSandbox` when prompted so `/agy-brain-explorer` can read `~/.gemini/**/brain/`):
+Paste this prompt (replacing `<0X-phase>` and `<Phase N>` with the phase you just recorded—for example `02-brainstorm` / `Phase 2`; approve `BypassSandbox` when prompted so `/agy-brain-explorer` can read `~/.gemini/**/brain/`):
 
 ```text
 /agy-brain-explorer /asciinema /cast-player-html I just finished capturing Run 2 `<0X-phase>.cast` (`<Phase N>`) in `~/Documents/GitHub/nuttxspace-egm`. Keep this recording separate for presentation playback and complete the per-phase capture, player build, and review before moving on to the next phase:
 
 1. **Correlate & Export AGY Traces**:
-   - Discover sessions under `~/.gemini/**/brain/` for project `nuttxspace-egm` matching the timestamp/duration (`trim-cast.py --info`) of `recordings/raw/<0X-phase>.cast` (including any Goldfish subagents spawned in this phase; note `00-plugin.cast` may be a TUI-only `/plugin` interaction with zero model turns).
+   - Discover sessions under `~/.gemini/**/brain/` for project `nuttxspace-egm` matching the timestamp/duration (`trim-cast.py --info`) of `recordings/raw/<0X-phase>.cast` (including any Goldfish subagents spawned in this phase).
    - Flag any aborted or superseded takes from this phase and ask confirmation before moving them to Trash.
    - Export the matched parent + subagent traces incrementally into `docs/prompts-egm/` and refresh `docs/prompts-egm/README.md`.
 2. **Capture This Phase's Generated Docs & Code into `docs/egm/`**:
@@ -702,7 +693,7 @@ Paste this prompt (replacing `<0X-phase>` and `<Phase N>` with the phase you jus
 
 ### 8.3 Full-Run Batch Reconciliation & Tutorial Capture Check
 
-Once all seven phases (`00-plugin.cast` through `06-teach-code.cast`) have passed their per-phase Section 8.2 reviews, verify that all separate final casts, standalone HTML players, presentation reviews, and the generated `/teach-code` tutorial are cleanly captured in `~/Documents/GitHub/nuttxspace`:
+Once all six phases (`01-bootstrap.cast` through `06-teach-code.cast`) have passed their per-phase Section 8.2 reviews, verify that all separate final casts, standalone HTML players, presentation reviews, and the generated `/teach-code` tutorial are cleanly captured in `~/Documents/GitHub/nuttxspace`:
 
 ```bash
 mkdir -p ~/Documents/GitHub/nuttxspace/docs/egm/tutorials
@@ -714,18 +705,18 @@ ls -lh ~/Documents/GitHub/nuttxspace/recordings/final/0*.cast \
        ~/Documents/GitHub/nuttxspace/docs/egm/reviews/
 ```
 
-If any cross-phase reconciliation or telemetry rollup across all 7 casts is needed, run one final `/agy-brain-explorer` pass in `~/Documents/GitHub/nuttxspace`:
+If any cross-phase reconciliation or telemetry rollup across all 6 casts is needed, run one final `/agy-brain-explorer` pass in `~/Documents/GitHub/nuttxspace`:
 
 ```text
-/agy-brain-explorer Reconcile all seven separate Run 2 recordings (`00-plugin.cast` through `06-teach-code.cast`) against `docs/prompts-egm/`, `docs/egm/`, and `docs/egm/reviews/`, confirm zero unexported sessions or missed artifacts (including `docs/egm/tutorials/`), and print the final Run 2 vs. Run 1 (`docs/prompts-vanilla/` + `docs/vanilla/`) telemetry comparison table.
+/agy-brain-explorer Reconcile all six separate Run 2 recordings (`01-bootstrap.cast` through `06-teach-code.cast`) against `docs/prompts-egm/`, `docs/egm/`, and `docs/egm/reviews/`, confirm zero unexported sessions or missed artifacts (including `docs/egm/tutorials/`), and print the final Run 2 vs. Run 1 (`docs/prompts-vanilla/` + `docs/vanilla/`) telemetry comparison table.
 ```
 
 ### Run 2 Post-Processing Checklist
 
-- [ ] All 7 raw EGM `.cast` files (`00-plugin.cast` through `06-teach-code.cast`) remain **separate** and were each sanitized into `recordings/final/00-plugin.cast`–`06-teach-code.cast`, matched to their exact AGY parent/subagent session(s) (`00-plugin.cast` accounted for as `/plugin` setup), and reviewed immediately after recording, with any aborted/superseded takes confirmed and trashed cleanly.
-- [ ] All 7 final casts pass `trim-cast.py --info` with zero trailing exit prompts, and `mark-cast.py --list` shows clean, sequentially numbered stop points on each recording.
-- [ ] All 7 standalone HTML players (`prototypes/00-plugin-cast-player.html` through `prototypes/06-teach-code-cast-player.html`) pass `node --check` and open cleanly via `file://` in a browser.
-- [ ] `docs/egm/reviews/00-plugin-review.md` through `docs/egm/reviews/06-teach-code-review.md` exist with step achievements, trace telemetry, and technical reviews of the generated docs/code for presentation slides.
+- [ ] All 6 raw EGM `.cast` files (`01-bootstrap.cast` through `06-teach-code.cast`) remain **separate** and were each sanitized into `recordings/final/01-bootstrap.cast`–`06-teach-code.cast`, matched to their exact AGY parent/subagent session(s) (`01-bootstrap.cast` verified complete), and reviewed immediately after recording, with any aborted/superseded takes confirmed and trashed cleanly.
+- [ ] All 6 final casts pass `trim-cast.py --info` with zero trailing exit prompts, and `mark-cast.py --list` shows clean, sequentially numbered stop points on each recording (`01-bootstrap.cast` verified: `11` stop points, `0` trailing exit prompts).
+- [ ] All 6 standalone HTML players (`prototypes/01-bootstrap-cast-player.html` through `prototypes/06-teach-code-cast-player.html`) pass `node --check` and open cleanly via `file://` in a browser (`01-bootstrap-cast-player.html` verified).
+- [ ] `docs/egm/reviews/01-bootstrap-review.md` through `docs/egm/reviews/06-teach-code-review.md` exist with step achievements, trace telemetry, and technical reviews of the generated docs/code for presentation slides (`01-bootstrap-review.md` complete).
 - [ ] `docs/prompts-egm/README.md` exists with complete exported traces (including Goldfish subagents and the `/teach-code` session).
 - [ ] `docs/egm/` contains `README.md`, `designs/` (`concepts_brief.md`, `design_draft.md`, `xiao-rp2350-bargraph.v0-draft.md`, `xiao-rp2350-bargraph.md`), `reports/` (`*DRIFT_REPORT.md`, `pass1/`, `pass2/`), `tutorials/` (the captured `/teach-code` tutorial on building both the board and the code by hand), `reviews/`, a clean `xiao-rp2350-bargraph/` source snapshot (with build binaries/objects stripped), and the generated breadboard wiring Markdown and SVG files.
 
@@ -743,7 +734,7 @@ Spawn `egm-codebase-details` and `egm-design` as fresh read-only auditors (with 
 - Vanilla captured source & artifacts: `docs/vanilla/` (and `~/Documents/GitHub/nuttxspace-vanilla`)
 - EGM traces: `docs/prompts-egm/`
 - EGM captured designs, per-pass review reports & source: `docs/egm/` (including `docs/egm/reviews/` and `~/Documents/GitHub/nuttxspace-egm`)
-- Recording durations & stop points: `recordings/final/vanilla-vibe.cast` and `recordings/final/00-plugin.cast` through `recordings/final/06-teach-code.cast`
+- Recording durations & stop points: `recordings/final/vanilla-vibe.cast` and `recordings/final/01-bootstrap.cast` through `recordings/final/06-teach-code.cast`
 
 Grade both implementations against the 10-point hardware/RTOS scorecard in `EXPERIMENT_RUNBOOK.md` (Section 9.2), verify each generated breadboard wiring Markdown file and SVG diagram matches its own firmware pins and hardware safety rules (`3V3` vs. `5V`, avoiding `GPIO 26–29` for LEDs, series resistors), cite exact file paths and line numbers for every defect or pass, and write the filled comparison report (with the telemetry table from Section 9.3) to `docs/reports/vanilla-vs-egm-comparison.md`.
 ```
