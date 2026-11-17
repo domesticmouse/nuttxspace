@@ -29,6 +29,45 @@ G'day everyone, I'm Brett Morgan from Google Cloud. Tonight's talk is about what
 layout: default
 ---
 
+<!-- S01b -->
+<div class="flex items-center gap-3 mb-6">
+  <h2 class="text-2xl font-bold m-0">The Stack: Apache NuttX &amp; Google Antigravity</h2>
+</div>
+
+<div class="grid grid-cols-2 gap-8 items-stretch mt-4">
+  <div class="p-6 rounded-xl bg-gray-900/80 border border-gray-800 flex flex-col items-center justify-between text-center gap-5">
+    <div class="w-full h-52 rounded-lg bg-white/95 flex items-center justify-center p-5">
+      <img src="/images/nuttx-logo.png" alt="Apache NuttX RTOS Logo" class="max-h-full max-w-full object-contain" />
+    </div>
+    <div class="space-y-1.5">
+      <div class="text-sm text-gray-300">Real-Time Operating System</div>
+      <a href="https://nuttx.apache.org/" target="_blank" rel="noopener noreferrer" class="inline-block text-base font-mono text-cyan-300 hover:text-cyan-200 underline underline-offset-4">
+        https://nuttx.apache.org/
+      </a>
+    </div>
+  </div>
+
+  <div class="p-6 rounded-xl bg-gray-900/80 border border-gray-800 flex flex-col items-center justify-between text-center gap-5">
+    <div class="w-full h-52 rounded-lg bg-[#121317] border border-gray-800/80 flex items-center justify-center p-6">
+      <img src="/images/antigravity-lockup.svg" alt="Google Antigravity Logo" class="max-h-24 w-full object-contain" />
+    </div>
+    <div class="space-y-1.5">
+      <div class="text-sm text-gray-300">Agentic Development Platform</div>
+      <a href="https://antigravity.google/" target="_blank" rel="noopener noreferrer" class="inline-block text-base font-mono text-cyan-300 hover:text-cyan-200 underline underline-offset-4">
+        https://antigravity.google/
+      </a>
+    </div>
+  </div>
+</div>
+
+<!--
+Before we touch any hardware, let's call out the two main players in tonight's experiment. On the left is Apache NuttX, a mature, POSIX-compliant real-time operating system you can explore at nuttx.apache.org. On the right is Google Antigravity, the agentic development platform I used to tame it, available at antigravity.google.
+-->
+
+---
+layout: default
+---
+
 <!-- S02a -->
 <div class="flex items-center gap-3 mb-4">
   <h2 class="text-2xl font-bold m-0">How a Solderless Breadboard Works</h2>
