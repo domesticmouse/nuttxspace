@@ -22,9 +22,10 @@
     },
     "bjm-voice": {
       "source": "domesticmouse/skills",
+      "commit": "a6a249ef9aafc49ac54332e366b3079add2977c7",
       "sourceType": "github",
       "skillPath": "skills/bjm-voice/SKILL.md",
-      "computedHash": "3d92c0a0ece351b393f218ff347d40b97a8f01c704399071980119a020caedaa"
+      "computedHash": "b2e273fb70c037ea7c17f2f9c1b9530effba5f37108233b800d0b5e3584d8ac3"
     },
     "cast-player-html": {
       "source": "domesticmouse/skills",
@@ -45,6 +46,13 @@
       "sourceType": "github",
       "skillPath": "skills/engineering/codebase-design/SKILL.md",
       "computedHash": "d40f025dc1b0f2020663260f38f2bcb8d6ed3523afb11e5fda624b01238677e8"
+    },
+    "crop-image": {
+      "source": "domesticmouse/skills",
+      "commit": "a6a249ef9aafc49ac54332e366b3079add2977c7",
+      "sourceType": "github",
+      "skillPath": "skills/crop-image/SKILL.md",
+      "computedHash": "9a7751b6e32ebb4374156b01b0f5414c57551e3970ef5a39224f1ed112ab43b6"
     },
     "diagnosing-bugs": {
       "source": "mattpocock/skills",
@@ -143,6 +151,13 @@
       "sourceType": "github",
       "skillPath": "skills/engineering/setup-matt-pocock-skills/SKILL.md",
       "computedHash": "9659e7025d4cf1c0a0b40ddff32ed4b8debb87a4b20d7a52ff89c506a638df69"
+    },
+    "slidev-deck": {
+      "source": "domesticmouse/skills",
+      "commit": "a6a249ef9aafc49ac54332e366b3079add2977c7",
+      "sourceType": "github",
+      "skillPath": "skills/slidev-deck/SKILL.md",
+      "computedHash": "45153d749cf9a2550796bdb8d8cbd13a1dcdd187a2c74ce3173eacc140478720"
     },
     "tdd": {
       "source": "mattpocock/skills",
