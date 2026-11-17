@@ -82,7 +82,7 @@ layout: default
     </p>
   </div>
 
-  <div class="p-5 rounded-xl bg-gray-900/80 border border-gray-800 space-y-2">
+  <div v-click class="p-5 rounded-xl bg-gray-900/80 border border-gray-800 space-y-2">
     <div class="text-xs font-mono text-emerald-400 uppercase tracking-wide">C Source &amp; Header Footprint</div>
     <div class="text-2xl font-extrabold text-white font-mono">12,139 <code class="text-emerald-300">.c</code> &amp; 8,801 <code class="text-emerald-300">.h</code> Files</div>
     <p class="text-xs text-gray-300 m-0 leading-relaxed">
