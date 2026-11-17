@@ -1,0 +1,17 @@
+# Generated HTML & static site outputs
+_site/
+index.html
+lessons/*.html
+reference/*.html
+
+# Python virtual environment & bytecode
+.venv/
+__pycache__/
+*.pyc
+
+# Companion app build outputs
+apps/*/build/
+apps/*/target/
+apps/*/*.o
+apps/*/bargraph_test
+apps/*/bargraph_lesson

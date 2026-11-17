@@ -1,0 +1,556 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 1120" width="1160" height="1120" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace">
+  <defs>
+    <linearGradient id="boardBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#eef2f6"/>
+    </linearGradient>
+    <linearGradient id="xiaoPcb" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="potBody" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect x="0" y="0" width="1160" height="1120" fill="#0f172a"/>
+
+  <!-- Header Banner -->
+  <rect x="24" y="20" width="1112" height="76" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+  <text x="48" y="52" fill="#f8fafc" font-size="20" font-weight="bold">Seeed Studio XIAO RP2350 — 6-Segment Hardware PWM LED Bar Graph</text>
+  <text x="48" y="76" fill="#94a3b8" font-size="13">400-Tie-Point Solderless Breadboard Layout  |  ADC0: D0/A0 (GPIO26)  |  PWM LEDs: D1–D6 (GPIO27, 28, 5, 6, 7, 0)</text>
+
+  <!-- Main Breadboard Body -->
+  <rect x="60" y="116" width="680" height="964" rx="14" fill="url(#boardBg)" stroke="#cbd5e1" stroke-width="3" filter="url(#shadow)"/>
+
+  <!-- Center Ravine / Trench -->
+  <rect x="382" y="116" width="36" height="964" fill="#cbd5e1"/>
+  <line x1="400" y1="116" x2="400" y2="1080" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6,6"/>
+
+  <!-- Left Power Rail Guide Lines (+3.3V Red, GND Blue) -->
+  <line x1="88" y1="175" x2="88" y2="1045" stroke="#ef4444" stroke-width="2.5"/>
+  <line x1="128" y1="175" x2="128" y2="1045" stroke="#2563eb" stroke-width="2.5"/>
+  <text x="98" y="156" fill="#dc2626" font-size="13" font-weight="bold" text-anchor="middle">+3V3</text>
+  <text x="118" y="156" fill="#1d4ed8" font-size="13" font-weight="bold" text-anchor="middle">GND</text>
+  <line x1="142" y1="116" x2="142" y2="1080" stroke="#cbd5e1" stroke-width="2"/>
+
+  <!-- Right Power Rail Guide Lines (+3.3V Red, GND Blue) -->
+  <line x1="658" y1="116" x2="658" y2="1080" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="672" y1="175" x2="672" y2="1045" stroke="#ef4444" stroke-width="2.5"/>
+  <line x1="712" y1="175" x2="712" y2="1045" stroke="#2563eb" stroke-width="2.5"/>
+  <text x="682" y="156" fill="#dc2626" font-size="13" font-weight="bold" text-anchor="middle">+3V3</text>
+  <text x="702" y="156" fill="#1d4ed8" font-size="13" font-weight="bold" text-anchor="middle">GND</text>
+
+  <!-- Column Headers (A..E and F..J) -->
+  <!-- Left Columns: A=200, B=235, C=270, D=305, E=340 -->
+  <!-- Right Columns: F=460, G=495, H=530, I=565, J=600 -->
+  <g fill="#475569" font-size="14" font-weight="bold" text-anchor="middle">
+    <text x="200" y="156">A</text>
+    <text x="235" y="156">B</text>
+    <text x="270" y="156">C</text>
+    <text x="305" y="156">D</text>
+    <text x="340" y="156">E</text>
+    <text x="460" y="156">F</text>
+    <text x="495" y="156">G</text>
+    <text x="530" y="156">H</text>
+    <text x="565" y="156">I</text>
+    <text x="600" y="156">J</text>
+  </g>
+
+  <!-- Breadboard Row Strips, Numbers, and Tie-Point Holes (Rows 1..21) -->
+  <!-- Row Y formula: Y = 190 + (row - 1) * 40 -->
+  <g id="breadboard-grid">
+    <!-- Row conductive backing strips -->
+    <g stroke="#e2e8f0" stroke-width="14" stroke-linecap="round">
+      <line x1="200" y1="190" x2="340" y2="190"/><line x1="460" y1="190" x2="600" y2="190"/>
+      <line x1="200" y1="230" x2="340" y2="230"/><line x1="460" y1="230" x2="600" y2="230"/>
+      <line x1="200" y1="270" x2="340" y2="270"/><line x1="460" y1="270" x2="600" y2="270"/>
+      <line x1="200" y1="310" x2="340" y2="310"/><line x1="460" y1="310" x2="600" y2="310"/>
+      <line x1="200" y1="350" x2="340" y2="350"/><line x1="460" y1="350" x2="600" y2="350"/>
+      <line x1="200" y1="390" x2="340" y2="390"/><line x1="460" y1="390" x2="600" y2="390"/>
+      <line x1="200" y1="430" x2="340" y2="430"/><line x1="460" y1="430" x2="600" y2="430"/>
+      <line x1="200" y1="470" x2="340" y2="470"/><line x1="460" y1="470" x2="600" y2="470"/>
+      <line x1="200" y1="510" x2="340" y2="510"/><line x1="460" y1="510" x2="600" y2="510"/>
+      <line x1="200" y1="550" x2="340" y2="550"/><line x1="460" y1="550" x2="600" y2="550"/>
+      <line x1="200" y1="590" x2="340" y2="590"/><line x1="460" y1="590" x2="600" y2="590"/>
+      <line x1="200" y1="630" x2="340" y2="630"/><line x1="460" y1="630" x2="600" y2="630"/>
+      <line x1="200" y1="670" x2="340" y2="670"/><line x1="460" y1="670" x2="600" y2="670"/>
+      <line x1="200" y1="710" x2="340" y2="710"/><line x1="460" y1="710" x2="600" y2="710"/>
+      <line x1="200" y1="750" x2="340" y2="750"/><line x1="460" y1="750" x2="600" y2="750"/>
+      <line x1="200" y1="790" x2="340" y2="790"/><line x1="460" y1="790" x2="600" y2="790"/>
+      <line x1="200" y1="830" x2="340" y2="830"/><line x1="460" y1="830" x2="600" y2="830"/>
+      <line x1="200" y1="870" x2="340" y2="870"/><line x1="460" y1="870" x2="600" y2="870"/>
+      <line x1="200" y1="910" x2="340" y2="910"/><line x1="460" y1="910" x2="600" y2="910"/>
+      <line x1="200" y1="950" x2="340" y2="950"/><line x1="460" y1="950" x2="600" y2="950"/>
+      <line x1="200" y1="990" x2="340" y2="990"/><line x1="460" y1="990" x2="600" y2="990"/>
+    </g>
+
+    <!-- Row Numbers -->
+    <g fill="#64748b" font-size="12" font-weight="bold" text-anchor="middle">
+      <text x="166" y="194">1</text><text x="634" y="194">1</text>
+      <text x="166" y="234">2</text><text x="634" y="234">2</text>
+      <text x="166" y="274">3</text><text x="634" y="274">3</text>
+      <text x="166" y="314">4</text><text x="634" y="314">4</text>
+      <text x="166" y="354">5</text><text x="634" y="354">5</text>
+      <text x="166" y="394">6</text><text x="634" y="394">6</text>
+      <text x="166" y="434">7</text><text x="634" y="434">7</text>
+      <text x="166" y="474">8</text><text x="634" y="474">8</text>
+      <text x="166" y="514">9</text><text x="634" y="514">9</text>
+      <text x="166" y="554">10</text><text x="634" y="554">10</text>
+      <text x="166" y="594">11</text><text x="634" y="594">11</text>
+      <text x="166" y="634">12</text><text x="634" y="634">12</text>
+      <text x="166" y="674">13</text><text x="634" y="674">13</text>
+      <text x="166" y="714">14</text><text x="634" y="714">14</text>
+      <text x="166" y="754">15</text><text x="634" y="754">15</text>
+      <text x="166" y="794">16</text><text x="634" y="794">16</text>
+      <text x="166" y="834">17</text><text x="634" y="834">17</text>
+      <text x="166" y="874">18</text><text x="634" y="874">18</text>
+      <text x="166" y="914">19</text><text x="634" y="914">19</text>
+      <text x="166" y="954">20</text><text x="634" y="954">20</text>
+      <text x="166" y="994">21</text><text x="634" y="994">21</text>
+    </g>
+
+    <!-- Tie-Point Holes (Representative Grid Dots) -->
+    <g fill="#475569">
+      <!-- Power Rail Holes: Left (+3V3=98, GND=118), Right (+3V3=682, GND=702) -->
+      <!-- Terminal Holes: A=200, B=235, C=270, D=305, E=340 | F=460, G=495, H=530, I=565, J=600 -->
+      <!-- Row 1 (Y=190) -->
+      <circle cx="98" cy="190" r="4"/><circle cx="118" cy="190" r="4"/>
+      <circle cx="200" cy="190" r="4"/><circle cx="235" cy="190" r="4"/><circle cx="270" cy="190" r="4"/><circle cx="305" cy="190" r="4"/><circle cx="340" cy="190" r="4"/>
+      <circle cx="460" cy="190" r="4"/><circle cx="495" cy="190" r="4"/><circle cx="530" cy="190" r="4"/><circle cx="565" cy="190" r="4"/><circle cx="600" cy="190" r="4"/>
+      <circle cx="682" cy="190" r="4"/><circle cx="702" cy="190" r="4"/>
+      <!-- Row 2 (Y=230) -->
+      <circle cx="98" cy="230" r="4"/><circle cx="118" cy="230" r="4"/>
+      <circle cx="200" cy="230" r="4"/><circle cx="235" cy="230" r="4"/><circle cx="270" cy="230" r="4"/><circle cx="305" cy="230" r="4"/><circle cx="340" cy="230" r="4"/>
+      <circle cx="460" cy="230" r="4"/><circle cx="495" cy="230" r="4"/><circle cx="530" cy="230" r="4"/><circle cx="565" cy="230" r="4"/><circle cx="600" cy="230" r="4"/>
+      <circle cx="682" cy="230" r="4"/><circle cx="702" cy="230" r="4"/>
+      <!-- Row 3 (Y=270) -->
+      <circle cx="98" cy="270" r="4"/><circle cx="118" cy="270" r="4"/>
+      <circle cx="200" cy="270" r="4"/><circle cx="235" cy="270" r="4"/><circle cx="270" cy="270" r="4"/><circle cx="305" cy="270" r="4"/><circle cx="340" cy="270" r="4"/>
+      <circle cx="460" cy="270" r="4"/><circle cx="495" cy="270" r="4"/><circle cx="530" cy="270" r="4"/><circle cx="565" cy="270" r="4"/><circle cx="600" cy="270" r="4"/>
+      <circle cx="682" cy="270" r="4"/><circle cx="702" cy="270" r="4"/>
+      <!-- Row 4 (Y=310) -->
+      <circle cx="98" cy="310" r="4"/><circle cx="118" cy="310" r="4"/>
+      <circle cx="200" cy="310" r="4"/><circle cx="235" cy="310" r="4"/><circle cx="270" cy="310" r="4"/><circle cx="305" cy="310" r="4"/><circle cx="340" cy="310" r="4"/>
+      <circle cx="460" cy="310" r="4"/><circle cx="495" cy="310" r="4"/><circle cx="530" cy="310" r="4"/><circle cx="565" cy="310" r="4"/><circle cx="600" cy="310" r="4"/>
+      <circle cx="682" cy="310" r="4"/><circle cx="702" cy="310" r="4"/>
+      <!-- Row 5 (Y=350) -->
+      <circle cx="98" cy="350" r="4"/><circle cx="118" cy="350" r="4"/>
+      <circle cx="200" cy="350" r="4"/><circle cx="235" cy="350" r="4"/><circle cx="270" cy="350" r="4"/><circle cx="305" cy="350" r="4"/><circle cx="340" cy="350" r="4"/>
+      <circle cx="460" cy="350" r="4"/><circle cx="495" cy="350" r="4"/><circle cx="530" cy="350" r="4"/><circle cx="565" cy="350" r="4"/><circle cx="600" cy="350" r="4"/>
+      <circle cx="682" cy="350" r="4"/><circle cx="702" cy="350" r="4"/>
+      <!-- Row 6 (Y=390) -->
+      <circle cx="98" cy="390" r="4"/><circle cx="118" cy="390" r="4"/>
+      <circle cx="200" cy="390" r="4"/><circle cx="235" cy="390" r="4"/><circle cx="270" cy="390" r="4"/><circle cx="305" cy="390" r="4"/><circle cx="340" cy="390" r="4"/>
+      <circle cx="460" cy="390" r="4"/><circle cx="495" cy="390" r="4"/><circle cx="530" cy="390" r="4"/><circle cx="565" cy="390" r="4"/><circle cx="600" cy="390" r="4"/>
+      <circle cx="682" cy="390" r="4"/><circle cx="702" cy="390" r="4"/>
+      <!-- Row 7 (Y=430) -->
+      <circle cx="98" cy="430" r="4"/><circle cx="118" cy="430" r="4"/>
+      <circle cx="200" cy="430" r="4"/><circle cx="235" cy="430" r="4"/><circle cx="270" cy="430" r="4"/><circle cx="305" cy="430" r="4"/><circle cx="340" cy="430" r="4"/>
+      <circle cx="460" cy="430" r="4"/><circle cx="495" cy="430" r="4"/><circle cx="530" cy="430" r="4"/><circle cx="565" cy="430" r="4"/><circle cx="600" cy="430" r="4"/>
+      <circle cx="682" cy="430" r="4"/><circle cx="702" cy="430" r="4"/>
+      <!-- Row 8 (Y=470) -->
+      <circle cx="98" cy="470" r="4"/><circle cx="118" cy="470" r="4"/>
+      <circle cx="200" cy="470" r="4"/><circle cx="235" cy="470" r="4"/><circle cx="270" cy="470" r="4"/><circle cx="305" cy="470" r="4"/><circle cx="340" cy="470" r="4"/>
+      <circle cx="460" cy="470" r="4"/><circle cx="495" cy="470" r="4"/><circle cx="530" cy="470" r="4"/><circle cx="565" cy="470" r="4"/><circle cx="600" cy="470" r="4"/>
+      <circle cx="682" cy="470" r="4"/><circle cx="702" cy="470" r="4"/>
+      <!-- Row 9 (Y=510) -->
+      <circle cx="98" cy="510" r="4"/><circle cx="118" cy="510" r="4"/>
+      <circle cx="200" cy="510" r="4"/><circle cx="235" cy="510" r="4"/><circle cx="270" cy="510" r="4"/><circle cx="305" cy="510" r="4"/><circle cx="340" cy="510" r="4"/>
+      <circle cx="460" cy="510" r="4"/><circle cx="495" cy="510" r="4"/><circle cx="530" cy="510" r="4"/><circle cx="565" cy="510" r="4"/><circle cx="600" cy="510" r="4"/>
+      <circle cx="682" cy="510" r="4"/><circle cx="702" cy="510" r="4"/>
+      <!-- Row 10 (Y=550) -->
+      <circle cx="98" cy="550" r="4"/><circle cx="118" cy="550" r="4"/>
+      <circle cx="200" cy="550" r="4"/><circle cx="235" cy="550" r="4"/><circle cx="270" cy="550" r="4"/><circle cx="305" cy="550" r="4"/><circle cx="340" cy="550" r="4"/>
+      <circle cx="460" cy="550" r="4"/><circle cx="495" cy="550" r="4"/><circle cx="530" cy="550" r="4"/><circle cx="565" cy="550" r="4"/><circle cx="600" cy="550" r="4"/>
+      <circle cx="682" cy="550" r="4"/><circle cx="702" cy="550" r="4"/>
+      <!-- Row 11 (Y=590) -->
+      <circle cx="98" cy="590" r="4"/><circle cx="118" cy="590" r="4"/>
+      <circle cx="200" cy="590" r="4"/><circle cx="235" cy="590" r="4"/><circle cx="270" cy="590" r="4"/><circle cx="305" cy="590" r="4"/><circle cx="340" cy="590" r="4"/>
+      <circle cx="460" cy="590" r="4"/><circle cx="495" cy="590" r="4"/><circle cx="530" cy="590" r="4"/><circle cx="565" cy="590" r="4"/><circle cx="600" cy="590" r="4"/>
+      <circle cx="682" cy="590" r="4"/><circle cx="702" cy="590" r="4"/>
+      <!-- Row 12 (Y=630) -->
+      <circle cx="98" cy="630" r="4"/><circle cx="118" cy="630" r="4"/>
+      <circle cx="200" cy="630" r="4"/><circle cx="235" cy="630" r="4"/><circle cx="270" cy="630" r="4"/><circle cx="305" cy="630" r="4"/><circle cx="340" cy="630" r="4"/>
+      <circle cx="460" cy="630" r="4"/><circle cx="495" cy="630" r="4"/><circle cx="530" cy="630" r="4"/><circle cx="565" cy="630" r="4"/><circle cx="600" cy="630" r="4"/>
+      <circle cx="682" cy="630" r="4"/><circle cx="702" cy="630" r="4"/>
+      <!-- Row 13 (Y=670) -->
+      <circle cx="98" cy="670" r="4"/><circle cx="118" cy="670" r="4"/>
+      <circle cx="200" cy="670" r="4"/><circle cx="235" cy="670" r="4"/><circle cx="270" cy="670" r="4"/><circle cx="305" cy="670" r="4"/><circle cx="340" cy="670" r="4"/>
+      <circle cx="460" cy="670" r="4"/><circle cx="495" cy="670" r="4"/><circle cx="530" cy="670" r="4"/><circle cx="565" cy="670" r="4"/><circle cx="600" cy="670" r="4"/>
+      <circle cx="682" cy="670" r="4"/><circle cx="702" cy="670" r="4"/>
+      <!-- Row 14 (Y=710) -->
+      <circle cx="98" cy="710" r="4"/><circle cx="118" cy="710" r="4"/>
+      <circle cx="200" cy="710" r="4"/><circle cx="235" cy="710" r="4"/><circle cx="270" cy="710" r="4"/><circle cx="305" cy="710" r="4"/><circle cx="340" cy="710" r="4"/>
+      <circle cx="460" cy="710" r="4"/><circle cx="495" cy="710" r="4"/><circle cx="530" cy="710" r="4"/><circle cx="565" cy="710" r="4"/><circle cx="600" cy="710" r="4"/>
+      <circle cx="682" cy="710" r="4"/><circle cx="702" cy="710" r="4"/>
+      <!-- Row 15 (Y=750) -->
+      <circle cx="98" cy="750" r="4"/><circle cx="118" cy="750" r="4"/>
+      <circle cx="200" cy="750" r="4"/><circle cx="235" cy="750" r="4"/><circle cx="270" cy="750" r="4"/><circle cx="305" cy="750" r="4"/><circle cx="340" cy="750" r="4"/>
+      <circle cx="460" cy="750" r="4"/><circle cx="495" cy="750" r="4"/><circle cx="530" cy="750" r="4"/><circle cx="565" cy="750" r="4"/><circle cx="600" cy="750" r="4"/>
+      <circle cx="682" cy="750" r="4"/><circle cx="702" cy="750" r="4"/>
+      <!-- Row 16 (Y=790) -->
+      <circle cx="98" cy="790" r="4"/><circle cx="118" cy="790" r="4"/>
+      <circle cx="200" cy="790" r="4"/><circle cx="235" cy="790" r="4"/><circle cx="270" cy="790" r="4"/><circle cx="305" cy="790" r="4"/><circle cx="340" cy="790" r="4"/>
+      <circle cx="460" cy="790" r="4"/><circle cx="495" cy="790" r="4"/><circle cx="530" cy="790" r="4"/><circle cx="565" cy="790" r="4"/><circle cx="600" cy="790" r="4"/>
+      <circle cx="682" cy="790" r="4"/><circle cx="702" cy="790" r="4"/>
+      <!-- Row 17 (Y=830) -->
+      <circle cx="98" cy="830" r="4"/><circle cx="118" cy="830" r="4"/>
+      <circle cx="200" cy="830" r="4"/><circle cx="235" cy="830" r="4"/><circle cx="270" cy="830" r="4"/><circle cx="305" cy="830" r="4"/><circle cx="340" cy="830" r="4"/>
+      <circle cx="460" cy="830" r="4"/><circle cx="495" cy="830" r="4"/><circle cx="530" cy="830" r="4"/><circle cx="565" cy="830" r="4"/><circle cx="600" cy="830" r="4"/>
+      <circle cx="682" cy="830" r="4"/><circle cx="702" cy="830" r="4"/>
+      <!-- Row 18 (Y=870) -->
+      <circle cx="98" cy="870" r="4"/><circle cx="118" cy="870" r="4"/>
+      <circle cx="200" cy="870" r="4"/><circle cx="235" cy="870" r="4"/><circle cx="270" cy="870" r="4"/><circle cx="305" cy="870" r="4"/><circle cx="340" cy="870" r="4"/>
+      <circle cx="460" cy="870" r="4"/><circle cx="495" cy="870" r="4"/><circle cx="530" cy="870" r="4"/><circle cx="565" cy="870" r="4"/><circle cx="600" cy="870" r="4"/>
+      <circle cx="682" cy="870" r="4"/><circle cx="702" cy="870" r="4"/>
+      <!-- Row 19 (Y=910) -->
+      <circle cx="98" cy="910" r="4"/><circle cx="118" cy="910" r="4"/>
+      <circle cx="200" cy="910" r="4"/><circle cx="235" cy="910" r="4"/><circle cx="270" cy="910" r="4"/><circle cx="305" cy="910" r="4"/><circle cx="340" cy="910" r="4"/>
+      <circle cx="460" cy="910" r="4"/><circle cx="495" cy="910" r="4"/><circle cx="530" cy="910" r="4"/><circle cx="565" cy="910" r="4"/><circle cx="600" cy="910" r="4"/>
+      <circle cx="682" cy="910" r="4"/><circle cx="702" cy="910" r="4"/>
+      <!-- Row 20 (Y=950) -->
+      <circle cx="98" cy="950" r="4"/><circle cx="118" cy="950" r="4"/>
+      <circle cx="200" cy="950" r="4"/><circle cx="235" cy="950" r="4"/><circle cx="270" cy="950" r="4"/><circle cx="305" cy="950" r="4"/><circle cx="340" cy="950" r="4"/>
+      <circle cx="460" cy="950" r="4"/><circle cx="495" cy="950" r="4"/><circle cx="530" cy="950" r="4"/><circle cx="565" cy="950" r="4"/><circle cx="600" cy="950" r="4"/>
+      <circle cx="682" cy="950" r="4"/><circle cx="702" cy="950" r="4"/>
+      <!-- Row 21 (Y=990) -->
+      <circle cx="98" cy="990" r="4"/><circle cx="118" cy="990" r="4"/>
+      <circle cx="200" cy="990" r="4"/><circle cx="235" cy="990" r="4"/><circle cx="270" cy="990" r="4"/><circle cx="305" cy="990" r="4"/><circle cx="340" cy="990" r="4"/>
+      <circle cx="460" cy="990" r="4"/><circle cx="495" cy="990" r="4"/><circle cx="530" cy="990" r="4"/><circle cx="565" cy="990" r="4"/><circle cx="600" cy="990" r="4"/>
+      <circle cx="682" cy="990" r="4"/><circle cx="702" cy="990" r="4"/>
+    </g>
+  </g>
+
+  <!-- ====================================================================== -->
+  <!-- COMPONENT 1: 10 kOhm Linear Potentiometer (B10K) on Rows 1..3 (Col E)  -->
+  <!-- ====================================================================== -->
+  <g id="potentiometer" filter="url(#shadow)">
+    <!-- Leads into 1E (340,190), 2E (340,230), 3E (340,270) -->
+    <line x1="340" y1="190" x2="366" y2="190" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+    <line x1="340" y1="230" x2="366" y2="230" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+    <line x1="340" y1="270" x2="366" y2="270" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="340" cy="190" r="5" fill="#dc2626"/>
+    <circle cx="340" cy="230" r="5" fill="#f59e0b"/>
+    <circle cx="340" cy="270" r="5" fill="#1d4ed8"/>
+
+    <!-- Potentiometer Body -->
+    <rect x="358" y="172" width="84" height="116" rx="10" fill="url(#potBody)" stroke="#1e3a8a" stroke-width="2"/>
+    <circle cx="400" cy="230" r="32" fill="#e2e8f0" stroke="#475569" stroke-width="2.5"/>
+    <circle cx="400" cy="230" r="22" fill="#94a3b8" stroke="#334155" stroke-width="1.5"/>
+    <!-- Wiper indicator line -->
+    <line x1="400" y1="230" x2="416" y2="214" stroke="#0f172a" stroke-width="4" stroke-linecap="round"/>
+    <text x="400" y="164" fill="#1e293b" font-size="11" font-weight="bold" text-anchor="middle">B10K POT (10kΩ)</text>
+    <text x="466" y="194" fill="#dc2626" font-size="11" font-weight="bold">Lug 1 (CW: 3V3)</text>
+    <text x="466" y="234" fill="#d97706" font-size="11" font-weight="bold">Lug 2 (Wiper)</text>
+    <text x="466" y="274" fill="#1d4ed8" font-size="11" font-weight="bold">Lug 3 (CCW: GND)</text>
+  </g>
+
+  <!-- Potentiometer Jumpers -->
+  <!-- Row 1A (200,190) -> Left +3V3 Rail (98,190) -->
+  <path d="M 200 190 L 98 190" stroke="#ef4444" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <circle cx="200" cy="190" r="5" fill="#b91c1c"/>
+  <circle cx="98" cy="190" r="5" fill="#b91c1c"/>
+
+  <!-- Row 3A (200,270) -> Left GND Rail (118,270) -->
+  <path d="M 200 270 L 118 270" stroke="#2563eb" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <circle cx="200" cy="270" r="5" fill="#1e40af"/>
+  <circle cx="118" cy="270" r="5" fill="#1e40af"/>
+
+  <!-- Wiper Jumper: Row 2B (235,230) -> Row 5A (200,350) (D0/A0, GPIO26) -->
+  <path d="M 235 230 C 175 230, 175 350, 200 350" stroke="#f59e0b" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <circle cx="235" cy="230" r="5" fill="#b45309"/>
+  <circle cx="200" cy="350" r="5" fill="#b45309"/>
+
+  <!-- Optional 100 nF Wiper Filter Capacitor: Row 5B (235,350) -> Left GND Rail (118,350) -->
+  <path d="M 235 350 L 118 350" stroke="#64748b" stroke-width="3" stroke-dasharray="4,3" fill="none"/>
+  <rect x="162" y="341" width="28" height="18" rx="6" fill="#f59e0b" stroke="#92400e" stroke-width="1.5"/>
+  <text x="176" y="353" fill="#0f172a" font-size="9" font-weight="bold" text-anchor="middle">100n</text>
+  <circle cx="235" cy="350" r="4" fill="#475569"/>
+  <circle cx="118" cy="350" r="4" fill="#1e40af"/>
+
+  <!-- ====================================================================== -->
+  <!-- COMPONENT 2: Seeed Studio XIAO RP2350 Module (Rows 5..11, Cols E & F)  -->
+  <!-- ====================================================================== -->
+  <g id="xiao-rp2350" filter="url(#shadow)">
+    <!-- PCB Footprint straddling center trench from Row 5 (Y=350) to Row 11 (Y=590) -->
+    <rect x="326" y="322" width="148" height="288" rx="10" fill="url(#xiaoPcb)" stroke="#475569" stroke-width="2"/>
+    <!-- USB-C Connector at top of XIAO -->
+    <rect x="372" y="306" width="56" height="26" rx="5" fill="#cbd5e1" stroke="#64748b" stroke-width="2"/>
+    <text x="400" y="323" fill="#0f172a" font-size="10" font-weight="bold" text-anchor="middle">USB-C</text>
+
+    <!-- RP2350 SoC package -->
+    <rect x="374" y="438" width="52" height="52" rx="4" fill="#090d16" stroke="#334155" stroke-width="1.5"/>
+    <text x="400" y="462" fill="#e2e8f0" font-size="9" font-weight="bold" text-anchor="middle">RP2350</text>
+    <text x="400" y="476" fill="#38bdf8" font-size="8" text-anchor="middle">XIAO</text>
+
+    <!-- Left Header Pins (Col E = 340, Rows 5..11) -->
+    <g fill="#fbbf24" stroke="#78350f" stroke-width="1.5">
+      <circle cx="340" cy="350" r="6"/>
+      <circle cx="340" cy="390" r="6"/>
+      <circle cx="340" cy="430" r="6"/>
+      <circle cx="340" cy="470" r="6"/>
+      <circle cx="340" cy="510" r="6"/>
+      <circle cx="340" cy="550" r="6"/>
+      <circle cx="340" cy="590" r="6"/>
+    </g>
+
+    <!-- Right Header Pins (Col F = 460, Rows 5..11) -->
+    <g fill="#fbbf24" stroke="#78350f" stroke-width="1.5">
+      <circle cx="460" cy="350" r="6"/>
+      <circle cx="460" cy="390" r="6"/>
+      <circle cx="460" cy="430" r="6"/>
+      <circle cx="460" cy="470" r="6"/>
+      <circle cx="460" cy="510" r="6"/>
+      <circle cx="460" cy="550" r="6"/>
+      <circle cx="460" cy="590" r="6"/>
+    </g>
+
+    <!-- Pin Labels on XIAO PCB -->
+    <g fill="#f8fafc" font-size="10" font-weight="bold">
+      <!-- Left side (D0..D6) -->
+      <text x="352" y="354">D0/A0</text>
+      <text x="352" y="394">D1/A1</text>
+      <text x="352" y="434">D2/A2</text>
+      <text x="352" y="474">D3</text>
+      <text x="352" y="514">D4</text>
+      <text x="352" y="554">D5</text>
+      <text x="352" y="594">D6</text>
+      <!-- Right side (5V, GND, 3V3, D10..D7) -->
+      <text x="448" y="354" text-anchor="end" fill="#94a3b8">5V</text>
+      <text x="448" y="394" text-anchor="end" fill="#60a5fa">GND</text>
+      <text x="448" y="434" text-anchor="end" fill="#f87171">3V3</text>
+      <text x="448" y="474" text-anchor="end" fill="#94a3b8">D10</text>
+      <text x="448" y="514" text-anchor="end" fill="#94a3b8">D9</text>
+      <text x="448" y="554" text-anchor="end" fill="#94a3b8">D8</text>
+      <text x="448" y="594" text-anchor="end" fill="#94a3b8">D7</text>
+    </g>
+  </g>
+
+  <!-- XIAO Power & Ground Jumpers to Rails -->
+  <!-- Row 6J (600,390) GND -> Right GND Rail (702,390) -->
+  <path d="M 600 390 L 702 390" stroke="#2563eb" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <circle cx="600" cy="390" r="5" fill="#1e40af"/>
+  <circle cx="702" cy="390" r="5" fill="#1e40af"/>
+
+  <!-- Row 7J (600,430) 3V3 -> Right +3V3 Rail (682,430) -->
+  <path d="M 600 430 L 682 430" stroke="#ef4444" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <circle cx="600" cy="430" r="5" fill="#b91c1c"/>
+  <circle cx="682" cy="430" r="5" fill="#b91c1c"/>
+
+  <!-- Cross-Rail Distribution Jumpers (Bottom of Breadboard: Row 21) -->
+  <!-- Right +3V3 Rail (682,990) -> Left +3V3 Rail (98,990) -->
+  <path d="M 682 990 C 682 1035, 98 1035, 98 990" stroke="#ef4444" stroke-width="4" stroke-linecap="round" fill="none"/>
+  <circle cx="682" cy="990" r="5" fill="#b91c1c"/>
+  <circle cx="98" cy="990" r="5" fill="#b91c1c"/>
+
+  <!-- Right GND Rail (702,950) -> Left GND Rail (118,950) -->
+  <path d="M 702 950 C 702 1060, 118 1060, 118 950" stroke="#2563eb" stroke-width="4" stroke-linecap="round" fill="none"/>
+  <circle cx="702" cy="950" r="5" fill="#1e40af"/>
+  <circle cx="118" cy="950" r="5" fill="#1e40af"/>
+
+  <!-- ====================================================================== -->
+  <!-- COMPONENT 3: Signal Jumpers from XIAO D1..D6 (Rows 6..11) to Rows 14..19-->
+  <!-- ====================================================================== -->
+  <!-- D1 (Row 6A: 200,390) -> Row 14A (200,710) [PWM5B / GPIO27 / LED1] -->
+  <path d="M 200 390 C 148 390, 148 710, 200 710" stroke="#22c55e" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+  <circle cx="200" cy="390" r="5" fill="#15803d"/><circle cx="200" cy="710" r="5" fill="#15803d"/>
+
+  <!-- D2 (Row 7B: 235,430) -> Row 15B (235,750) [PWM6A / GPIO28 / LED2] -->
+  <path d="M 235 430 C 156 430, 156 750, 235 750" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+  <circle cx="235" cy="430" r="5" fill="#047857"/><circle cx="235" cy="750" r="5" fill="#047857"/>
+
+  <!-- D3 (Row 8C: 270,470) -> Row 16C (270,790) [PWM2B / GPIO5 / LED3] -->
+  <path d="M 270 470 C 164 470, 164 790, 270 790" stroke="#06b6d4" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+  <circle cx="270" cy="470" r="5" fill="#0e7490"/><circle cx="270" cy="790" r="5" fill="#0e7490"/>
+
+  <!-- D4 (Row 9D: 305,510) -> Row 17D (305,830) [PWM3A / GPIO6 / LED4] -->
+  <path d="M 305 510 C 172 510, 172 830, 305 830" stroke="#eab308" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+  <circle cx="305" cy="510" r="5" fill="#a16207"/><circle cx="305" cy="830" r="5" fill="#a16207"/>
+
+  <!-- D5 (Row 10B: 235,550) -> Row 18B (235,870) [PWM3B / GPIO7 / LED5] -->
+  <path d="M 235 550 C 180 550, 180 870, 235 870" stroke="#f97316" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+  <circle cx="235" cy="550" r="5" fill="#c2410c"/><circle cx="235" cy="870" r="5" fill="#c2410c"/>
+
+  <!-- D6 (Row 11A: 200,590) -> Row 19A (200,910) [PWM0A / GPIO0 / LED6] -->
+  <path d="M 200 590 C 188 590, 188 910, 200 910" stroke="#ec4899" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+  <circle cx="200" cy="590" r="5" fill="#be185d"/><circle cx="200" cy="910" r="5" fill="#be185d"/>
+
+  <!-- ====================================================================== -->
+  <!-- COMPONENT 4: Six 330 Ohm Resistors (Cols E -> F, Rows 14..19)          -->
+  <!--              & Six Active-High LEDs (Col H Anode -> Right GND Rail)    -->
+  <!-- ====================================================================== -->
+  <!-- Helper macro pattern repeated for Rows 14..19 (Y = 710, 750, 790, 830, 870, 910) -->
+  <g id="resistors-and-leds">
+    <!-- Row 14: LED1 (Lowest, 0.0-16.7%) -->
+    <line x1="340" y1="710" x2="460" y2="710" stroke="#94a3b8" stroke-width="3"/>
+    <circle cx="340" cy="710" r="4.5" fill="#64748b"/><circle cx="460" cy="710" r="4.5" fill="#64748b"/>
+    <rect x="366" y="701" width="68" height="18" rx="5" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>
+    <line x1="378" y1="701" x2="378" y2="719" stroke="#f97316" stroke-width="3"/>
+    <line x1="390" y1="701" x2="390" y2="719" stroke="#f97316" stroke-width="3"/>
+    <line x1="402" y1="701" x2="402" y2="719" stroke="#78350f" stroke-width="3"/>
+    <line x1="420" y1="701" x2="420" y2="719" stroke="#eab308" stroke-width="2.5"/>
+    <line x1="530" y1="710" x2="702" y2="710" stroke="#64748b" stroke-width="3"/>
+    <circle cx="530" cy="710" r="4.5" fill="#15803d"/><circle cx="702" cy="710" r="5" fill="#1e40af"/>
+    <circle cx="565" cy="710" r="13" fill="#22c55e" stroke="#15803d" stroke-width="2"/>
+    <text x="565" y="714" fill="#052e16" font-size="10" font-weight="bold" text-anchor="middle">LED1</text>
+    <text x="515" y="705" fill="#15803d" font-size="11" font-weight="bold">+</text>
+    <text x="612" y="705" fill="#1e40af" font-size="11" font-weight="bold">-</text>
+
+    <!-- Row 15: LED2 (16.7-33.3%) -->
+    <line x1="340" y1="750" x2="460" y2="750" stroke="#94a3b8" stroke-width="3"/>
+    <circle cx="340" cy="750" r="4.5" fill="#64748b"/><circle cx="460" cy="750" r="4.5" fill="#64748b"/>
+    <rect x="366" y="741" width="68" height="18" rx="5" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>
+    <line x1="378" y1="741" x2="378" y2="759" stroke="#f97316" stroke-width="3"/>
+    <line x1="390" y1="741" x2="390" y2="759" stroke="#f97316" stroke-width="3"/>
+    <line x1="402" y1="741" x2="402" y2="759" stroke="#78350f" stroke-width="3"/>
+    <line x1="420" y1="741" x2="420" y2="759" stroke="#eab308" stroke-width="2.5"/>
+    <line x1="530" y1="750" x2="702" y2="750" stroke="#64748b" stroke-width="3"/>
+    <circle cx="530" cy="750" r="4.5" fill="#047857"/><circle cx="702" cy="750" r="5" fill="#1e40af"/>
+    <circle cx="565" cy="750" r="13" fill="#22c55e" stroke="#15803d" stroke-width="2"/>
+    <text x="565" y="754" fill="#052e16" font-size="10" font-weight="bold" text-anchor="middle">LED2</text>
+    <text x="515" y="745" fill="#15803d" font-size="11" font-weight="bold">+</text>
+    <text x="612" y="745" fill="#1e40af" font-size="11" font-weight="bold">-</text>
+
+    <!-- Row 16: LED3 (33.3-50.0%) -->
+    <line x1="340" y1="790" x2="460" y2="790" stroke="#94a3b8" stroke-width="3"/>
+    <circle cx="340" cy="790" r="4.5" fill="#64748b"/><circle cx="460" cy="790" r="4.5" fill="#64748b"/>
+    <rect x="366" y="781" width="68" height="18" rx="5" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>
+    <line x1="378" y1="781" x2="378" y2="799" stroke="#f97316" stroke-width="3"/>
+    <line x1="390" y1="781" x2="390" y2="799" stroke="#f97316" stroke-width="3"/>
+    <line x1="402" y1="781" x2="402" y2="799" stroke="#78350f" stroke-width="3"/>
+    <line x1="420" y1="781" x2="420" y2="799" stroke="#eab308" stroke-width="2.5"/>
+    <line x1="530" y1="790" x2="702" y2="790" stroke="#64748b" stroke-width="3"/>
+    <circle cx="530" cy="790" r="4.5" fill="#0e7490"/><circle cx="702" cy="790" r="5" fill="#1e40af"/>
+    <circle cx="565" cy="790" r="13" fill="#eab308" stroke="#a16207" stroke-width="2"/>
+    <text x="565" y="794" fill="#422006" font-size="10" font-weight="bold" text-anchor="middle">LED3</text>
+    <text x="515" y="785" fill="#a16207" font-size="11" font-weight="bold">+</text>
+    <text x="612" y="785" fill="#1e40af" font-size="11" font-weight="bold">-</text>
+
+    <!-- Row 17: LED4 (50.0-66.7%) -->
+    <line x1="340" y1="830" x2="460" y2="830" stroke="#94a3b8" stroke-width="3"/>
+    <circle cx="340" cy="830" r="4.5" fill="#64748b"/><circle cx="460" cy="830" r="4.5" fill="#64748b"/>
+    <rect x="366" y="821" width="68" height="18" rx="5" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>
+    <line x1="378" y1="821" x2="378" y2="839" stroke="#f97316" stroke-width="3"/>
+    <line x1="390" y1="821" x2="390" y2="839" stroke="#f97316" stroke-width="3"/>
+    <line x1="402" y1="821" x2="402" y2="839" stroke="#78350f" stroke-width="3"/>
+    <line x1="420" y1="821" x2="420" y2="839" stroke="#eab308" stroke-width="2.5"/>
+    <line x1="530" y1="830" x2="702" y2="830" stroke="#64748b" stroke-width="3"/>
+    <circle cx="530" cy="830" r="4.5" fill="#a16207"/><circle cx="702" cy="830" r="5" fill="#1e40af"/>
+    <circle cx="565" cy="830" r="13" fill="#eab308" stroke="#a16207" stroke-width="2"/>
+    <text x="565" y="834" fill="#422006" font-size="10" font-weight="bold" text-anchor="middle">LED4</text>
+    <text x="515" y="825" fill="#a16207" font-size="11" font-weight="bold">+</text>
+    <text x="612" y="825" fill="#1e40af" font-size="11" font-weight="bold">-</text>
+
+    <!-- Row 18: LED5 (66.7-83.3%) -->
+    <line x1="340" y1="870" x2="460" y2="870" stroke="#94a3b8" stroke-width="3"/>
+    <circle cx="340" cy="870" r="4.5" fill="#64748b"/><circle cx="460" cy="870" r="4.5" fill="#64748b"/>
+    <rect x="366" y="861" width="68" height="18" rx="5" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>
+    <line x1="378" y1="861" x2="378" y2="879" stroke="#f97316" stroke-width="3"/>
+    <line x1="390" y1="861" x2="390" y2="879" stroke="#f97316" stroke-width="3"/>
+    <line x1="402" y1="861" x2="402" y2="879" stroke="#78350f" stroke-width="3"/>
+    <line x1="420" y1="861" x2="420" y2="879" stroke="#eab308" stroke-width="2.5"/>
+    <line x1="530" y1="870" x2="702" y2="870" stroke="#64748b" stroke-width="3"/>
+    <circle cx="530" cy="870" r="4.5" fill="#c2410c"/><circle cx="702" cy="870" r="5" fill="#1e40af"/>
+    <circle cx="565" cy="870" r="13" fill="#ef4444" stroke="#b91c1c" stroke-width="2"/>
+    <text x="565" y="874" fill="#ffffff" font-size="10" font-weight="bold" text-anchor="middle">LED5</text>
+    <text x="515" y="865" fill="#b91c1c" font-size="11" font-weight="bold">+</text>
+    <text x="612" y="865" fill="#1e40af" font-size="11" font-weight="bold">-</text>
+
+    <!-- Row 19: LED6 (Highest, 83.3-100.0%) -->
+    <line x1="340" y1="910" x2="460" y2="910" stroke="#94a3b8" stroke-width="3"/>
+    <circle cx="340" cy="910" r="4.5" fill="#64748b"/><circle cx="460" cy="910" r="4.5" fill="#64748b"/>
+    <rect x="366" y="901" width="68" height="18" rx="5" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>
+    <line x1="378" y1="901" x2="378" y2="919" stroke="#f97316" stroke-width="3"/>
+    <line x1="390" y1="901" x2="390" y2="919" stroke="#f97316" stroke-width="3"/>
+    <line x1="402" y1="901" x2="402" y2="919" stroke="#78350f" stroke-width="3"/>
+    <line x1="420" y1="901" x2="420" y2="919" stroke="#eab308" stroke-width="2.5"/>
+    <line x1="530" y1="910" x2="702" y2="910" stroke="#64748b" stroke-width="3"/>
+    <circle cx="530" cy="910" r="4.5" fill="#be185d"/><circle cx="702" cy="910" r="5" fill="#1e40af"/>
+    <circle cx="565" cy="910" r="13" fill="#ef4444" stroke="#b91c1c" stroke-width="2"/>
+    <text x="565" y="914" fill="#ffffff" font-size="10" font-weight="bold" text-anchor="middle">LED6</text>
+    <text x="515" y="905" fill="#b91c1c" font-size="11" font-weight="bold">+</text>
+    <text x="612" y="905" fill="#1e40af" font-size="11" font-weight="bold">-</text>
+
+    <text x="400" y="692" fill="#0f172a" font-size="11" font-weight="bold" text-anchor="middle">6 × 330 Ω (Col E → Col F)</text>
+  </g>
+
+  <!-- ====================================================================== -->
+  <!-- RIGHT PANEL: Pinout, Netlist, & Electrical Reference                   -->
+  <!-- ====================================================================== -->
+  <g transform="translate(764, 116)">
+    <!-- Box 1: Pinout & Firmware Mapping -->
+    <rect x="0" y="0" width="372" height="436" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+    <text x="20" y="32" fill="#f8fafc" font-size="15" font-weight="bold">Firmware Pin &amp; Slice Mapping</text>
+    <line x1="20" y1="44" x2="352" y2="44" stroke="#334155" stroke-width="1"/>
+
+    <g font-size="11.5" fill="#e2e8f0">
+      <text x="20" y="70" fill="#94a3b8" font-weight="bold">XIAO Pin   GPIO     Device      Role / Segment</text>
+
+      <circle cx="26" cy="94" r="5" fill="#f59e0b"/>
+      <text x="38" y="98">D0/A0    GPIO26   /dev/adc0   Pot Wiper (ADC0)</text>
+
+      <circle cx="26" cy="128" r="5" fill="#22c55e"/>
+      <text x="38" y="132">D1/A1    GPIO27   /dev/pwm5   LED1 (PWM5B, 0–17%)</text>
+
+      <circle cx="26" cy="162" r="5" fill="#10b981"/>
+      <text x="38" y="166">D2/A2    GPIO28   /dev/pwm6   LED2 (PWM6A, 17–33%)</text>
+
+      <circle cx="26" cy="196" r="5" fill="#06b6d4"/>
+      <text x="38" y="200">D3       GPIO5    /dev/pwm2   LED3 (PWM2B, 33–50%)</text>
+
+      <circle cx="26" cy="230" r="5" fill="#eab308"/>
+      <text x="38" y="234">D4/SDA   GPIO6    /dev/pwm3   LED4 (PWM3A, 50–67%)</text>
+
+      <circle cx="26" cy="264" r="5" fill="#f97316"/>
+      <text x="38" y="268">D5/SCL   GPIO7    /dev/pwm3   LED5 (PWM3B, 67–83%)</text>
+
+      <circle cx="26" cy="298" r="5" fill="#ec4899"/>
+      <text x="38" y="302">D6/TX    GPIO0    /dev/pwm0   LED6 (PWM0A, 83–100%)</text>
+
+      <circle cx="26" cy="332" r="5" fill="#ef4444"/>
+      <text x="38" y="336">3V3      Pin 12   LDO Out     +3.3 V Supply Rail</text>
+
+      <circle cx="26" cy="366" r="5" fill="#2563eb"/>
+      <text x="38" y="370">GND      Pin 13   Ground      0.0 V Common Return</text>
+    </g>
+
+    <rect x="20" y="388" width="332" height="34" rx="6" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+    <text x="32" y="409" fill="#38bdf8" font-size="11">PWM: 1000 Hz, TOP=65535 (16-bit), Active-High</text>
+
+    <!-- Box 2: Row-by-Row Wiring Summary -->
+    <rect x="0" y="456" width="372" height="330" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+    <text x="20" y="488" fill="#f8fafc" font-size="15" font-weight="bold">Breadboard Coordinate Summary</text>
+    <line x1="20" y1="500" x2="352" y2="500" stroke="#334155" stroke-width="1"/>
+
+    <g font-size="11.5" fill="#cbd5e1">
+      <text x="20" y="526"><tspan fill="#f8fafc" font-weight="bold">Row 1:</tspan> Pot Lug 1 (1E) → Jumper 1A to Left +3V3</text>
+      <text x="20" y="550"><tspan fill="#f8fafc" font-weight="bold">Row 2:</tspan> Pot Lug 2 (2E) → Jumper 2B to 5A (D0/A0)</text>
+      <text x="20" y="574"><tspan fill="#f8fafc" font-weight="bold">Row 3:</tspan> Pot Lug 3 (3E) → Jumper 3A to Left GND</text>
+      <text x="20" y="598"><tspan fill="#f8fafc" font-weight="bold">Row 5:</tspan> XIAO D0 (5E) | 100nF Cap (5B to Left GND)</text>
+      <text x="20" y="622"><tspan fill="#f8fafc" font-weight="bold">Row 6:</tspan> XIAO D1 (6E) | XIAO GND (6F) → Right GND</text>
+      <text x="20" y="646"><tspan fill="#f8fafc" font-weight="bold">Row 7:</tspan> XIAO D2 (7E) | XIAO 3V3 (7F) → Right +3V3</text>
+      <text x="20" y="670"><tspan fill="#f8fafc" font-weight="bold">Rows 8–11:</tspan> XIAO D3–D6 (8E–11E) | D10–D7 (8F–11F)</text>
+      <text x="20" y="694"><tspan fill="#f8fafc" font-weight="bold">Rows 14–19 (Left):</tspan> Jumpers from Rows 6–11 (D1–D6)</text>
+      <text x="20" y="718"><tspan fill="#f8fafc" font-weight="bold">Rows 14–19 (Center):</tspan> 330 Ω Resistors (14E–19E → F)</text>
+      <text x="20" y="742"><tspan fill="#f8fafc" font-weight="bold">Rows 14–19 (Right):</tspan> LED1–6 Anode (H) → Right GND</text>
+      <text x="20" y="766"><tspan fill="#f8fafc" font-weight="bold">Rows 20–21:</tspan> Rail Bridge Jumpers (Right ↔ Left)</text>
+    </g>
+
+    <!-- Box 3: Electrical & Current Budget -->
+    <rect x="0" y="806" width="372" height="158" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+    <text x="20" y="836" fill="#f8fafc" font-size="15" font-weight="bold">Electrical &amp; Current Budget</text>
+    <line x1="20" y1="848" x2="352" y2="848" stroke="#334155" stroke-width="1"/>
+    <g font-size="11.5" fill="#cbd5e1">
+      <text x="20" y="874">• Supply Voltage (VDD): 3.3 V (from XIAO 3V3 pin)</text>
+      <text x="20" y="896">• Per-LED Current (100%): (3.3V − 2.0V) / 330Ω ≈ 3.94 mA</text>
+      <text x="20" y="918">• All 6 LEDs at 100%: 6 × 3.94 mA ≈ 23.6 mA (&lt; 200 mA)</text>
+      <text x="20" y="940">• 10 kΩ Potentiometer: 3.3V / 10kΩ = 0.33 mA (Rs ≤ 2.5kΩ)</text>
+    </g>
+  </g>
+</svg>

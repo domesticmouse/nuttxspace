@@ -1,6 +1,6 @@
 # Lesson Markdown Format (`build.py` Schema)
 
-Every lesson (`lessons/NNNN-<slug>.md`) is compiled to `lessons/NNNN-<slug>.html` by `build.py`. Follow this exact syntax—`build.py` parses attributes with whitespace separation, **never** `{}` braces.
+Every lesson (`lessons/NNNN-<slug>.md`) is compiled to `lessons/NNNN-<slug>.html` by `build.py`. Follow this exact syntax—`build.py` parses attributes with whitespace separation, **never** `{}` braces, and does not load a TeX math engine (use inline code and Unicode symbols like `Ω`, `≈`, `±`, `≤`, `≥` instead of `$...$` TeX markup).
 
 ## Frontmatter & Header Links
 

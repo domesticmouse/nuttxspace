@@ -1,4 +1,4 @@
-# Project Conversation Logs
+# Project Conversation Logs (`nuttxspace-egm`)
 
 This directory contains per-conversation Markdown logs recording user prompts, interactive Q&A selections, thinking summaries, Antigravity actions/deliverables, and executed commands.
 
@@ -27,3 +27,5 @@ This directory contains per-conversation Markdown logs recording user prompts, i
 | 21 | `2026-11-16 20:54` | `ca2b90ea` [↗](conversation://ca2b90ea-bf59-4104-907d-911e084f7695) | 93 | [21-ca2b90ea-none.md](21-ca2b90ea-none.md) | (none) |
 | 22 | `2026-11-16 21:00` | `6c5a9959` [↗](conversation://6c5a9959-e5f8-468b-a145-be3977a53f0c) | 35 | [22-6c5a9959-none.md](22-6c5a9959-none.md) | (none) |
 | 23 | `2026-11-17 05:39` | `78649743` [↗](conversation://78649743-94b6-48f1-b973-dc196c4d17c3) | 120 | [23-78649743-implement-docs-designs-xiao-rp2350-bargraph-md.md](23-78649743-implement-docs-designs-xiao-rp2350-bargraph-md.md) | Implement @[docs/designs/xiao-rp2350-bargraph.md] in `xiao-rp2350-bargraph/`, keeping `nut |
+| 24 | `2026-11-17 10:17` | `0cc3a75f` [↗](conversation://0cc3a75f-3187-413b-90bf-a6f607f93900) | 179 | [24-0cc3a75f-build-a-complete-story-arc-tutorial-teaching.md](24-0cc3a75f-build-a-complete-story-arc-tutorial-teaching.md) | /teach-code Build a complete story arc tutorial, teaching me how to build this app and cir |
+| 25 | `2026-11-17 12:17` | `98ffad8f` [↗](conversation://98ffad8f-04bf-43bf-b0c3-e6a6c36a0562) | 54 | [25-98ffad8f-the-html-in-tutorial-contains-unrendered-tex.md](25-98ffad8f-the-html-in-tutorial-contains-unrendered-tex.md) | The html in @[tutorial] contains unrendered TeX markup, and there is an odd bleed through |
