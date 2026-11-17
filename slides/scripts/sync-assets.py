@@ -137,11 +137,20 @@ def main() -> int:
     # 2. Copy breadboard SVGs and generate zoomed viewBox crops
     egm_svg = repo_root / "docs" / "egm" / "breadboard-wiring.svg"
     vanilla_svg = repo_root / "docs" / "vanilla" / "breadboard_circuit.svg"
-    if not egm_svg.is_file() or not vanilla_svg.is_file():
+    assets_scopes_svg = repo_root / "docs" / "assets" / "breadboard-scopes.svg"
+    assets_wiring_svg = repo_root / "docs" / "assets" / "breadboard-wiring.svg"
+    if (
+        not egm_svg.is_file()
+        or not vanilla_svg.is_file()
+        or not assets_scopes_svg.is_file()
+        or not assets_wiring_svg.is_file()
+    ):
         raise FileNotFoundError("Missing breadboard SVG source files.")
 
     shutil.copy2(egm_svg, images_dir / "breadboard-wiring.svg")
     shutil.copy2(vanilla_svg, images_dir / "breadboard_circuit.svg")
+    shutil.copy2(assets_scopes_svg, images_dir / "breadboard-scopes.svg")
+    shutil.copy2(assets_wiring_svg, images_dir / "assets-breadboard-wiring.svg")
 
     make_cropped_svg(
         egm_svg,
@@ -162,7 +171,7 @@ def main() -> int:
     build_tutorial_html(repo_root, tutorial_out)
 
     print(
-        f"[OK] Synced {len(expected_casts)} casts, 4 SVGs, and compiled tutorial -> {public_dir}"
+        f"[OK] Synced {len(expected_casts)} casts, 6 SVGs, and compiled tutorial -> {public_dir}"
     )
     return 0
 
