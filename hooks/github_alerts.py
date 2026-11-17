@@ -49,7 +49,7 @@ WIDGET_LINE_RE = re.compile(r"^\s*\{\{widget:([a-zA-Z0-9_-]+)\}\}\s*$")
 BLANK_TOKEN_RE = re.compile(r"\{\{blank:([^|}]+)(?:\|[^}]*)?\}\}")
 SIDENOTE_RE = re.compile(r"\{\{sidenote:((?:[^{}]|\{[^{}]*\})+)\}\}")
 LINK_OR_CODE_RE = re.compile(
-    r"(!?\[(?:`[^`\n]*`|[^\]\n])+\]\()([^)\s]+)(\))|(`+)(?:(?!\4)[^\n])+\4"
+    r"(!?\[(?:`[^`\n]*`|[^`\]\n])+\]\()([^)\s]+)(\))|(`+)[^`\n]*?\4"
 )
 LINE_FRAG_RE = re.compile(r"^L(\d+)(?:-L\d+)?$")
 
@@ -222,7 +222,7 @@ def _extract_headings(md_path: pathlib.Path) -> list[tuple[int, str]]:
             explicit_id = hm.group(3)
             clean_title = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", raw_title)
             clean_title = re.sub(r"`([^`]*)`", r"\1", clean_title)
-            clean_title = clean_title.replace("*", "").replace("_", "")
+            clean_title = clean_title.replace("*", "")
             base_slug = explicit_id if explicit_id else slugify(clean_title, "-")
             count = used.get(base_slug, 0)
             used[base_slug] = count + 1
