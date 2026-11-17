@@ -18,7 +18,7 @@ import AsciinemaPlayer from '../components/AsciinemaPlayer.vue'
         :theme="$frontmatter.theme ?? 'dracula'"
         :markers="$frontmatter.markers ?? []"
         :pauseOnMarkers="$frontmatter.pauseOnMarkers ?? true"
-        :showChapterBar="$frontmatter.showChapterBar ?? true"
+        :showChapterBar="$frontmatter.showChapterBar ?? false"
         :initialStopPoint="$frontmatter.initialStopPoint"
         class="w-full h-full"
       />
