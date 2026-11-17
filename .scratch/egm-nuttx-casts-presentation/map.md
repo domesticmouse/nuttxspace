@@ -1,7 +1,7 @@
 # Roll Your Own Docs: Custom AI Skills for Rapid Tech Ramp-Up — Presentation Map
 
 Label: wayfinder:map
-Status: open
+Status: resolved
 
 ## Destination
 
@@ -40,6 +40,7 @@ A complete, slide-by-slide presentation specification and speaker narrative at `
 - [Explaining EGM and Antigravity Mechanics on Stage](./issues/04-explain-egm-and-antigravity-on-stage.md): Use low-density slides and progressive `v-click` reveals (1 Triad anchor slide at Act III start + just-in-time setup/debrief slides per cast): unpack the Elephant via 3 visual beats (Tree Map, 3-click stylized Contract Anatomy, Bootstrap/Drift pipeline), plant the `RP23XX_ADC_DIV` false start at `03-draft` Stop 4 to illustrate Author Bias/Sycophancy, stage the Goldfish around `04-review` via 3-click Swarm Anatomy + `B-1` $\rightarrow$ `/clear` $\rightarrow$ `CA-01` second-order catch, deliver the candid `5/10` vs `10/10` (`6 Pass / 4 Partial / 0 Fail` strict) scorecard after `05-implement`, and finish by bridging "Docs for the AI" to "Docs for the Human" (`06-teach-code`) and showing off the generated interactive HTML lessons (`docs/egm/tutorial/index.html`) as the finale.
 - [Prototype the Slide Structure, Stage Beats, and Timing Budget](./issues/05-slide-structure-and-pacing-outline.md): Locked Preset A (`33` low-density slides across 4 modular act files in [slide-structure-prototype.md](./slide-structure-prototype.md): `26` progressive `v-click` slides averaging `~2.1` beats/slide + `7` `cast-full` slides) budgeted at `29m 51s` (`14m 09s` slides/showcase + `15m 42s` live casts, `9s` buffer), culminating in a 3-slide Finale Showcase (`S29`–`S31`, `2m 30s`) with a clickable `Open ./tutorial/index.html ↗` launch badge touring the Course Hub, the 3 live JS simulators (`breadboard-simulator`, `pwm-segment-visualizer`, `adc-ema-simulator`) & equal-length quizzes, the printable `@media print` A4 bench sheets, and `Lesson 0006`'s strict C99 bug catch.
 - [Draft the Spoken Script and Narrator Voice in bjm-voice](./issues/06-speaker-script-and-narrative-bjm-voice.md): Scripted the full verbatim Australian English (`bjm-voice`, `~140 wpm`) narrative in [speaker-script-bjm-voice.md](./speaker-script-bjm-voice.md) synced to every `[On Load]` / `[v-click]` beat across all `26` concept/setup/debrief/showcase slides plus dual-layer commentary across all `7` live `.cast` slides (`53` paused stop-point cues + `25s–30s` warped play-by-play voiceovers), crediting Dave Rensin (`@drensin`), Matt Pocock (`/teach`), and Edward Tufte while owning all four candid false-start/audit beats.
+- [Assemble and Verify the Presentation Specification at spec.md](./issues/07-assemble-and-verify-presentation-spec.md): Compiled and verified the authoritative 33-slide presentation specification at [spec.md](./spec.md), uniting the `29m 51s` timing budget (`14m 09s` slides/showcase + `15m 42s` across `7` live `.cast` recordings and `53` paired stop points), visual layouts and asset paths (`breadboard-vanilla-crop-ch.svg`, `breadboard-wiring-crop-ef.svg`, `./tutorial/index.html`), and verbatim `bjm-voice` speaker script while verifying all scope exclusions.
 
 ## Not yet specified
 
