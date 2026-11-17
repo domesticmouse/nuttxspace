@@ -1,9 +1,32 @@
 # Prototype the Slide Structure, Stage Beats, and Timing Budget
 
 Type: prototype
-Status: open
+Status: resolved
 Blocked by: 03, 04
 
 ## Question
 
 How should the slide-by-slide sequence, low-density `v-click` reveals, and visual rhythm be structured across the 30-minute budget (Setup Slides → Cast Stage Transitions → Debrief Slides → Finale Showcase of the generated `/teach-code` interactive lessons at `docs/egm/tutorial/index.html`) to ensure breathable slides, crisp transitions, and balanced live playback segments?
+
+## Answer
+
+Locked **Preset A (33-Slide Balanced Low-Density Deck + 3-Slide Interactive Lesson Showcase)** in [`slide-structure-prototype.md`](../slide-structure-prototype.md) and [`slide-structure-prototype.html`](../slide-structure-prototype.html):
+
+1. **Macro Pacing & 4 Modular Act Files (`33` Slides · `29m 51s` Total · `9s` Buffer under `30m 00s`)**:
+   - **Act I — Hook & Hardware/RTOS Stress Test (`slides/acts/01-hook-and-setup.md` · `5` slides `S01`–`S05` · `3m 15s`)**:
+     - `S01` Title Slide (`layout: center`, `25s`) $\rightarrow$ `S02` Hardware Target: XIAO RP2350 & 6-LED Bar Graph (`layout: hardware-callout`, `2` `v-click`s, `45s`) $\rightarrow$ `S03` RTOS Scale Shock (`3,241` dirs vs `13` READMEs, `layout: default`, `2` `v-click`s, `40s`) $\rightarrow$ `S04` Three Hardware/RTOS Booby Traps (`layout: default`, `3` `v-click`s, `55s`) $\rightarrow$ `S05` Controlled Experiment: Vanilla vs. EGM + `/teach-code` (`layout: default`, `2` `v-click`s, `30s`).
+   - **Act II — The Vanilla Vibe Foil (`slides/acts/02-vanilla-foil.md` · `4` slides `S06`–`S09` · `3m 21s` = `1m 30s` slides + `1m 51s` Cast 1)**:
+     - `S06` Experiment A Setup (`layout: default`, `2` `v-click`s, `25s`) $\rightarrow$ `S07` **LIVE CAST 1: `vanilla-vibe.cast`** (`layout: cast-full`, `1m 51s` stage) $\rightarrow$ `S08` Debrief: The Lie of "It Compiled!" showing `breadboard-vanilla-crop-ch.svg` `0.7"` straddle (`layout: hardware-callout`, `2` `v-click`s, `35s`) $\rightarrow$ `S09` Vanilla Vibe Audit Scorecard (`5 / 10`, `layout: default`, `2` `v-click`s, `30s`).
+   - **Act III — Rolling Docs for the AI: The Elephant-Goldfish Model (`slides/acts/03-egm-journey.md` · `17` slides `S10`–`S26` · `17m 07s` = `5m 20s` slides + `11m 47s` Casts 2–6)**:
+     - **Triad Anchor & Elephant (`01-bootstrap`)**: `S10` EGM Triad Anchor (`layout: default`, `3` `v-click`s, `40s`) $\rightarrow$ `S11` Stylized Contract Anatomy (`nuttx/arch/arm/src/rp23xx`, `layout: skill-breakdown`, `3` `v-click`s, `40s`) $\rightarrow$ `S12` `/plugin` $\rightarrow$ `/egm-bootstrap` $\rightarrow$ `/egm-drift-report` pipeline (`layout: default`, `3` `v-click`s, `25s`) $\rightarrow$ `S13` **LIVE CAST 2: `01-bootstrap.cast`** (`layout: cast-full`, `1m 35s` stage).
+     - **Human + Elephant Brainstorming (`02-brainstorm`)**: `S14` Specification Funnel (`49` READMEs read $\rightarrow$ `1-at-a-time` Q&A $\rightarrow$ `concepts_brief.md`, `layout: default`, `3` `v-click`s, `30s`) $\rightarrow$ `S15` **LIVE CAST 3: `02-brainstorm.cast`** (`layout: cast-full`, `2m 40s` stage).
+     - **Drafting & Planting the False Start (`03-draft`)**: `S16` Section Gates & Cueing Stop 4's `RP23XX_ADC_DIV` Trap (`layout: default`, `2` `v-click`s, `25s`) $\rightarrow$ `S17` **LIVE CAST 4: `03-draft.cast`** (`layout: cast-full`, `2m 31s` stage) $\rightarrow$ `S18` Debrief: Why `RP23XX_ADC_DIV` Fails under `START_ONCE` & Author Bias / Self-Sycophancy (`layout: default`, `2` `v-click`s, `25s`).
+     - **The Goldfish Swarm (`04-review`)**: `S19` Anatomy of a Goldfish Swarm (`146` README reads, `layout: default`, `3` `v-click`s, `35s`) $\rightarrow$ `S20` What to Watch in `04-review.cast`: `B-1`, `/clear` Amnesia & Pass 2 (`layout: default`, `2` `v-click`s, `20s`) $\rightarrow$ `S21` **LIVE CAST 5: `04-review.cast`** (`layout: cast-full`, `3m 39s` stage) $\rightarrow$ `S22` Debrief: First-Order Catch (`B-1` NVIC IRQ gating) vs. Second-Order Catch (`CA-01` `25-byte` short read caught after `/clear`) (`layout: default`, `2` `v-click`s, `30s`).
+     - **Boring Implementation & Candid Scorecard (`05-implement`)**: `S23` Hardened Spec Setup (`4` Blockers + `7` Majors fixed in Markdown, `layout: default`, `2` `v-click`s, `20s`) $\rightarrow$ `S24` **LIVE CAST 6: `05-implement.cast`** (`layout: cast-full`, `1m 22s` stage) $\rightarrow$ `S25` Physical Breadboard Payoff (`breadboard-wiring-crop-ef.svg` in `Cols E & F`, `layout: hardware-callout`, `1` `v-click`, `25s`) $\rightarrow$ `S26` Candid Scorecard Callback (`5/10` vs `10/10` primary + `6 Pass / 4 Partial / 0 Fail` strict audit honesty, `layout: default`, `2` `v-click`s, `30s`).
+   - **Act IV — Finale: Rolling Docs for the Human & Live Lesson Showcase (`slides/acts/04-teach-code-finale.md` · `7` slides `S27`–`S33` · `6m 08s` = `4m 04s` slides/showcase + `2m 04s` Cast 7)**:
+     - `S27` Comprehension Debt & `/teach-code` Setup (`layout: default`, `2` `v-click`s, `35s`) $\rightarrow$ `S28` **LIVE CAST 7: `06-teach-code.cast`** (`layout: cast-full`, `2m 04s` stage) $\rightarrow$ **3-Slide Interactive Lesson Showcase (`S29`–`S31`, `2m 30s`)** $\rightarrow$ `S32` The "Roll Your Own Docs" Flywheel (`layout: default`, `3` `v-click`s, `30s`) $\rightarrow$ `S33` Links, Open-Source Skills & Course URL (`layout: default`, `19s`).
+
+2. **3-Slide Finale Showcase of `docs/egm/tutorial/index.html` (`S29`–`S31` + Launch Link)**:
+   - **`S29` — Course Hub & 6-Lesson Story Arc (`45s`)**: Displays the compiled landing page with a clickable `Open ./tutorial/index.html ↗` badge, the Figure 0.1 Mermaid progression (`0001` Breadboard $\rightarrow$ `0006` `bargraphd`), and the zero-divergence C99 verification gates (`sync_listing.py --check` + `build.py --check`).
+   - **`S30` — Tactile JS Simulators, Fill-in-the-Blank C99 & Quizzes (`60s`)**: Walks through the 3 live JavaScript widgets (`breadboard-simulator`, `pwm-segment-visualizer`, and `adc-ema-simulator` toggling `CA-01` stale `msgs[0]` and `B-2` `>> 2` vs `>> 4`), Prism `keep-markup` C99 exercises, and equal-word-count (`10 words/option`) retrieval quizzes.
+   - **`S31` — Teaching Dead Ends (`Lesson 0005`), Printable Bench Sheets & Bonus Twist (`45s`)**: Highlights how `Lesson 0005` turns the `RP23XX_ADC_DIV` false start into curriculum, shows the printable `@media print` A4 workbench reference sheet (`nuttx-rp2350-driver-traps.md`), and reveals how compiling `Lesson 0006`'s strict C99 `pthreads` harness caught 2 real Phase 5 bugs (`MANUAL`-mode clobber).

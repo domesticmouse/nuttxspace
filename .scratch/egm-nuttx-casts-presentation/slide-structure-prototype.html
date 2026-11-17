@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROTOTYPE: 30-Minute Slide Structure, Stage Beats & Timing Budget (Ticket 05)</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel-alt: #26334d;
+    --border: #334155;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --cast: #a855f7;
+    --showcase: #10b981;
+    --warn: #eab308;
+    --danger: #ef4444;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 32px 64px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  header {
+    max-width: 1240px;
+    margin: 0 auto 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(56, 189, 248, 0.15);
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  h1 { margin: 0 0 8px; font-size: 24px; }
+  header p { margin: 0; color: var(--muted); font-size: 14px; }
+  .container { max-width: 1240px; margin: 0 auto; }
+
+  .state-dashboard {
+    position: sticky;
+    top: 12px;
+    z-index: 20;
+    background: rgba(30, 41, 59, 0.96);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.45);
+  }
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .metric-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .metric-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .metric-value { font-size: 19px; font-weight: 700; margin-top: 2px; }
+  .metric-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .bar-track {
+    height: 16px;
+    background: var(--bg);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    border: 1px solid var(--border);
+  }
+  .bar-seg { height: 100%; transition: width 0.25s; }
+  .bar-act1 { background: #38bdf8; }
+  .bar-act2 { background: #f97316; }
+  .bar-act3 { background: #a855f7; }
+  .bar-act4 { background: #10b981; }
+  .bar-legend {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .change-banner {
+    margin-top: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    font-size: 12px;
+    color: #bae6fd;
+  }
+
+  .controls-row {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+  }
+  .card h2 {
+    margin: 0 0 10px;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+  }
+  .tab-bar, .freeplay-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  button {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 7px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  button:hover { border-color: var(--accent); }
+  button.active {
+    background: rgba(56, 189, 248, 0.18);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .scenario-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .act-section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .act-header {
+    padding: 14px 20px;
+    background: var(--panel-alt);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .act-title { font-size: 17px; font-weight: 700; }
+  .act-meta { font-size: 13px; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+  .slide-list {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .slide-row {
+    display: grid;
+    grid-template-columns: 76px 135px 1fr 190px;
+    gap: 12px;
+    align-items: start;
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+  }
+  .slide-row.is-cast {
+    border-color: rgba(168, 85, 247, 0.5);
+    background: rgba(168, 85, 247, 0.07);
+  }
+  .slide-row.is-showcase {
+    border-color: rgba(16, 185, 129, 0.55);
+    background: rgba(16, 185, 129, 0.08);
+  }
+  .slide-row.is-merged {
+    opacity: 0.42;
+    border-style: dashed;
+  }
+  .slide-id {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .layout-pill {
+    display: inline-block;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: rgba(148, 163, 184, 0.15);
+    color: #cbd5e1;
+  }
+  .is-cast .layout-pill {
+    background: rgba(168, 85, 247, 0.2);
+    color: #e9d5ff;
+  }
+  .is-showcase .layout-pill {
+    background: rgba(16, 185, 129, 0.2);
+    color: #a7f3d0;
+  }
+  .slide-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .clicks-list {
+    margin: 4px 0 0;
+    padding-left: 18px;
+    font-size: 12.5px;
+    color: #cbd5e1;
+  }
+  .clicks-list li { margin-bottom: 2px; }
+  .slide-actions {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+  }
+  .time-badge {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .mini-btns { display: flex; gap: 4px; }
+  .mini-btns button { padding: 3px 8px; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Throwaway Logic &amp; Pacing Prototype &middot; Ticket 05</div>
+  <h1>30-Minute Slide Structure, Stage Beats &amp; Finale Showcase Planner</h1>
+  <p>
+    <strong>Question being tested:</strong> How should the slide-by-slide sequence, low-density <code>v-click</code> reveals, live <code>.cast</code> transitions, and the Finale Showcase of the generated <code>/teach-code</code> interactive HTML lessons (<code>docs/egm/tutorial/index.html</code>) be budgeted across the 30-minute talk so every concept breathes without rushing?
+  </p>
+</header>
+
+<div class="container">
+  <div class="state-dashboard">
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">Total Deck Size</div>
+        <div class="metric-value" id="m-slides">33 slides</div>
+        <div class="metric-sub" id="m-slides-sub">26 concept/showcase + 7 casts</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Progressive Beats</div>
+        <div class="metric-value" id="m-clicks">54 v-clicks</div>
+        <div class="metric-sub">Low-density (~2.1 beats/slide)</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">7 Live Casts Stage Time</div>
+        <div class="metric-value" id="m-casts">15m 42s</div>
+        <div class="metric-sub">10m 24s play + 5m 18s (53 stops)</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Slides &amp; Debriefs</div>
+        <div class="metric-value" id="m-slide-time">11m 39s</div>
+        <div class="metric-sub">Setup, Triad, Goldfish &amp; Retro</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Finale HTML Showcase</div>
+        <div class="metric-value" id="m-showcase-time">2m 30s</div>
+        <div class="metric-sub" id="m-showcase-sub">3 showcase slides (tutorial/index.html)</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Total Talk Clock</div>
+        <div class="metric-value" id="m-total">29m 51s</div>
+        <div class="metric-sub" id="m-budget-delta">9s buffer under 30m 00s</div>
+      </div>
+    </div>
+
+    <div class="bar-track">
+      <div class="bar-seg bar-act1" id="b-act1" style="width: 11%"></div>
+      <div class="bar-seg bar-act2" id="b-act2" style="width: 11%"></div>
+      <div class="bar-seg bar-act3" id="b-act3" style="width: 58%"></div>
+      <div class="bar-seg bar-act4" id="b-act4" style="width: 20%"></div>
+    </div>
+    <div class="bar-legend">
+      <span id="leg-act1">Act I: Hook &amp; Hardware/NuttX Setup (3m 15s)</span>
+      <span id="leg-act2">Act II: Vanilla Vibe Foil (3m 21s)</span>
+      <span id="leg-act3">Act III: EGM Elephant + Goldfish Journey (17m 17s)</span>
+      <span id="leg-act4">Act IV: /teach-code &amp; Live HTML Lesson Showcase Finale (5m 58s)</span>
+    </div>
+    <div class="change-banner" id="last-action">
+      Active Preset: <strong>Preset A (Recommended — 33-Slide Balanced Low-Density Deck + 3-Slide Interactive Lesson Showcase)</strong>. Click any preset or adjust individual slides below.
+    </div>
+  </div>
+
+  <div class="controls-row">
+    <div class="card">
+      <h2>Guided Walkthrough Scenarios</h2>
+      <div class="tab-bar">
+        <button id="btn-preset-a" class="active" onclick="applyPreset('A')">Preset A: Recommended (33 Slides · 29m 51s)</button>
+        <button id="btn-preset-b" onclick="applyPreset('B')">Preset B: Live Embedded Iframe Tour (34 Slides · 30m 00s)</button>
+        <button id="btn-preset-c" onclick="applyPreset('C')">Preset C: Ultra-Lean Merged Setups (29 Slides · 28m 46s)</button>
+      </div>
+      <p class="scenario-desc" id="scenario-text">
+        <strong>Preset A (Recommended):</strong> 33 low-density slides across 4 modular act files (<code>01-hook-and-setup.md</code>, <code>02-vanilla-foil.md</code>, <code>03-egm-journey.md</code>, <code>04-teach-code-finale.md</code>). Every cast is bracketed by a 1–2 slide just-in-time setup and a 1–2 slide visual debrief, culminating in a 3-slide live showcase of <code>docs/egm/tutorial/index.html</code>.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Free-Play Deck Adjustments</h2>
+      <div class="freeplay-bar">
+        <button onclick="toggleIframeSlide()" id="btn-iframe">Toggle Live &lt;iframe&gt; Browser Slide (S29b)</button>
+        <button onclick="adjustAllSlideTime(-5)">-5s / Concept Slide</button>
+        <button onclick="adjustAllSlideTime(5)">+5s / Concept Slide</button>
+        <button onclick="resetCurrentPreset()">Reset Timing</button>
+      </div>
+      <p class="scenario-desc">
+        Test how adding a dedicated full-screen live <code>&lt;iframe src="./tutorial/index.html"&gt;</code> demo slide or shifting speaking pace per slide affects the 30-minute clock.
+      </p>
+    </div>
+  </div>
+
+  <div id="acts-container"></div>
+</div>
+
+<script>
+// Pure state & reducer module (liftable specification model)
+const INITIAL_SLIDES = [
+  // ACT I
+  {
+    id: "S01", act: 1, layout: "center", kind: "slide", baseSec: 25,
+    title: "Roll Your Own Docs: Custom AI Skills for Rapid Tech Ramp-Up",
+    clicks: [
+      "Title, subtitle ('Taming Apache NuttX & RP2350 Silicon with the Elephant-Goldfish Model and /teach-code'), and speaker credit: Brett Morgan (Google Cloud)."
+    ]
+  },
+  {
+    id: "S02", act: 1, layout: "hardware-callout", kind: "slide", baseSec: 45,
+    title: "The Hardware Target: XIAO RP2350 & 6-LED Bar Graph",
+    clicks: [
+      "Left: Physical breadboard layout & pin map (Seeed Studio XIAO RP2350 14-pin module straddling centre trench, 10 kΩ pot on D0/A0, 6 discrete through-hole LEDs: 2 Green, 2 Yellow, 2 Red).",
+      "v-click 1: Proportional 6-segment PWM brightness scaling (smooth sub-segment interpolation across LED1–LED6).",
+      "v-click 2: Dual runtime requirement — 50 Hz autonomous background daemon (bargraphd) + interactive single USB-C nsh> CLI (start, stop, status, test, set)."
+    ]
+  },
+  {
+    id: "S03", act: 1, layout: "default", kind: "slide", baseSec: 40,
+    title: "The RTOS Scale Shock: Why Apache NuttX Breaks 'Vibe Coding'",
+    clicks: [
+      "Contrast flat Arduino loop() sketches with Apache NuttX — an industrial POSIX RTOS where hardware lives behind character drivers (/dev/adc0, /dev/pwmX) and Kconfig trees.",
+      "v-click 1: The Documentation Gap — 3,241 directories across nuttx/ (2,607) and apps/ (634), but only 13 upstream README.md files (0.4% coverage).",
+      "v-click 2: When an AI coding agent has no map, it falls back to blind grep and training-weight guesswork."
+    ]
+  },
+  {
+    id: "S04", act: 1, layout: "default", kind: "slide", baseSec: 55,
+    title: "Three Hardware & RTOS Booby Traps Waiting on the Bench",
+    clicks: [
+      "v-click 1 — Trap 1 (USB-C Boot Hang): Blocking NSH startup hangs the USB-C console before it enumerates; naive dual-init scripts spawn duplicate daemons.",
+      "v-click 2 — Trap 2 (ADC Pin Clobber & Erratum RP2350-E9): NuttX ADC init resets all 4 ADC pins (GPIO 26–29) and re-enables digital input buffer IE=1, clobbering D1/D2 LEDs or injecting pad leakage into D0/A0.",
+      "v-click 3 — Trap 3 (The 500k IRQ/s Storm): Opening /dev/adc0 fires 500 kHz free-running interrupts that starve the CPU — while opening/closing at 40 Hz triggers an unguarded ISR teardown race."
+    ]
+  },
+  {
+    id: "S05", act: 1, layout: "default", kind: "slide", baseSec: 30,
+    title: "The Controlled Experiment: Same Hardware, Same Prompt, Two Workflows",
+    clicks: [
+      "v-click 1 — Experiment A (Vanilla Vibe Foil): Unconstrained Antigravity against raw upstream NuttX (13 READMEs, 0 custom skills).",
+      "v-click 2 — Experiment B (Roll Your Own Docs): Antigravity + Elephant-Goldfish Model (EGM) directory contracts & adversarial review + /teach-code human course."
+    ]
+  },
+
+  // ACT II
+  {
+    id: "S06", act: 2, layout: "default", kind: "slide", baseSec: 25,
+    title: "Act II Setup: Watching Unconstrained Antigravity (Vanilla Vibe)",
+    clicks: [
+      "v-click 1: What happens when we paste the requirements straight into Antigravity with zero directory contracts?",
+      "v-click 2: Watch 3 things in the live recording: (1) 1 clarifying pin question, (2) a 26-minute monolithic coding sprint with 0 README reads, and (3) a generated breadboard SVG."
+    ]
+  },
+  {
+    id: "S07", act: 2, layout: "cast-full", kind: "cast", baseSec: 111,
+    title: "LIVE CAST 1 — vanilla-vibe.cast (1m 15s play · 6 stops · 1m 51s stage)",
+    clicks: [
+      "0. Start (AGY Start Page) → 1. Initial Prompt (0.5s) → 2. Q1: Pins & Polarity (14.1s) → 3. A1: Any Free Pins (0.5s)",
+      "4. 26m Monolithic Firmware Build at 52x (29.8s) → 5. Prompt: Breadboard Wiring SVG (0.5s) → 6. Wiring Guide & SVG Complete (29.8s)"
+    ]
+  },
+  {
+    id: "S08", act: 2, layout: "hardware-callout", kind: "slide", baseSec: 35,
+    title: "The Lie of 'It Compiled!': Inspecting Vanilla's Breadboard SVG",
+    clicks: [
+      "Left: breadboard-vanilla-crop-ch.svg — firmware compiled (nuttx.uf2) and 7/7 host math tests passed on the first try.",
+      "v-click 1: Look at the breadboard columns: Vanilla seated the XIAO across Cols C to H — a 0.7-inch (6-column) span for a 0.3-inch module!",
+      "v-click 2: You physically cannot plug a wire into the pins underneath a module covering holes b through i."
+    ]
+  },
+  {
+    id: "S09", act: 2, layout: "default", kind: "slide", baseSec: 30,
+    title: "Vanilla Vibe Audit Scorecard: 5 / 10 Against the Hardware Traps",
+    clicks: [
+      "v-click 1: What worked — pure C math, Q4 EMA filter, and host unit tests (where LLM pre-training is strong).",
+      "v-click 2: What broke on silicon (5 / 10) — 0 README reads meant it missed RP2350-E9 pad leakage, triggered the 40 Hz open()/close() ISR teardown race, and silently dropped Kconfig symbols."
+    ]
+  },
+
+  // ACT III
+  {
+    id: "S10", act: 3, layout: "default", kind: "slide", baseSec: 40,
+    title: "Act III Anchor: The Elephant-Goldfish Model (EGM) Triad",
+    clicks: [
+      "v-click 1 — The Elephant (Context Memory): 3,241 directory-level README.md contracts giving the main agent a top-down map instead of blind grep.",
+      "v-click 2 — The Human (Intent & Ownership): Makes product and hardware-boundary decisions one question at a time; owns what ships.",
+      "v-click 3 — The Goldfish (Stateless Adversarial Swarm): Fresh-context review subagents with zero memory of the drafting struggle — immune to author sycophancy."
+    ]
+  },
+  {
+    id: "S11", act: 3, layout: "skill-breakdown", kind: "slide", baseSec: 40,
+    title: "Unpacking The Elephant: Directory Contracts as a Navigable Map",
+    clicks: [
+      "v-click 1 — Tree Scale: 2,607 README.md contracts in nuttx/ + 634 in apps/ (209 contract reads across the EGM run vs 0 in Vanilla).",
+      "v-click 2 — Stylized Contract Card (nuttx/arch/arm/src/rp23xx): Reveals (a) Scope & Public Files, and (b) Plain-English Hardware Invariants ('ADC init resets all 4 pins GPIO 26–29 and leaves IE=1 enabled').",
+      "v-click 3 — Child Directory Routing: Tells the agent where to zoom next without loading C source files into context."
+    ]
+  },
+  {
+    id: "S12", act: 3, layout: "default", kind: "slide", baseSec: 25, canMergeInC: true,
+    title: "Keeping the Elephant Honest: /plugin → /egm-bootstrap → /egm-drift-report",
+    clicks: [
+      "v-click 1: Install the egm plugin dynamically inside Antigravity (/plugin).",
+      "v-click 2: Run /egm-bootstrap to synthesize the root workspace README.md blueprint.",
+      "v-click 3: Run /egm-drift-report to verify all 3,241 directory contracts match git HEAD before we brainstorm."
+    ]
+  },
+  {
+    id: "S13", act: 3, layout: "cast-full", kind: "cast", baseSec: 95,
+    title: "LIVE CAST 2 — 01-bootstrap.cast (0m 59s play · 6 stops · 1m 35s stage)",
+    clicks: [
+      "0. Start (AGY Start Page) → 1. Run /plugin (0.7s) → 2. Select egm in Discover (2.4s) → 3. egm Installed (3.0s)",
+      "4. Prompt: /egm-bootstrap (0.5s) → 5. Q1: Run EGM Drift Report? (29.1s) → 6. Root Blueprint & Drift Report Complete (25.3s)"
+    ]
+  },
+  {
+    id: "S14", act: 3, layout: "default", kind: "slide", baseSec: 30,
+    title: "The Specification Funnel: Human + Elephant (/egm-brainstorm)",
+    clicks: [
+      "v-click 1: Before asking a single question, the Elephant reads 49 README.md contracts across nuttx/ and apps/ — discovering the GPIO 26–29 ADC clobber upfront.",
+      "v-click 2: Single-question Socratic loop (Q1 Pin Mapping avoiding GPIO 27–29, Q2 Background Daemon vs USB-C NSH, Q3 Proportional PWM Brightness).",
+      "v-click 3: Readiness checkpoint synthesizes decisions into a 176-line concepts_brief.md."
+    ]
+  },
+  {
+    id: "S15", act: 3, layout: "cast-full", kind: "cast", baseSec: 160,
+    title: "LIVE CAST 3 — 02-brainstorm.cast (1m 46s play · 9 stops · 2m 40s stage)",
+    clicks: [
+      "0. Start (AGY Start Page) → 1. Prompt: /egm-brainstorm (0.5s) → 2–3. Q1/A1 Pin Mapping (30.3s) → 4–5. Q2/A2 Boot vs USB-C NSH (13.1s)",
+      "6–7. Q3/A3 PWM Bar Graph (5.1s) → [Q4–Q6 CLI trim] → 8. Q7 Readiness Checkpoint (28.2s) → 9. Goldfish Synthesis concepts_brief.md (28.4s)"
+    ]
+  },
+  {
+    id: "S16", act: 3, layout: "default", kind: "slide", baseSec: 25, canMergeInC: true,
+    title: "Section-by-Section Drafting & Planting the RP23XX_ADC_DIV Trap (/egm-draft)",
+    clicks: [
+      "v-click 1: /egm-draft turns concepts_brief.md into the full engineering spec (docs/designs/xiao-rp2350-bargraph.md) behind interactive section-approval gates.",
+      "v-click 2: Watch Stop 4 (Q3: Technical Plan) — both the Elephant and I approve throttling the ADC via CONFIG_RP23XX_ADC_DIV. Sounds completely reasonable... and it's a trap!"
+    ]
+  },
+  {
+    id: "S17", act: 3, layout: "cast-full", kind: "cast", baseSec: 151,
+    title: "LIVE CAST 4 — 03-draft.cast (1m 55s play · 6 stops · 2m 31s stage)",
+    clicks: [
+      "0. Start (AGY Start Page) → 1. Prompt: /egm-draft @concepts_brief.md (0.8s) → 2. Q1 Confirm Context (28.3s) → 3. Q2 Approve Overview & Goals (27.3s)",
+      "4. Q3 Approve Technical Plan [RP23XX_ADC_DIV false start!] (29.1s) → [Q4–Q5 trim] → 5. Draft Reconciled & Promoted to v0-draft (29.0s)"
+    ]
+  },
+  {
+    id: "S18", act: 3, layout: "default", kind: "slide", baseSec: 25,
+    title: "Debrief: Author Bias, Self-Sycophancy & Why We Need Goldfish",
+    clicks: [
+      "v-click 1: Why RP23XX_ADC_DIV fails — NuttX's rp23xx_adc.c uses START_ONCE (not free-running CS_START_MANY), where the RP2350 hardware divider is completely ignored and /dev/adc0 still fires 500,000 IRQ/s!",
+      "v-click 2: Author Bias — an LLM session (and human!) that spent 30 minutes drafting a design is psychologically and contextually invested in defending it. Enter the Goldfish."
+    ]
+  },
+  {
+    id: "S19", act: 3, layout: "default", kind: "slide", baseSec: 35,
+    title: "Unpacking The Goldfish: Stateless Adversarial Swarm (/egm-review)",
+    clicks: [
+      "v-click 1 — Stateless & Uninvested: Spawns fresh subagent context windows that only see the spec and the repo contracts — zero memory of our drafting session.",
+      "v-click 2 — Multi-Angle Adversarial Personas: Codebase Details, Hostile Design Critic, Implementation Readiness, and Zoom-Out Architect read 146 README.md contracts in parallel.",
+      "v-click 3 — Synthesizer + /egm-resolve: Deduplicates findings into Blockers (B-1..B-3) and Majors (M-1..M-5) for interactive human accept/reject."
+    ]
+  },
+  {
+    id: "S20", act: 3, layout: "default", kind: "slide", baseSec: 20, canMergeInC: true,
+    title: "What to Watch in 04-review.cast: B-1, /clear Amnesia, and Pass 2",
+    clicks: [
+      "v-click 1: Watch Pass 1 Item 1/12 (B-1) bust our RP23XX_ADC_DIV assumption and replace it with NVIC IRQ gating (up_enable_irq / up_disable_irq).",
+      "v-click 2: Watch us run /clear to wipe session memory completely, then launch Pass 2 with GoldfishContext to audit the fix itself!"
+    ]
+  },
+  {
+    id: "S21", act: 3, layout: "cast-full", kind: "cast", baseSec: 219,
+    title: "LIVE CAST 5 — 04-review.cast (2m 21s play · 13 stops · 3m 39s stage)",
+    clicks: [
+      "0. Start → 1–3. Pass 1 /egm-review (146 README reads, 38.3s) → 4–6. /egm-resolve & Reply: interactive (27.7s) → 7–8. Item 1/12 (B-1) NVIC IRQ Gating & Reply: accept (17.6s)",
+      "9–11. Ready for /clear → Run /clear → Session Cleared (5.5s) → 12–13. Pass 2 /egm-review with GoldfishContext catching CA-01 Short Read (29.6s)"
+    ]
+  },
+  {
+    id: "S22", act: 3, layout: "default", kind: "slide", baseSec: 30,
+    title: "Debrief: First-Order Catch (Pass 1) vs. Second-Order Catch (Pass 2)",
+    clicks: [
+      "v-click 1 — Pass 1 Caught Our Spec Bug (B-1): Replaced 500 kHz free-running IRQ storm with a 5-sample NVIC IRQ-gated burst (discarding 1 stale sample + averaging 4).",
+      "v-click 2 — Pass 2 Caught Pass 1's Bug (CA-01): Requesting 5 samples (25 bytes) from NuttX's default 8-sample FIFO (CONFIG_ADC_FIFOSIZE=8) blocks after 7 samples! /clear gave Pass 2 fresh eyes to fix the fix."
+    ]
+  },
+  {
+    id: "S23", act: 3, layout: "default", kind: "slide", baseSec: 20, canMergeInC: true,
+    title: "When the Spec is Hardened, Coding is Boring (05-implement Setup)",
+    clicks: [
+      "v-click 1: Across Pass 1 and Pass 2, the Goldfish caught 4 Blockers and 7 Majors in Markdown before a single line of C was written.",
+      "v-click 2: Watch 05-implement.cast pass 100% of host unit tests and compile nuttx/nuttx.uf2 (347K) on the very first attempt (0 retries), plus generate 9 new README.md contracts."
+    ]
+  },
+  {
+    id: "S24", act: 3, layout: "cast-full", kind: "cast", baseSec: 82,
+    title: "LIVE CAST 6 — 05-implement.cast (0m 58s play · 4 stops · 1m 22s stage)",
+    clicks: [
+      "0. Start (AGY Start Page) → 1. Prompt: Implement Firmware & Verify Build (0.5s) → 2. 1st-Attempt Test & nuttx.uf2 Build Complete (29.0s)",
+      "3. Prompt: Breadboard Wiring Guide & SVG (0.5s) → 4. Breadboard Wiring & SVG Complete (28.2s)"
+    ]
+  },
+  {
+    id: "S25", act: 3, layout: "hardware-callout", kind: "slide", baseSec: 25,
+    title: "Physical Breadboard Payoff: Vanilla (0.7\" Straddle) vs. EGM (Cols E & F)",
+    clicks: [
+      "Left: breadboard-wiring-crop-ef.svg — XIAO RP2350 seated properly across Columns E & F (0.3\" center trench), leaving Columns A–D and G–J completely open for jumper wires.",
+      "v-click 1: All 6 LEDs routed to non-ADC PWM pins (D1, D2, D4, D5, D8, D9) with 4 distinct PWM slices and RP2350-E9 pad isolation on GPIO 26."
+    ]
+  },
+  {
+    id: "S26", act: 3, layout: "default", kind: "slide", baseSec: 30,
+    title: "Candid Scorecard Callback: 5 / 10 vs. 10 / 10 (And Strict Engineering Honesty)",
+    clicks: [
+      "v-click 1 — Primary 10-Trap Benchmark: Vanilla Vibe 5 / 10 (3 hard fails, 4 partials) vs. EGM 10 / 10 (0 hardware or RTOS traps hit).",
+      "v-click 2 — Candid Post-Implementation Audit (6 Pass / 4 Partial / 0 Fail): A cold post-build Goldfish audit still flagged 4 polish items (e.g., SIGTERM handler & Makefile test harness) — adversarial review is an ongoing habit, not a magic wand."
+    ]
+  },
+
+  // ACT IV (FINALE)
+  {
+    id: "S27", act: 4, layout: "default", kind: "slide", baseSec: 35,
+    title: "Act IV Finale: From 'Docs for the AI' to 'Docs for the Human'",
+    clicks: [
+      "v-click 1 — The Comprehension Debt Problem: The AI scored 10/10 and shipped 872 lines of bargraph_main.c — but Dave Rensin's 3rd rule says 'Humans Own the Outcomes.' Can YOU debug this on the bench in 6 months?",
+      "v-click 2 — Rolling Docs for the Human (/teach-code): Built on Matt Pocock's /teach skill (npx skills add domesticmouse/skills) — turns our README contracts, spec, and Goldfish reports into a 6-lesson interactive HTML course."
+    ]
+  },
+  {
+    id: "S28", act: 4, layout: "cast-full", kind: "cast", baseSec: 124,
+    title: "LIVE CAST 7 — 06-teach-code.cast (1m 10s play · 9 stops · 2m 04s stage)",
+    clicks: [
+      "0–4. Shell: npx skills add domesticmouse/skills → Select teach-code → Installed (7.4s) → 5. AGY Start Page (2.2s)",
+      "6–7. Prompt: /teach-code Story Arc in ./tutorial/ & 6-Lesson Generation at 79x (30.3s) → 8–9. Prompt: Verify sync_listing.py + build.py & Complete (29.6s)"
+    ]
+  },
+  {
+    id: "S29", act: 4, layout: "default", kind: "showcase", baseSec: 45,
+    title: "FINALE SHOWCASE 1: Course Hub & 6-Lesson Story Arc (docs/egm/tutorial/index.html)",
+    clicks: [
+      "v-click 1: Open compiled docs/egm/tutorial/index.html — Figure 0.1 Mermaid progression from 0001 (Breadboard & 23.6 mA Budget) through 0006 (50 Hz bargraphd State Machine & NSH CLI).",
+      "v-click 2: Every lesson pairs Tufte-style prose + margin sidenotes with a real compiling C99 project in tutorial/apps/0001..0006/ (-std=c99 -Wall -Wextra -Werror -pedantic) verified by sync_listing.py and build.py --check."
+    ]
+  },
+  {
+    id: "S29b", act: 4, layout: "default", kind: "showcase", baseSec: 45, optionalIframe: true, hidden: true,
+    title: "FINALE LIVE IFRAME: Interactive Click-Through of ./tutorial/index.html",
+    clicks: [
+      "Full-viewport embedded <iframe src='./tutorial/index.html'> inside Slidev: click live from the Course Index into Lesson 0003 and drag the simulator sliders on stage."
+    ]
+  },
+  {
+    id: "S30", act: 4, layout: "default", kind: "showcase", baseSec: 60,
+    title: "FINALE SHOWCASE 2: Tactile JS Simulators, Fill-in-the-Blank C99 & Retrieval Quizzes",
+    clicks: [
+      "v-click 1 — 3 Live Hardware/Math Simulators: Drag the 0..3300 mV wiper in breadboard-simulator (Lesson 0001) and watch 6-channel 16-bit interpolation in pwm-segment-visualizer (Lesson 0002).",
+      "v-click 2 — Turning Goldfish Bugs into Play (adc-ema-simulator in Lesson 0003): Flip 'Discard stale msgs[0]' (CA-01) and toggle '>> 2 vs >> 4' (B-2) to watch the waveform peg at quarter turn!",
+      "v-click 3 — Active Recall over Passive Skimming: Prism keep-markup fill-in-the-blank C99 exercises + equal-word-count (10 words/option) retrieval quizzes."
+    ]
+  },
+  {
+    id: "S31", act: 4, layout: "default", kind: "showcase", baseSec: 45,
+    title: "FINALE SHOWCASE 3: Teaching Dead Ends (Lesson 0005), Printable Bench Sheets & Bonus Bug Catch!",
+    clicks: [
+      "v-click 1 — Dead Ends Become Curriculum: Lesson 0005 explicitly teaches WHY our RP23XX_ADC_DIV false start failed under START_ONCE, paired with 4 printable @media print A4 workbench reference sheets (nuttx-rp2350-driver-traps.md).",
+      "v-click 2 — The Ultimate Twist: Forcing Lesson 0006's host pthreads harness to compile and test under strict C99 caught 2 real firmware bugs we missed in Phase 5 (including a bargraph test MANUAL-mode clobber)!"
+    ]
+  },
+  {
+    id: "S32", act: 4, layout: "default", kind: "slide", baseSec: 30,
+    title: "The 'Roll Your Own Docs' Flywheel: Three Habits for Monday Morning",
+    clicks: [
+      "v-click 1 — Feed the Elephant First: Generate & maintain directory-level README.md contracts (/egm-bootstrap + /egm-drift-report) so agents navigate architecture instead of grepping blindly.",
+      "v-click 2 — Unleash Stateless Goldfish Before Coding: Review specs with fresh-context subagents (/egm-review + /clear) to catch hardware and system traps in Markdown.",
+      "v-click 3 — Pay Down Comprehension Debt Immediately: Run /teach-code so the machine's 10/10 codebase becomes a 10/10 mental model in your own head."
+    ]
+  },
+  {
+    id: "S33", act: 4, layout: "default", kind: "slide", baseSec: 19,
+    title: "Links, Open-Source Skills & Interactive Course",
+    clicks: [
+      "Repository & Experiment Runbook (github.com/domesticmouse/nuttxspace), EGM Plugin (/plugin -> egm), /teach-code Skill (npx skills add domesticmouse/skills), and Live 6-Lesson Course (/nuttxspace/tutorial/index.html)."
+    ]
+  }
+];
+
+let state = {
+  preset: "A",
+  slides: JSON.parse(JSON.stringify(INITIAL_SLIDES)),
+  lastMessage: "Active Preset: Preset A (Recommended — 33-Slide Balanced Low-Density Deck + 3-Slide Interactive Lesson Showcase)."
+};
+
+function fmtTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = Math.round(sec % 60);
+  return `${m}m ${String(s).padStart(2, '0')}s`;
+}
+
+function computeSummary(currentState) {
+  const activeSlides = currentState.slides.filter(s => !s.hidden && !s.merged);
+  const castSlides = activeSlides.filter(s => s.kind === "cast");
+  const showcaseSlides = activeSlides.filter(s => s.kind === "showcase");
+  const conceptSlides = activeSlides.filter(s => s.kind === "slide");
+
+  const castSec = castSlides.reduce((acc, s) => acc + s.baseSec, 0);
+  const showcaseSec = showcaseSlides.reduce((acc, s) => acc + s.baseSec, 0);
+  const conceptSec = conceptSlides.reduce((acc, s) => acc + s.baseSec, 0);
+  const totalSec = castSec + showcaseSec + conceptSec;
+
+  const nonCastClicks = activeSlides
+    .filter(s => s.kind !== "cast")
+    .reduce((acc, s) => acc + s.clicks.length, 0);
+
+  const byAct = { 1: 0, 2: 0, 3: 0, 4: 0 };
+  activeSlides.forEach(s => { byAct[s.act] += s.baseSec; });
+
+  return {
+    totalSlides: activeSlides.length,
+    conceptCount: conceptSlides.length + showcaseSlides.length,
+    castCount: castSlides.length,
+    showcaseCount: showcaseSlides.length,
+    nonCastClicks,
+    castSec,
+    showcaseSec,
+    conceptSec,
+    totalSec,
+    byAct
+  };
+}
+
+function applyPreset(preset) {
+  const fresh = JSON.parse(JSON.stringify(INITIAL_SLIDES));
+  if (preset === "A") {
+    state.preset = "A";
+    state.slides = fresh;
+    state.lastMessage = "Switched to Preset A (Recommended): 33 slides (26 low-density concept/showcase slides + 7 live casts), 3-slide Finale Showcase of docs/egm/tutorial/index.html, total 29m 51s.";
+  } else if (preset === "B") {
+    state.preset = "B";
+    fresh.forEach(s => {
+      if (s.optionalIframe) s.hidden = false;
+      if (["S02", "S04", "S10", "S11", "S19", "S29", "S30"].includes(s.id)) {
+        s.baseSec -= 5;
+      }
+    });
+    state.slides = fresh;
+    state.lastMessage = "Switched to Preset B (Expanded Live Iframe Finale): Adds S29b (full-screen live <iframe src='./tutorial/index.html'> click-through slide) and trims 35s across 7 slides to land at 30m 00s.";
+  } else if (preset === "C") {
+    state.preset = "C";
+    fresh.forEach(s => {
+      if (s.canMergeInC) s.merged = true;
+    });
+    state.slides = fresh;
+    state.lastMessage = "Switched to Preset C (Ultra-Lean 29-Slide Deck): Merges 4 pre-cast setup slides in Act III into their preceding slides, leaving a 1m 59s buffer under 30m 00s.";
+  }
+  render();
+}
+
+function toggleIframeSlide() {
+  const s = state.slides.find(x => x.id === "S29b");
+  if (!s) return;
+  s.hidden = !s.hidden;
+  state.lastMessage = s.hidden
+    ? "Hid S29b (Live <iframe src='./tutorial/index.html'> slide)."
+    : "Enabled S29b (Live <iframe src='./tutorial/index.html'> slide in Act IV Finale: +45s).";
+  render();
+}
+
+function adjustAllSlideTime(delta) {
+  state.slides.forEach(s => {
+    if (s.kind !== "cast" && !s.hidden && !s.merged) {
+      s.baseSec = Math.max(10, s.baseSec + delta);
+    }
+  });
+  state.lastMessage = `Adjusted every non-cast slide by ${delta > 0 ? '+' : ''}${delta}s.`;
+  render();
+}
+
+function adjustSingleSlide(id, delta) {
+  const s = state.slides.find(x => x.id === id);
+  if (!s) return;
+  s.baseSec = Math.max(10, s.baseSec + delta);
+  state.lastMessage = `Adjusted ${s.id} (${s.title}) by ${delta > 0 ? '+' : ''}${delta}s → ${s.baseSec}s.`;
+  render();
+}
+
+function toggleMergeSlide(id) {
+  const s = state.slides.find(x => x.id === id);
+  if (!s) return;
+  s.merged = !s.merged;
+  state.lastMessage = s.merged
+    ? `Merged/skipped ${s.id} (${s.title}) to save ${s.baseSec}s.`
+    : `Restored ${s.id} (${s.title}) as its own standalone slide (+${s.baseSec}s).`;
+  render();
+}
+
+function resetCurrentPreset() {
+  applyPreset(state.preset);
+}
+
+const ACT_INFO = {
+  1: { name: "Act I — The Hook & Real-World Embedded Stress Test", file: "slides/acts/01-hook-and-setup.md" },
+  2: { name: "Act II — The Vanilla Vibe Foil (Experiment A)", file: "slides/acts/02-vanilla-foil.md" },
+  3: { name: "Act III — Rolling Docs for the AI: The Elephant-Goldfish Model", file: "slides/acts/03-egm-journey.md" },
+  4: { name: "Act IV — Finale: Rolling Docs for the Human (/teach-code & Live HTML Course Showcase)", file: "slides/acts/04-teach-code-finale.md" }
+};
+
+function render() {
+  const sum = computeSummary(state);
+
+  document.getElementById("m-slides").textContent = `${sum.totalSlides} slides`;
+  document.getElementById("m-slides-sub").textContent = `${sum.conceptCount} concept/showcase + ${sum.castCount} casts`;
+  document.getElementById("m-clicks").textContent = `${sum.nonCastClicks} beats`;
+  document.getElementById("m-casts").textContent = fmtTime(sum.castSec);
+  document.getElementById("m-slide-time").textContent = fmtTime(sum.conceptSec);
+  document.getElementById("m-showcase-time").textContent = fmtTime(sum.showcaseSec);
+  document.getElementById("m-showcase-sub").textContent = `${sum.showcaseCount} showcase slides (tutorial/index.html)`;
+  document.getElementById("m-total").textContent = fmtTime(sum.totalSec);
+
+  const delta = 1800 - sum.totalSec;
+  const deltaEl = document.getElementById("m-budget-delta");
+  if (delta >= 0) {
+    deltaEl.textContent = `${delta}s buffer under 30m 00s`;
+    deltaEl.style.color = "#4ade80";
+  } else {
+    deltaEl.textContent = `${Math.abs(delta)}s OVER 30m 00s target`;
+    deltaEl.style.color = "#f87171";
+  }
+
+  ["a", "b", "c"].forEach(k => {
+    document.getElementById(`btn-preset-${k}`).classList.toggle("active", state.preset === k.toUpperCase());
+  });
+
+  const total = Math.max(1, sum.totalSec);
+  document.getElementById("b-act1").style.width = `${(sum.byAct[1] / total) * 100}%`;
+  document.getElementById("b-act2").style.width = `${(sum.byAct[2] / total) * 100}%`;
+  document.getElementById("b-act3").style.width = `${(sum.byAct[3] / total) * 100}%`;
+  document.getElementById("b-act4").style.width = `${(sum.byAct[4] / total) * 100}%`;
+
+  document.getElementById("leg-act1").textContent = `Act I: Hook & Setup (${fmtTime(sum.byAct[1])})`;
+  document.getElementById("leg-act2").textContent = `Act II: Vanilla Foil (${fmtTime(sum.byAct[2])})`;
+  document.getElementById("leg-act3").textContent = `Act III: EGM Journey (${fmtTime(sum.byAct[3])})`;
+  document.getElementById("leg-act4").textContent = `Act IV: /teach-code & Lesson Showcase (${fmtTime(sum.byAct[4])})`;
+  document.getElementById("last-action").innerHTML = state.lastMessage;
+
+  const container = document.getElementById("acts-container");
+  container.innerHTML = "";
+
+  [1, 2, 3, 4].forEach(actNum => {
+    const actSlides = state.slides.filter(s => s.act === actNum && !s.hidden);
+    const activeActSlides = actSlides.filter(s => !s.merged);
+    const actSec = activeActSlides.reduce((a, b) => a + b.baseSec, 0);
+
+    const secEl = document.createElement("div");
+    secEl.className = "act-section";
+    secEl.innerHTML = `
+      <div class="act-header">
+        <div class="act-title">${ACT_INFO[actNum].name}</div>
+        <div class="act-meta">${ACT_INFO[actNum].file} &middot; ${activeActSlides.length} slides &middot; ${fmtTime(actSec)}</div>
+      </div>
+      <div class="slide-list" id="act-list-${actNum}"></div>
+    `;
+    container.appendChild(secEl);
+
+    const listEl = secEl.querySelector(`#act-list-${actNum}`);
+    actSlides.forEach(s => {
+      const row = document.createElement("div");
+      row.className = `slide-row ${s.kind === 'cast' ? 'is-cast' : ''} ${s.kind === 'showcase' ? 'is-showcase' : ''} ${s.merged ? 'is-merged' : ''}`;
+      const clicksHtml = s.clicks.map(c => `<li>${c}</li>`).join("");
+      const controlsHtml = s.kind === "cast"
+        ? `<div class="metric-sub">Locked in Ticket 03</div>`
+        : `<div class="mini-btns">
+             <button onclick="adjustSingleSlide('${s.id}', -5)">-5s</button>
+             <button onclick="adjustSingleSlide('${s.id}', 5)">+5s</button>
+             <button onclick="toggleMergeSlide('${s.id}')">${s.merged ? 'Restore' : 'Merge/Skip'}</button>
+           </div>`;
+      row.innerHTML = `
+        <div class="slide-id">${s.id}</div>
+        <div><span class="layout-pill">layout: ${s.layout}</span></div>
+        <div>
+          <div class="slide-title">${s.title}</div>
+          <ul class="clicks-list">${clicksHtml}</ul>
+        </div>
+        <div class="slide-actions">
+          <div class="time-badge">${s.merged ? '0s (merged)' : s.baseSec + 's'}</div>
+          ${controlsHtml}
+        </div>
+      `;
+      listEl.appendChild(row);
+    });
+  });
+}
+
+render();
+</script>
+</body>
+</html>
