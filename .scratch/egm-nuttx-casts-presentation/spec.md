@@ -751,7 +751,7 @@
 
 #### `S30` — FINALE SHOWCASE 2: Interactive JS Simulators, Fill-in-the-Blank C99 & Quizzes (`Lesson 0001–0003`) (`04-teach-code-finale.md` · `layout: default` · `60s` · `3` `v-click`s)
 - **Visual Specification**:
-  - **`[On Load]`**: Header — **Active Recall & Tactile Hardware Simulation Inside the Browser** (with direct links to `./tutorial/lessons/0001-breadboard-and-current-budget.html`, `0002-sixteen-bit-pwm-bargraph-scaling.html`, and `0003-adc-burst-shifting-and-ema-filter.html`).
+  - **`[On Load]`**: Header — **Active Recall & Tactile Hardware Simulation Inside the Browser** (with direct links to `./tutorial/lessons/0001-breadboard-circuit-and-current-budget.html`, `0002-proportional-bargraph-math-and-pwm-scaling.html`, and `0003-q4-ema-filtering-and-adc-extraction.html`).
   - **`[v-click 1]`**: **Live Hardware & PWM Simulators (`Lesson 0001` & `0002`)** — Drag the `0..3300 mV` wiper in `breadboard-simulator` (watching per-pin mA and `Cols E & F` geometry) and scrub 6-channel `0..65535` duty cycles in `pwm-segment-visualizer`.
   - **`[v-click 2]`**: **Turning Goldfish Catches into Interactive Play (`Lesson 0003` `adc-ema-simulator`)** — Toggle *"Discard stale `msgs[0]`"* (`CA-01`) and flip `>> 2` vs `(ema_q4 + 8) >> 4` (`B-2`) to watch the bar graph peg at a quarter-turn of the knob!
   - **`[v-click 3]`**: **Tufte Sidenotes, Fill-in-the-Blank C99 & Equal-Length Quizzes** — Right-margin sidenotes, Prism `keep-markup` C99 exercises, and Matt Pocock's retrieval quizzes where every option has the exact same word count (`10 words/option`).
@@ -769,7 +769,7 @@
 
 #### `S31` — FINALE SHOWCASE 3: Teaching Dead Ends (`Lesson 0005`), Printable Bench Sheets & Bonus Bug Catch! (`04-teach-code-finale.md` · `layout: default` · `45s` · `2` `v-click`s)
 - **Visual Specification**:
-  - **`[On Load]`**: Header — **Why Teaching the Code Makes the Engineering Better** (with links to `./tutorial/lessons/0005-nuttx-out-of-tree-bsp-and-irq-gating.html` and `./tutorial/reference/nuttx-rp2350-driver-traps.html`).
+  - **`[On Load]`**: Header — **Why Teaching the Code Makes the Engineering Better** (with links to `./tutorial/lessons/0005-out-of-tree-bsp-and-adc-irq-gating.html` and `./tutorial/reference/nuttx-rp2350-driver-traps.html`).
   - **`[v-click 1]`**: **Dead Ends as Curriculum + Printable `@media print` A4 Bench Sheets** — `Lesson 0005` explicitly teaches *why* `CONFIG_RP23XX_ADC_DIV` failed under `START_ONCE`, paired with `4` single-page A4 reference sheets (`nuttx-rp2350-driver-traps.md`) formatted for the workbench.
   - **`[v-click 2]`**: **The Bonus Twist — Docs for Humans Catch Firmware Bugs Too!** — Compiling `Lesson 0006`'s strict C99 `pthreads` harness caught **2 real bugs** missed in Phase 5 (including `bargraph test` forgetting to set `MANUAL` mode so the `50 Hz` loop clobbered the LED sweep after `20 ms`).
 - **Verbatim Speaker Script (`bjm-voice` · `~105 words`)**:

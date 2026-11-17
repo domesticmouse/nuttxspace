@@ -83,9 +83,9 @@ layout: default
 <div class="flex items-center justify-between mb-6">
   <h2 class="text-2xl font-bold m-0">Finale Showcase 2: Interactive JS Simulators, C99 Exercises &amp; Quizzes</h2>
   <div class="flex items-center gap-2 text-xs font-mono">
-    <a href="./tutorial/lessons/0001-breadboard-and-current-budget.html" target="_blank" class="px-2.5 py-1 rounded bg-gray-900 border border-gray-700 text-cyan-300 hover:underline">0001 &nearr;</a>
-    <a href="./tutorial/lessons/0002-sixteen-bit-pwm-bargraph-scaling.html" target="_blank" class="px-2.5 py-1 rounded bg-gray-900 border border-gray-700 text-cyan-300 hover:underline">0002 &nearr;</a>
-    <a href="./tutorial/lessons/0003-adc-burst-shifting-and-ema-filter.html" target="_blank" class="px-2.5 py-1 rounded bg-gray-900 border border-gray-700 text-cyan-300 hover:underline">0003 &nearr;</a>
+    <a href="./tutorial/lessons/0001-breadboard-circuit-and-current-budget.html" target="_blank" class="px-2.5 py-1 rounded bg-gray-900 border border-gray-700 text-cyan-300 hover:underline">0001 &nearr;</a>
+    <a href="./tutorial/lessons/0002-proportional-bargraph-math-and-pwm-scaling.html" target="_blank" class="px-2.5 py-1 rounded bg-gray-900 border border-gray-700 text-cyan-300 hover:underline">0002 &nearr;</a>
+    <a href="./tutorial/lessons/0003-q4-ema-filtering-and-adc-extraction.html" target="_blank" class="px-2.5 py-1 rounded bg-gray-900 border border-gray-700 text-cyan-300 hover:underline">0003 &nearr;</a>
   </div>
 </div>
 
@@ -122,7 +122,7 @@ layout: default
 <div class="flex items-center justify-between mb-6">
   <h2 class="text-2xl font-bold m-0">Finale Showcase 3: Teaching Dead Ends, Printable Bench Sheets &amp; Bug Catch!</h2>
   <div class="flex items-center gap-2 text-xs font-mono">
-    <a href="./tutorial/lessons/0005-nuttx-out-of-tree-bsp-and-irq-gating.html" target="_blank" class="px-2.5 py-1 rounded bg-gray-900 border border-gray-700 text-cyan-300 hover:underline">Lesson 0005 &nearr;</a>
+    <a href="./tutorial/lessons/0005-out-of-tree-bsp-and-adc-irq-gating.html" target="_blank" class="px-2.5 py-1 rounded bg-gray-900 border border-gray-700 text-cyan-300 hover:underline">Lesson 0005 &nearr;</a>
     <a href="./tutorial/reference/nuttx-rp2350-driver-traps.html" target="_blank" class="px-2.5 py-1 rounded bg-gray-900 border border-gray-700 text-amber-300 hover:underline">A4 Traps Sheet &nearr;</a>
   </div>
 </div>

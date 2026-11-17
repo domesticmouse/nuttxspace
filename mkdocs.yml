@@ -64,6 +64,23 @@ extra_javascript:
 
 nav:
   - Home: index.md
+  - Presentation:
+      - "Live Slidev Deck (HTML)": slides/index.html
+      - "Authoritative Presentation Spec": egm-nuttx-casts-presentation/spec.md
+      - "Verbatim Speaker Script (bjm-voice)": egm-nuttx-casts-presentation/speaker-script-bjm-voice.md
+      - "Presentation Wayfinder Map": egm-nuttx-casts-presentation/map.md
+      - "Slide Structure & Timing Planner": egm-nuttx-casts-presentation/slide-structure-prototype.md
+      - "Interactive Timing Planner (HTML)": egm-nuttx-casts-presentation/slide-structure-prototype.html
+      - "Cast Curation & Trim Schedule": egm-nuttx-casts-presentation/cast-curation-prototype.md
+      - "Interactive Cast Curation Matrix (HTML)": egm-nuttx-casts-presentation/cast-curation-prototype.html
+      - "Design & Staging Tickets (01–07)":
+          - "01 — Catalog Cast Recording Stop Points": egm-nuttx-casts-presentation/issues/01-catalog-cast-recording-stop-points.md
+          - "02 — Hardware & NuttX Challenge Staging": egm-nuttx-casts-presentation/issues/02-hardware-and-nuttx-challenge-staging.md
+          - "03 — Curate Cast Recording Segments": egm-nuttx-casts-presentation/issues/03-curate-cast-recording-segments.md
+          - "04 — Explain EGM & Antigravity on Stage": egm-nuttx-casts-presentation/issues/04-explain-egm-and-antigravity-on-stage.md
+          - "05 — Slide Structure & Pacing Outline": egm-nuttx-casts-presentation/issues/05-slide-structure-and-pacing-outline.md
+          - "06 — Speaker Script & Narrative (bjm-voice)": egm-nuttx-casts-presentation/issues/06-speaker-script-and-narrative-bjm-voice.md
+          - "07 — Assemble & Verify Presentation Spec": egm-nuttx-casts-presentation/issues/07-assemble-and-verify-presentation-spec.md
   - Tutorials:
       - "From Zero to xiao-rp2350-bargraph": tutorials/xiao-rp2350-bargraph.md
       - "Replicating the NuttX EGM Experiment": tutorials/egm-replication-tutorial.md

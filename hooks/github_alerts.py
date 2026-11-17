@@ -5,6 +5,7 @@ from __future__ import annotations
 import pathlib
 import posixpath
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -280,6 +281,40 @@ def on_files(files, config):
                         inclusion=InclusionLevel.NOT_IN_NAV,
                     )
                 )
+
+    # 2b. Presentation specification, script, map, issues, and HTML prototypes under .scratch/egm-nuttx-casts-presentation/
+    pres_dir = REPO_ROOT / ".scratch" / "egm-nuttx-casts-presentation"
+    if pres_dir.is_dir():
+        scratch_root = REPO_ROOT / ".scratch"
+        for pres_file in sorted(pres_dir.rglob("*")):
+            if not pres_file.is_file() or pres_file.suffix not in (".md", ".html"):
+                continue
+            src_uri = pres_file.relative_to(scratch_root).as_posix()
+            if files.get_file_from_path(src_uri) is None:
+                files.append(
+                    File(
+                        src_uri,
+                        src_dir=str(scratch_root),
+                        dest_dir=config["site_dir"],
+                        use_directory_urls=config["use_directory_urls"],
+                        inclusion=(
+                            InclusionLevel.INCLUDED
+                            if pres_file.suffix == ".md"
+                            else InclusionLevel.NOT_IN_NAV
+                        ),
+                    )
+                )
+
+    # 2c. Register placeholder for compiled Slidev deck at slides/index.html (populated in on_post_build)
+    if files.get_file_from_path("slides/index.html") is None:
+        files.append(
+            File.generated(
+                config,
+                "slides/index.html",
+                content="",
+                inclusion=InclusionLevel.NOT_IN_NAV,
+            )
+        )
 
     # 3. Un-exclude .gitignore files inside docs/ so documentation links resolve
     for f in list(files):
@@ -604,6 +639,8 @@ def _rewrite_relative_links(markdown: str, src_uri: str) -> str:
 
     if src_uri == "EXPERIMENT_RUNBOOK.md":
         phys_dir = REPO_ROOT
+    elif src_uri.startswith("egm-nuttx-casts-presentation/"):
+        phys_dir = (REPO_ROOT / ".scratch" / posixpath.dirname(src_uri)).resolve()
     else:
         phys_dir = (DOCS_ROOT / posixpath.dirname(src_uri)).resolve()
     doc_dir = posixpath.dirname(src_uri)
@@ -652,6 +689,19 @@ def _rewrite_relative_links(markdown: str, src_uri: str) -> str:
 
         if repo_rel.startswith("prototypes/") and resolved.is_file():
             rel_to_doc = posixpath.relpath(repo_rel, doc_dir or ".")
+            return f"{prefix}{rel_to_doc}{frag_with_hash}{suffix}"
+
+        if repo_rel.startswith(".scratch/egm-nuttx-casts-presentation/") and resolved.is_file():
+            pres_target = repo_rel[len(".scratch/") :]
+            if resolved.suffix == ".md":
+                lm = LINE_FRAG_RE.match(frag)
+                if lm:
+                    frag_with_hash = _heading_slug_for_line(resolved, int(lm.group(1)))
+            rel_to_doc = posixpath.relpath(pres_target, doc_dir or ".")
+            return f"{prefix}{rel_to_doc}{frag_with_hash}{suffix}"
+
+        if repo_rel in ("slides", "slides/slides.md"):
+            rel_to_doc = posixpath.relpath("slides/index.html", doc_dir or ".")
             return f"{prefix}{rel_to_doc}{frag_with_hash}{suffix}"
 
         if repo_rel.startswith("docs/"):
@@ -786,6 +836,35 @@ def _convert_github_alerts(markdown: str) -> str:
     return "\n".join(out) + ("\n" if markdown.endswith("\n") else "")
 
 
+def _prepend_presentation_banner(markdown: str, src_uri: str) -> str:
+    """Prepend a navigation banner on egm-nuttx-casts-presentation pages linking to the Slidev deck."""
+    doc_dir = posixpath.dirname(src_uri)
+    slides_rel = posixpath.relpath("slides/index.html", doc_dir or ".")
+    extra_links = ""
+    if src_uri == "egm-nuttx-casts-presentation/slide-structure-prototype.md":
+        extra_links = " · [Open Interactive Timing Planner (HTML)](slide-structure-prototype.html)"
+    elif src_uri == "egm-nuttx-casts-presentation/cast-curation-prototype.md":
+        extra_links = " · [Open Interactive Cast Curation Matrix (HTML)](cast-curation-prototype.html)"
+    elif src_uri in (
+        "egm-nuttx-casts-presentation/spec.md",
+        "egm-nuttx-casts-presentation/map.md",
+        "egm-nuttx-casts-presentation/speaker-script-bjm-voice.md",
+    ):
+        extra_links = (
+            " · [Timing Planner (HTML)](slide-structure-prototype.html)"
+            " · [Cast Curation Matrix (HTML)](cast-curation-prototype.html)"
+        )
+
+    banner = [
+        '!!! tip "Live Slidev Presentation Deck"',
+        f"    [**Launch Slidev Presentation Deck**]({slides_rel}) · "
+        f"[Slide Overview]({slides_rel}#/overview) · "
+        f"[Presenter Console]({slides_rel}#/presenter){extra_links}",
+        "",
+    ]
+    return "\n".join(banner) + markdown
+
+
 def on_page_markdown(markdown, page, config, files):
     """Transform directives, normalize links, and convert GitHub alerts."""
     src_uri = page.file.src_uri
@@ -794,10 +873,21 @@ def on_page_markdown(markdown, page, config, files):
 
     if src_uri.startswith("egm/tutorial/"):
         markdown = _transform_tutorial_directives(markdown, src_uri)
+    elif src_uri.startswith("egm-nuttx-casts-presentation/"):
+        markdown = _prepend_presentation_banner(markdown, src_uri)
 
     markdown = _append_source_inventory(markdown, src_uri)
     markdown = _rewrite_relative_links(markdown, src_uri)
     return _convert_github_alerts(markdown)
+
+
+def on_post_build(config):
+    """Copy compiled Slidev presentation deck (slides/dist) into site/slides."""
+    slides_dist = REPO_ROOT / "slides" / "dist"
+    if not (slides_dist / "index.html").is_file():
+        return
+    dest_slides = pathlib.Path(config["site_dir"]) / "slides"
+    shutil.copytree(slides_dist, dest_slides, dirs_exist_ok=True)
 
 
 def on_page_content(html, page, config, files):

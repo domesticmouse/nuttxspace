@@ -7,7 +7,7 @@
     "predev": "npm run sync-casts",
     "dev": "slidev",
     "prebuild": "npm run sync-casts",
-    "build": "slidev build --base /nuttxspace/",
+    "build": "slidev build --base /nuttxspace/slides/ --router-mode hash",
     "export": "slidev export"
   },
   "dependencies": {

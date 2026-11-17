@@ -6,6 +6,14 @@ The workspace builds an out-of-tree custom board and 20 Hz potentiometer-to-6-LE
 
 ## Documentation Map
 
+### Conference Presentation: "Roll Your Own Docs: Custom AI Skills for Rapid Tech Ramp-Up"
+- [**Live 33-Slide Slidev Presentation Deck**](../slides/slides.md) ([Slide Overview](slides/index.html#/overview) · [Presenter Console](slides/index.html#/presenter)) — Interactive dark-mode conference deck featuring 7 embedded `asciinema` recordings (`53` stop points), progressive `v-click` reveals, breadboard SVG comparisons, and the live `/teach-code` course showcase.
+- [Authoritative Presentation Specification](../.scratch/egm-nuttx-casts-presentation/spec.md) and [Verbatim Speaker Script (`bjm-voice`)](../.scratch/egm-nuttx-casts-presentation/speaker-script-bjm-voice.md) — Complete 30-minute (`29m 51s`) slide-by-slide stage specification and Australian English narrative.
+- [Presentation Wayfinder Map](../.scratch/egm-nuttx-casts-presentation/map.md) and Design Tickets: [01 Cast Catalog](../.scratch/egm-nuttx-casts-presentation/issues/01-catalog-cast-recording-stop-points.md) · [02 Hardware & NuttX Staging](../.scratch/egm-nuttx-casts-presentation/issues/02-hardware-and-nuttx-challenge-staging.md) · [03 Cast Curation](../.scratch/egm-nuttx-casts-presentation/issues/03-curate-cast-recording-segments.md) · [04 Staging EGM Mechanics](../.scratch/egm-nuttx-casts-presentation/issues/04-explain-egm-and-antigravity-on-stage.md) · [05 Slide Structure & Pacing](../.scratch/egm-nuttx-casts-presentation/issues/05-slide-structure-and-pacing-outline.md) · [06 Speaker Script](../.scratch/egm-nuttx-casts-presentation/issues/06-speaker-script-and-narrative-bjm-voice.md) · [07 Spec Assembly & Audit](../.scratch/egm-nuttx-casts-presentation/issues/07-assemble-and-verify-presentation-spec.md).
+- Interactive Planning Prototypes:
+  - [Slide Structure & Timing Planner (`MD`)](../.scratch/egm-nuttx-casts-presentation/slide-structure-prototype.md) · [Interactive Timing Planner (`HTML`)](../.scratch/egm-nuttx-casts-presentation/slide-structure-prototype.html)
+  - [Cast Curation & Trim Schedule (`MD`)](../.scratch/egm-nuttx-casts-presentation/cast-curation-prototype.md) · [Interactive Cast Curation Matrix (`HTML`)](../.scratch/egm-nuttx-casts-presentation/cast-curation-prototype.html)
+
 ### Comparative Experiment: Vanilla Vibe Coding vs. Full EGM Flow
 - [Comparative Experiment Runbook](../EXPERIMENT_RUNBOOK.md) — End-to-end operator checklist, trace correlations, and defect scorecard comparing Vanilla Vibe Coding (`nuttxspace-vanilla`) against the full Engineering Guidance Model workflow (`nuttxspace-egm`).
 - [Vanilla vs. EGM Comparison Report](reports/vanilla-vs-egm-comparison.md) — Independent read-only Goldfish audit grading both captured implementations across all 10 hardware/RTOS invariants and reconciling recording/trace telemetry.

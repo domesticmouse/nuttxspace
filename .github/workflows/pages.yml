@@ -38,6 +38,21 @@ jobs:
       - name: Install MkDocs Material
         run: pip install mkdocs-material markdown-it-py
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: slides/package-lock.json
+
+      - name: Install Slidev dependencies
+        working-directory: slides
+        run: npm ci
+
+      - name: Build Slidev presentation deck
+        working-directory: slides
+        run: npm run build
+
       - name: Build site
         run: mkdocs build
 
