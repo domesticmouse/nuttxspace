@@ -1,7 +1,7 @@
 # Roll Your Own Docs: Custom AI Skills for Rapid Tech Ramp-Up — Presentation Map
 
 Label: wayfinder:map
-Status: open
+Status: resolved
 
 ## Destination
 
@@ -40,6 +40,7 @@ A complete, slide-by-slide presentation specification and speaker narrative at `
 - [Prototype the slide-by-slide outline and timing skeleton](./issues/05-slide-by-slide-outline-prototype.md): Locked 214 stage steps (S001–S214) across 26 narrative beats in [outline-prototype.md](./outline-prototype.md) — 208 low-density visual transitions averaging 7.8s (96 [Slide], 88 [v-click], 24 [Code-step], all 7.0s–9.0s) + 6 [Live-cast] segments (181.6s) + 3 freeze-frame players, grounded in Dave Rensin's Elephant / Goldfish / Human framework and Matt Pocock's /teach → /teach-code evolution.
 - [Specify exact code snippets, report excerpts, and SVG callouts for each visual step](./issues/06-exact-visual-callouts-and-code-excerpts.md): Locked all 24 Shiki [Code-step] progressions (3–8 lines each across Acts II–V), 3-field Goldfish finding cards (B-1..B-3, CA-01), single-row telemetry/scorecard reveals, breadboard SVG viewBox crops (0 0 1160 1120 full, 150 130 500 500 EGM Cols E&F 0.3", 120 180 320 320 Vanilla c1..h7 0.7"), and contract/codelab callout regions.
 - [Shape the spoken narrative, act transitions, and bjm-voice phrasing](./issues/07-speaker-narrative-and-transitions.md): Locked 16–24 word spoken cadence in Australian English (`bjm-voice`), prompt-and-effect voiceover cues for all 6 live cast windows and 3 freeze-frames (never reading off screen), 5 act transitions, fair credit to Vanilla (`D3–D8` & `bargraph_logic.c`), and candid self-corrections (`RP23XX_ADC_DIV` approval, Phase 5 shortcuts, `up_enable_irq` exit race, `0.6"` XIAO breadboard straddle, `25-98ffad8f` HTML gate) plus Dave Rensin & Matt Pocock credits.
+- [Assemble and verify the complete presentation specification in spec.md](./issues/08-assemble-and-verify-presentation-spec.md): Compiled the canonical 1,197-line presentation specification at [spec.md](./spec.md) covering all 214 steps (`S001`–`S214`, `1,800.0s`), 24 verified `3–8` line `[Code-step]` excerpts, and `bjm-voice` spoken script; verified zero timing gaps, zero broken repo paths/`#L` ranges, and zero prose spelling/slop violations.
 
 ## Not yet specified
 
