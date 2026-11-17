@@ -35,7 +35,7 @@ layout: default
 </div>
 
 <div class="w-full flex items-center justify-center">
-  <img src="./images/breadboard-scopes.svg" alt="Solderless Breadboard Internal Connections" class="w-full max-h-[430px] object-contain rounded-xl border border-gray-800 shadow-lg" />
+  <img src="/images/breadboard-scopes.svg" alt="Solderless Breadboard Internal Connections" class="w-full max-h-[430px] object-contain rounded-xl border border-gray-800 shadow-lg" />
 </div>
 
 <!--
@@ -48,7 +48,7 @@ layout: center
 
 <!-- S02b -->
 <div class="w-full h-full flex items-center justify-center">
-  <img src="./images/assets-breadboard-wiring.svg" alt="Physical Breadboard Wiring: XIAO RP2350 6-LED Bar Graph" class="w-full max-h-[500px] object-contain rounded-xl border border-gray-800 shadow-lg" />
+  <img src="/images/assets-breadboard-wiring.svg" alt="Physical Breadboard Wiring: XIAO RP2350 6-LED Bar Graph" class="w-full max-h-[500px] object-contain rounded-xl border border-gray-800 shadow-lg" />
 </div>
 
 <!--
