@@ -49,12 +49,16 @@ Here we are on the Antigravity start screen. Let's drop in the bar graph prompt.
 -->
 
 ---
-layout: center
+layout: default
 ---
 
 <!-- S07a -->
-<div class="w-full h-full flex items-center justify-center">
-  <img src="/images/breadboard_circuit.svg" alt="Vanilla Vibe Generated Breadboard Wiring SVG" class="w-full max-h-[500px] object-contain rounded-xl border border-gray-800 shadow-lg" />
+<div class="flex items-center gap-3 mb-4">
+  <h2 class="text-2xl font-bold m-0">Vanilla Vibe&rsquo;s Generated Breadboard Wiring</h2>
+</div>
+
+<div class="w-full flex items-center justify-center">
+  <img src="/images/breadboard_circuit.svg" alt="Vanilla Vibe Generated Breadboard Wiring SVG" class="w-full max-h-[430px] object-contain rounded-xl border border-gray-800 shadow-lg" />
 </div>
 
 <!--

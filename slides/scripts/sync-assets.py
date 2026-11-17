@@ -148,7 +148,13 @@ def main() -> int:
         raise FileNotFoundError("Missing breadboard SVG source files.")
 
     shutil.copy2(egm_svg, images_dir / "breadboard-wiring.svg")
-    shutil.copy2(vanilla_svg, images_dir / "breadboard_circuit.svg")
+    make_cropped_svg(
+        vanilla_svg,
+        images_dir / "breadboard_circuit.svg",
+        view_box="0 0 1200 760",
+        width="1200",
+        height="760",
+    )
     shutil.copy2(assets_scopes_svg, images_dir / "breadboard-scopes.svg")
     shutil.copy2(assets_wiring_svg, images_dir / "assets-breadboard-wiring.svg")
 
