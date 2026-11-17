@@ -452,25 +452,31 @@ Here is the full breadboard wiring SVG that EGM generated in one pass. Notice th
 
 ---
 layout: hardware-callout
-title: "Physical Breadboard Payoff: Vanilla (0.7&quot; Straddle) vs. EGM (Cols E &amp; F)"
+title: "Breadboard Reality Check: Electrical Wins vs. Physical Footprint (0.6&quot; XIAO)"
 image: /images/breadboard-wiring-crop-ef.svg
-imageCaption: "docs/egm/breadboard-wiring.svg — XIAO RP2350 seated across Columns E & F (0.3&quot; centre trench)"
+imageCaption: "docs/egm/breadboard-wiring.svg — XIAO RP2350 drawn across Cols E & F (0.3&quot; trench, widened visually)"
 ---
 
 <!-- S25 -->
 <div class="space-y-4">
-  <div v-click class="p-5 rounded-xl bg-emerald-950/20 border border-emerald-500/35 space-y-2.5">
-    <div class="text-xs font-mono text-emerald-400 uppercase tracking-wide">Physically Buildable on the Bench</div>
-    <ul class="text-sm text-gray-200 space-y-2 list-disc pl-5 m-0 leading-relaxed">
-      <li>Seated cleanly across <strong class="text-white">Columns E &amp; F (<code class="text-emerald-300">0.3&quot;</code> centre trench)</strong> leaving 4 open tie-points on every row (<code class="text-gray-300">A&ndash;D</code> and <code class="text-gray-300">G&ndash;J</code>).</li>
-      <li>Routes LEDs to <strong class="text-white">6 non-ADC PWM pins</strong> (<code class="text-cyan-300">D1, D2, D4, D5, D8, D9</code>).</li>
+  <div v-click class="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/35 space-y-2">
+    <div class="text-xs font-mono text-emerald-400 uppercase tracking-wide">Verified Electrical &amp; Pinout Wins</div>
+    <ul class="text-sm text-gray-200 space-y-1.5 list-disc pl-5 m-0 leading-relaxed">
+      <li>Routes LEDs to <strong class="text-white">6 non-ADC PWM pins</strong> (<code class="text-cyan-300">D1, D2, D4, D5, D8, D9</code>), leaves <code class="text-gray-300">5V</code> unconnected, and budgets <code class="text-emerald-300">23.6 mA</code> with <code class="text-gray-300">330 &Omega;</code> resistors.</li>
       <li>Disables digital input buffer <code class="text-emerald-300">IE=0</code> on <code class="text-gray-300">GPIO 26</code> to defeat Erratum <code class="text-amber-300">RP2350-E9</code>.</li>
     </ul>
+  </div>
+
+  <div v-click class="p-4 rounded-xl bg-amber-950/20 border border-amber-500/35 space-y-2">
+    <div class="text-xs font-mono text-amber-400 uppercase tracking-wide">Physical Footprint Catch (0.3&quot; vs. 0.6&quot; XIAO Width)</div>
+    <p class="text-sm text-gray-200 m-0 leading-relaxed">
+      Both runs missed the <strong class="text-white"><code class="text-amber-300">0.6&quot;</code> (<code class="text-gray-300">15.24 mm</code>)</strong> XIAO header spacing (<code class="text-gray-300">Cols C &amp; G</code> or <code class="text-gray-300">D &amp; H</code>): Vanilla spanned <strong class="text-red-300">0.7&quot;</strong> (<code class="text-gray-300">Cols C&ndash;H</code>), while EGM seated it in <strong class="text-amber-300">Cols E &amp; F (<code class="text-amber-300">0.3&quot;</code>)</strong>&mdash;masked in the SVG by widening the visual trench.
+    </p>
   </div>
 </div>
 
 <!--
-Look at docs/egm/breadboard-wiring.svg on the left. The XIAO RP2350 sits cleanly across Columns E and F over the zero-point-three-inch centre trench, leaving four open tie-points on every row, routing the six LEDs to non-ADC PWM pins (D1, D2, D4, D5, D8, D9), and disabling IE on GPIO 26 to defeat Erratum RP2350-E9.
+Zooming in on docs/egm/breadboard-wiring.svg gives us a great engineering honesty check. On the electrical side, EGM nailed it: six non-ADC PWM pins (D1, D2, D4, D5, D8, D9), 330-ohm resistors keeping total draw at 23.6 milliamps, 5V left unconnected, and IE disabled on GPIO 26 to defeat Erratum RP2350-E9. But look at the physical footprint: a XIAO RP2350's headers are 0.6 inches apart—meaning it needs Columns C and G, or D and H. Vanilla stretched it too wide to Columns C and H (0.7 inches), while EGM seated it too narrow in Columns E and F (0.3 inches) and hid the mismatch by drawing a wider centre trench in the SVG. Contracts caught every silicon and RTOS invariant, but mechanical dimensions still deserve a real-world check.
 -->
 
 ---
