@@ -31,6 +31,8 @@ A complete, slide-by-slide presentation specification and speaker narrative at `
 
 <!-- the index: one line per closed ticket, enough to judge relevance, then zoom the link for the detail the ticket holds -->
 
+- [Catalog Existing Cast Recordings, Stop Points, and Terminal Events](./issues/01-catalog-cast-recording-stop-points.md): Cataloged all 7 recording prototypes in `prototypes/` with raw vs warped runtimes, segment counts, chapter markers, and narrative beats across baseline vibe coding, EGM Phases 1–5, and the /teach-code course.
+
 ## Not yet specified
 
 - Exact timing split between spoken setup slides vs live recording playback in the final deck.

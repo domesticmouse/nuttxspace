@@ -1,7 +1,7 @@
 # Staging the Hardware Challenge and NuttX RTOS Complexity on Stage
 
 Type: grilling
-Status: open
+Status: claimed
 Blocked by: 
 
 ## Question
