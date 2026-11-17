@@ -195,7 +195,7 @@ layout: default
     </p>
   </div>
 
-  <div class="p-5 rounded-xl bg-cyan-950/15 border border-cyan-500/30 space-y-2">
+  <div v-click class="p-5 rounded-xl bg-cyan-950/15 border border-cyan-500/30 space-y-2">
     <div class="text-xs font-mono text-cyan-400 uppercase">Industrial POSIX RTOS</div>
     <div class="text-lg font-bold text-white">Apache NuttX (<code class="text-cyan-300">nuttx/</code> + <code class="text-cyan-300">apps/</code>)</div>
     <p class="text-xs text-gray-300 m-0 leading-relaxed">
@@ -279,7 +279,7 @@ layout: default
 </p>
 
 <div class="grid grid-cols-2 gap-6">
-  <div v-click class="p-6 rounded-xl bg-red-950/15 border border-red-500/30 space-y-3">
+  <div class="p-6 rounded-xl bg-red-950/15 border border-red-500/30 space-y-3">
     <div class="text-xs font-mono text-red-400 uppercase">Experiment A &middot; The Foil</div>
     <h3 class="text-xl font-bold text-white m-0">Vanilla Vibe Coding</h3>
     <ul class="text-sm text-gray-300 space-y-2 list-disc pl-5 m-0">

@@ -74,7 +74,7 @@ imageCaption: "docs/vanilla/breadboard_circuit.svg — XIAO RP2350 stretched acr
 
 <!-- S08 -->
 <div class="space-y-4">
-  <div v-click class="p-4 rounded-xl bg-emerald-950/15 border border-emerald-500/30 space-y-1.5">
+  <div class="p-4 rounded-xl bg-emerald-950/15 border border-emerald-500/30 space-y-1.5">
     <div class="text-xs font-mono text-emerald-400 uppercase tracking-wide">Fair Credit on Host</div>
     <p class="text-sm text-gray-200 m-0 leading-relaxed">
       Clean C fixed-point math, <strong class="text-white">7/7 host unit tests passing</strong>, and a compiled <code class="text-emerald-300">nuttx.uf2</code> binary on the first session.
@@ -104,7 +104,7 @@ layout: default
 </div>
 
 <div class="grid grid-cols-2 gap-6 mt-4">
-  <div v-click class="p-5 rounded-xl bg-emerald-950/15 border border-emerald-500/30 space-y-3">
+  <div class="p-5 rounded-xl bg-emerald-950/15 border border-emerald-500/30 space-y-3">
     <div class="text-xs font-mono text-emerald-400 uppercase">Where Vanilla Shone (5 Passes &middot; Pre-Training Strengths)</div>
     <h3 class="text-lg font-bold text-white m-0">Generic C &amp; Host Logic</h3>
     <ul class="text-xs text-gray-300 space-y-2 list-disc pl-4 m-0 leading-relaxed">

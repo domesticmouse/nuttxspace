@@ -51,7 +51,7 @@ title: "Unpacking The Elephant: Directory Contracts as a Navigable Map"
     How the Elephant remembers <code class="text-cyan-300">3,241</code> directories without blowing out the context window:
   </div>
 
-  <div v-click class="p-4 rounded-xl bg-gray-900/80 border border-gray-800">
+  <div class="p-4 rounded-xl bg-gray-900/80 border border-gray-800">
     <div class="text-xs font-mono text-cyan-400 uppercase mb-1">Beat 1 &middot; Top-Down Tree Map</div>
     <p class="text-sm text-gray-200 m-0">
       <code class="text-cyan-300">2,607</code> <code class="text-gray-300">README.md</code> contracts in <code class="text-gray-300">nuttx/</code> + <code class="text-cyan-300">634</code> in <code class="text-gray-300">apps/</code> navigated hierarchically from the workspace root.
@@ -365,7 +365,7 @@ layout: default
 </p>
 
 <div class="grid grid-cols-2 gap-6">
-  <div v-click class="p-5 rounded-xl bg-cyan-950/15 border border-cyan-500/30 space-y-2">
+  <div class="p-5 rounded-xl bg-cyan-950/15 border border-cyan-500/30 space-y-2">
     <div class="text-xs font-mono text-cyan-400 uppercase">First-Order Catch &middot; Pass 1 (B-1)</div>
     <h3 class="text-lg font-bold text-white m-0">NVIC IRQ Burst Gating</h3>
     <p class="text-sm text-gray-300 m-0 leading-relaxed">
@@ -459,7 +459,7 @@ imageCaption: "docs/egm/breadboard-wiring.svg — XIAO RP2350 drawn across Cols 
 
 <!-- S25 -->
 <div class="space-y-4">
-  <div v-click class="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/35 space-y-2">
+  <div class="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/35 space-y-2">
     <div class="text-xs font-mono text-emerald-400 uppercase tracking-wide">Verified Electrical &amp; Pinout Wins</div>
     <ul class="text-sm text-gray-200 space-y-1.5 list-disc pl-5 m-0 leading-relaxed">
       <li>Routes LEDs to <strong class="text-white">6 non-ADC PWM pins</strong> (<code class="text-cyan-300">D1, D2, D4, D5, D8, D9</code>), leaves <code class="text-gray-300">5V</code> unconnected, and budgets <code class="text-emerald-300">23.6 mA</code> with <code class="text-gray-300">330 &Omega;</code> resistors.</li>
@@ -493,7 +493,7 @@ layout: default
 </p>
 
 <div class="grid grid-cols-2 gap-6">
-  <div v-click class="p-5 rounded-xl bg-emerald-950/15 border border-emerald-500/30 space-y-2">
+  <div class="p-5 rounded-xl bg-emerald-950/15 border border-emerald-500/30 space-y-2">
     <div class="text-xs font-mono text-emerald-400 uppercase">Primary 10-Trap Hardware Scorecard</div>
     <div class="text-2xl font-extrabold text-white">
       Vanilla <code class="text-red-300">5 / 10</code> &rarr; EGM <code class="text-emerald-300">10 / 10</code>
