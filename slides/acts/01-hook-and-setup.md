@@ -68,6 +68,53 @@ Before we touch any hardware, let's call out the two main players in tonight's e
 layout: default
 ---
 
+<!-- S01c -->
+<div class="flex items-center gap-3 mb-6">
+  <h2 class="text-2xl font-bold m-0">Apache NuttX at a Glance: Project Scale &amp; Lineage</h2>
+</div>
+
+<div class="grid grid-cols-2 gap-5 mt-2">
+  <div class="p-5 rounded-xl bg-cyan-950/15 border border-cyan-500/30 space-y-2">
+    <div class="text-xs font-mono text-cyan-400 uppercase tracking-wide">Age &amp; Commit Velocity</div>
+    <div class="text-2xl font-extrabold text-white font-mono">~20 Years &middot; 75,800+ Commits</div>
+    <p class="text-xs text-gray-300 m-0 leading-relaxed">
+      Founded in <strong class="text-white">February 2007</strong> by Gregory Nutt (<code class="text-cyan-300">66,144</code> kernel commits + <code class="text-cyan-300">9,674</code> <code class="text-gray-300">apps/</code> commits from <code class="text-cyan-300">1,239+</code> contributors; Apache Top-Level Project).
+    </p>
+  </div>
+
+  <div class="p-5 rounded-xl bg-gray-900/80 border border-gray-800 space-y-2">
+    <div class="text-xs font-mono text-emerald-400 uppercase tracking-wide">C Source &amp; Header Footprint</div>
+    <div class="text-2xl font-extrabold text-white font-mono">12,139 <code class="text-emerald-300">.c</code> &amp; 8,801 <code class="text-emerald-300">.h</code> Files</div>
+    <p class="text-xs text-gray-300 m-0 leading-relaxed">
+      <strong class="text-white">~7.65M lines</strong> across <code class="text-gray-300">20,940</code> C/header files (<code class="text-emerald-300">10,322</code> <code class="text-gray-300">.c</code> files / <code class="text-gray-300">4.85M</code> LOC in <code class="text-gray-300">nuttx/</code> + <code class="text-emerald-300">1,817</code> <code class="text-gray-300">.c</code> files / <code class="text-gray-300">670K</code> LOC in <code class="text-gray-300">apps/</code>).
+    </p>
+  </div>
+
+  <div v-click class="p-5 rounded-xl bg-gray-900/80 border border-gray-800 space-y-2">
+    <div class="text-xs font-mono text-amber-400 uppercase tracking-wide">Hardware &amp; Build Surface</div>
+    <div class="text-2xl font-extrabold text-white font-mono">19 CPU Archs &middot; 473 Boards</div>
+    <p class="text-xs text-gray-300 m-0 leading-relaxed">
+      Configured via <code class="text-amber-300">1,569</code> <code class="text-gray-300">Kconfig</code> files spanning <code class="text-amber-300">3,241</code> directories&mdash;scaling from 8-bit AVR/Z80 microcontrollers up to multi-core 64-bit ARM, RISC-V, and x86_64 SoCs.
+    </p>
+  </div>
+
+  <div v-click class="p-5 rounded-xl bg-amber-950/15 border border-amber-500/30 space-y-2">
+    <div class="text-xs font-mono text-amber-300 uppercase tracking-wide">Strict POSIX Architecture</div>
+    <div class="text-2xl font-extrabold text-white font-mono">Everything Is a File (<code class="text-cyan-300">/dev/*</code>)</div>
+    <p class="text-xs text-gray-300 m-0 leading-relaxed">
+      Split upper-half VFS character drivers + lower-half silicon HALs (<code class="text-gray-300">open</code>, <code class="text-gray-300">read</code>, <code class="text-gray-300">ioctl</code>, <code class="text-gray-300">poll</code>), interactive <code class="text-cyan-300">nsh&gt;</code> shell, and only <strong class="text-red-300">13 upstream <code class="text-gray-300">README.md</code> files</strong>.
+    </p>
+  </div>
+</div>
+
+<!--
+To appreciate what we're dropping our coding agent into, let's look at the scale of Apache NuttX. Founded by Gregory Nutt back in February 2007, the project is nearly twenty years old, with more than seventy-five thousand commits from over twelve hundred contributors across the kernel and apps repositories. Under the hood, it spans more than twelve thousand C source files and nearly nine thousand header files—around seven-point-six million lines of C and header code in total. It supports nineteen CPU architectures and four hundred and seventy-three target boards, wired together by over fifteen hundred Kconfig files across three thousand two hundred and forty-one directories. And unlike a flat bare-metal SDK, NuttX is a strict POSIX operating system where peripherals live behind upper-half VFS character drivers and lower-half silicon HALs—yet the entire tree ships with just thirteen README.md files.
+-->
+
+---
+layout: default
+---
+
 <!-- S02a -->
 <div class="flex items-center gap-3 mb-4">
   <h2 class="text-2xl font-bold m-0">How a Solderless Breadboard Works</h2>
@@ -152,7 +199,7 @@ layout: default
     <div class="text-xs font-mono text-cyan-400 uppercase">Industrial POSIX RTOS</div>
     <div class="text-lg font-bold text-white">Apache NuttX (<code class="text-cyan-300">nuttx/</code> + <code class="text-cyan-300">apps/</code>)</div>
     <p class="text-xs text-gray-300 m-0 leading-relaxed">
-      30 years of strict POSIX character drivers (<code class="text-cyan-300">/dev/adc0</code>, <code class="text-cyan-300">/dev/pwmX</code>), <code class="text-gray-300">Kconfig</code> trees, and out-of-tree board overlays.
+      Nearly 20 years of strict POSIX character drivers (<code class="text-cyan-300">/dev/adc0</code>, <code class="text-cyan-300">/dev/pwmX</code>), <code class="text-gray-300">Kconfig</code> trees, and out-of-tree board overlays.
     </p>
   </div>
 </div>
@@ -174,7 +221,7 @@ layout: default
 </div>
 
 <!--
-In Arduino, that's a thirty-line loop() sketch. The catch? I wanted to build it as a proper out-of-tree application inside Apache NuttX—thirty years of industrial POSIX real-time operating system C that I have definitely not memorised. When I checked the upstream submodules—nuttx/ and apps/—they spanned 3,241 directories, shipping with just 13 README.md files. That is zero-point-four percent directory coverage. Drop an unguided coding agent into three thousand undocumented directories, and it falls straight back to blind grep and training-weight guesswork.
+In Arduino, that's a thirty-line loop() sketch. The catch? I wanted to build it as a proper out-of-tree application inside Apache NuttX—nearly twenty years of industrial POSIX real-time operating system C that I have definitely not memorised. When I checked the upstream submodules—nuttx/ and apps/—they spanned 3,241 directories, shipping with just 13 README.md files. That is zero-point-four percent directory coverage. Drop an unguided coding agent into three thousand undocumented directories, and it falls straight back to blind grep and training-weight guesswork.
 -->
 
 ---
