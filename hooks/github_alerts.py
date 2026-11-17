@@ -246,6 +246,43 @@ def _heading_slug_for_line(md_path: pathlib.Path, line_no: int) -> str:
     return f"#{best}" if best else ""
 
 
+def _normalize_heading_frag(md_path: pathlib.Path, frag: str) -> str:
+    """Collapse GitHub-style repeated hyphens in a heading fragment when matching MkDocs slugs."""
+    if not frag:
+        return ""
+    if md_path.is_file():
+        slugs = {slug for _, slug in _extract_headings(md_path)}
+        if frag not in slugs:
+            collapsed = re.sub(r"-+", "-", frag)
+            if collapsed in slugs:
+                return f"#{collapsed}"
+    return f"#{frag}"
+
+
+def _resolve_md_frag(md_path: pathlib.Path, frag: str) -> str:
+    """Resolve line-range fragments or normalize heading anchors for a Markdown target."""
+    if not frag:
+        return ""
+    lm = LINE_FRAG_RE.match(frag)
+    if lm:
+        return _heading_slug_for_line(md_path, int(lm.group(1)))
+    return _normalize_heading_frag(md_path, frag)
+
+
+def _rewrite_tutorial_html_links(html_text: str) -> str:
+    """Rewrite relative .md course links inside compiled Tufte HTML files to .html targets."""
+    html_text = re.sub(
+        r'href="((?:\.\./|\./)?reference/)GLOSSARY\.md((?:#[^"]*)?)"',
+        r'href="\1glossary.html\2"',
+        html_text,
+    )
+    return re.sub(
+        r'href="((?:\.\./|\./)?(?:lessons/|reference/)?[0-9a-zA-Z_-]+)\.md((?:#[^"]*)?)"',
+        r'href="\1.html\2"',
+        html_text,
+    )
+
+
 def on_files(files, config):
     """Add root runbook, cast players, compiled tutorial HTML, and source viewer pages."""
     global _WRAPPED_SOURCES, _WRAPPED_SOURCE_MD_URIS, _REFERENCED_LINE_ANCHORS
@@ -358,11 +395,14 @@ def on_files(files, config):
             rel = html_file.relative_to(tmp_path).as_posix()
             src_uri = f"egm/tutorial/{rel}"
             if files.get_file_from_path(src_uri) is None:
+                html_text = _rewrite_tutorial_html_links(
+                    html_file.read_text(encoding="utf-8")
+                )
                 files.append(
                     File.generated(
                         config,
                         src_uri,
-                        content=html_file.read_text(encoding="utf-8"),
+                        content=html_text,
                         inclusion=InclusionLevel.NOT_IN_NAV,
                     )
                 )
@@ -638,19 +678,26 @@ def _rewrite_relative_links(markdown: str, src_uri: str) -> str:
     sub_branch = "master" if is_vanilla else "egm"
 
     if src_uri == "EXPERIMENT_RUNBOOK.md":
-        phys_dir = REPO_ROOT
+        phys_file = REPO_ROOT / "EXPERIMENT_RUNBOOK.md"
     elif src_uri.startswith("egm-nuttx-casts-presentation/"):
-        phys_dir = (REPO_ROOT / ".scratch" / posixpath.dirname(src_uri)).resolve()
+        phys_file = (REPO_ROOT / ".scratch" / src_uri).resolve()
     else:
-        phys_dir = (DOCS_ROOT / posixpath.dirname(src_uri)).resolve()
+        phys_file = (DOCS_ROOT / src_uri).resolve()
+    phys_dir = phys_file.parent
     doc_dir = posixpath.dirname(src_uri)
 
     def _resolve_target(m: re.Match[str]) -> str:
         if not m.group(1):
             return m.group(0)
         prefix, raw_url, suffix = m.group(1), m.group(2), m.group(3)
-        if raw_url.startswith(("http://", "https://", "mailto:", "conversation://", "file://", "#")):
+        if raw_url.startswith(("http://", "https://", "mailto:", "conversation://", "file://")):
             return m.group(0)
+
+        if raw_url.startswith("#"):
+            frag = raw_url[1:]
+            if not frag:
+                return m.group(0)
+            return f"{prefix}{_normalize_heading_frag(phys_file, frag)}{suffix}"
 
         if "[" in raw_url or "..." in raw_url:
             return f"`{prefix}{raw_url}{suffix}`"
@@ -672,19 +719,33 @@ def _rewrite_relative_links(markdown: str, src_uri: str) -> str:
                 if egm_candidate.exists():
                     resolved = egm_candidate
 
-        if not resolved.exists():
-            return m.group(0)
-
         try:
             repo_rel = resolved.relative_to(REPO_ROOT).as_posix()
         except ValueError:
             return m.group(0)
 
+        for prefix_dir, gh_repo in (
+            ("nuttx/", GITHUB_NUTTX_REPO),
+            ("apps/", GITHUB_APPS_REPO),
+        ):
+            if repo_rel.startswith(prefix_dir):
+                sub_path = repo_rel[len(prefix_dir) :]
+                kind = (
+                    ("tree" if resolved.is_dir() else "blob")
+                    if resolved.exists()
+                    else ("tree" if path_part.endswith("/") else "blob")
+                )
+                return (
+                    f"{prefix}https://github.com/{gh_repo}/{kind}/"
+                    f"{sub_branch}/{sub_path}{frag_with_hash}{suffix}"
+                )
+
+        if not resolved.exists():
+            return m.group(0)
+
         if repo_rel == "EXPERIMENT_RUNBOOK.md":
             rel_to_doc = posixpath.relpath("EXPERIMENT_RUNBOOK.md", doc_dir or ".")
-            lm = LINE_FRAG_RE.match(frag)
-            if lm:
-                frag_with_hash = _heading_slug_for_line(resolved, int(lm.group(1)))
+            frag_with_hash = _resolve_md_frag(resolved, frag)
             return f"{prefix}{rel_to_doc}{frag_with_hash}{suffix}"
 
         if repo_rel.startswith("prototypes/") and resolved.is_file():
@@ -694,9 +755,7 @@ def _rewrite_relative_links(markdown: str, src_uri: str) -> str:
         if repo_rel.startswith(".scratch/egm-nuttx-casts-presentation/") and resolved.is_file():
             pres_target = repo_rel[len(".scratch/") :]
             if resolved.suffix == ".md":
-                lm = LINE_FRAG_RE.match(frag)
-                if lm:
-                    frag_with_hash = _heading_slug_for_line(resolved, int(lm.group(1)))
+                frag_with_hash = _resolve_md_frag(resolved, frag)
             rel_to_doc = posixpath.relpath(pres_target, doc_dir or ".")
             return f"{prefix}{rel_to_doc}{frag_with_hash}{suffix}"
 
@@ -717,28 +776,10 @@ def _rewrite_relative_links(markdown: str, src_uri: str) -> str:
             elif doc_target in _WRAPPED_SOURCES:
                 doc_target = f"{doc_target}.md"
             elif resolved.suffix == ".md":
-                lm = LINE_FRAG_RE.match(frag)
-                if lm:
-                    frag_with_hash = _heading_slug_for_line(resolved, int(lm.group(1)))
+                frag_with_hash = _resolve_md_frag(resolved, frag)
 
             rel_to_doc = posixpath.relpath(doc_target, doc_dir or ".")
             return f"{prefix}{rel_to_doc}{frag_with_hash}{suffix}"
-
-        if repo_rel.startswith("nuttx/"):
-            sub_path = repo_rel[len("nuttx/") :]
-            kind = "tree" if resolved.is_dir() else "blob"
-            return (
-                f"{prefix}https://github.com/{GITHUB_NUTTX_REPO}/{kind}/"
-                f"{sub_branch}/{sub_path}{frag_with_hash}{suffix}"
-            )
-
-        if repo_rel.startswith("apps/"):
-            sub_path = repo_rel[len("apps/") :]
-            kind = "tree" if resolved.is_dir() else "blob"
-            return (
-                f"{prefix}https://github.com/{GITHUB_APPS_REPO}/{kind}/"
-                f"{sub_branch}/{sub_path}{frag_with_hash}{suffix}"
-            )
 
         kind = "tree" if resolved.is_dir() else "blob"
         return (
