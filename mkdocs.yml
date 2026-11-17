@@ -5,6 +5,9 @@ repo_url: https://github.com/domesticmouse/nuttxspace
 repo_name: domesticmouse/nuttxspace
 docs_dir: docs
 
+exclude_docs: |
+  egm/tutorial/index.md
+
 hooks:
   - hooks/github_alerts.py
 
@@ -35,6 +38,7 @@ theme:
 
 markdown_extensions:
   - admonition
+  - attr_list
   - pymdownx.details
   - pymdownx.superfences:
       custom_fences:
@@ -63,6 +67,107 @@ nav:
   - Tutorials:
       - "From Zero to xiao-rp2350-bargraph": tutorials/xiao-rp2350-bargraph.md
       - "Replicating the NuttX EGM Experiment": tutorials/egm-replication-tutorial.md
+  - Comparative Experiment:
+      - "Experiment Runbook": EXPERIMENT_RUNBOOK.md
+      - "Vanilla vs. EGM Comparison Report": reports/vanilla-vs-egm-comparison.md
+      - "Experiment A (Vanilla)":
+          - "Technical Code Review": vanilla/CODE_REVIEW.md
+          - "Breadboard Wiring Guide": vanilla/BREADBOARD_WIRING.md
+          - "Captured Source Snapshot (README)": vanilla/xiao-rp2350-bargraph/README.md
+          - "Captured Wiring Guide (Copy)": vanilla/xiao-rp2350-bargraph/BREADBOARD_WIRING.md
+          - "Vanilla Trace Index": prompts-vanilla/README.md
+          - "01 — Vanilla Vibe Coding Session": prompts-vanilla/01-60c052d5-i-want-to-build-an-out-of.md
+      - "Experiment B (Full EGM Flow)":
+          - "Phases 0–6 Documentation & Code Review": egm/DOCS_REVIEW.md
+          - "Root Workspace Blueprint": egm/README.md
+          - "Breadboard Wiring Guide": egm/BREADBOARD_WIRING.md
+          - "Per-Phase Reviews":
+              - "01 — Bootstrap & Drift Report": egm/reviews/01-bootstrap-review.md
+              - "02 — Brainstorm": egm/reviews/02-brainstorm-review.md
+              - "03 — Design Draft": egm/reviews/03-draft-review.md
+              - "04 — Two-Pass Review & Resolve": egm/reviews/04-review-review.md
+              - "05 — Firmware Implementation": egm/reviews/05-implement-review.md
+              - "06 — /teach-code Tutorial": egm/reviews/06-teach-code-review.md
+          - "Design Evolution":
+              - "Concepts Brief": egm/designs/concepts_brief.md
+              - "Initial Design Draft": egm/designs/design_draft.md
+              - "v0 Design Spec": egm/designs/xiao-rp2350-bargraph.v0-draft.md
+              - "Hardened Design Spec": egm/designs/xiao-rp2350-bargraph.md
+          - "Drift & Goldfish Review Reports":
+              - "Drift Report (2026-11-16)": egm/reports/2026-11-16_DRIFT_REPORT.md
+              - "Pass 1 Review":
+                  - "Goldfish Review Report": egm/reports/pass1/goldfish_review_report.md
+                  - "Consolidated Review Report": egm/reports/pass1/consolidated_review_report.md
+                  - "Comprehension Report": egm/reports/pass1/comprehension_report.md
+                  - "Design Critic Report": egm/reports/pass1/critic_report.md
+                  - "Implementation Readiness Report": egm/reports/pass1/implementation_readiness_report.md
+                  - "Intermediate Zoom Out Report": egm/reports/pass1/intermediate_zoom_out_report.md
+                  - "Zoom Out Report": egm/reports/pass1/zoom_out_report.md
+                  - "Pass 1 Spec Snapshot": egm/reports/pass1/xiao-rp2350-bargraph.pass1.md
+              - "Pass 2 Review":
+                  - "Goldfish Review Report": egm/reports/pass2/goldfish_review_report.md
+                  - "Consolidated Review Report": egm/reports/pass2/consolidated_review_report.md
+                  - "Comprehension Report": egm/reports/pass2/comprehension_report.md
+                  - "Design Critic Report": egm/reports/pass2/critic_report.md
+                  - "Implementation Readiness Report": egm/reports/pass2/implementation_readiness_report.md
+                  - "Intermediate Zoom Out Report": egm/reports/pass2/intermediate_zoom_out_report.md
+                  - "Zoom Out Report": egm/reports/pass2/zoom_out_report.md
+                  - "Pass 2 Spec Snapshot": egm/reports/pass2/xiao-rp2350-bargraph.pass2.md
+          - "Captured Source & Contracts":
+              - "Project Overview": egm/xiao-rp2350-bargraph/README.md
+              - "Wiring Guide (Snapshot)": egm/xiao-rp2350-bargraph/BREADBOARD_WIRING.md
+              - "Apps Root Contract": egm/xiao-rp2350-bargraph/apps/README.md
+              - "Bargraph App Contract": egm/xiao-rp2350-bargraph/apps/bargraph/README.md
+              - "Board BSP Contract": egm/xiao-rp2350-bargraph/board/README.md
+              - "Board Configs Contract": egm/xiao-rp2350-bargraph/board/configs/README.md
+              - "Bargraph Defconfig Contract": egm/xiao-rp2350-bargraph/board/configs/bargraph/README.md
+              - "Board Include Contract": egm/xiao-rp2350-bargraph/board/include/README.md
+              - "Board Scripts Contract": egm/xiao-rp2350-bargraph/board/scripts/README.md
+              - "Board Src Contract": egm/xiao-rp2350-bargraph/board/src/README.md
+          - "Interactive /teach-code Course":
+              - "Course Overview (README)": egm/tutorial/README.md
+              - "Course Index": egm/tutorial/index.md
+              - "Mission": egm/tutorial/MISSION.md
+              - "Resources": egm/tutorial/RESOURCES.md
+              - "Curriculum Notes": egm/tutorial/NOTES.md
+              - "Learning Record 0001": egm/tutorial/learning-records/0001-initial-architecture-and-driver-traps.md
+              - "Lesson 0001 — Breadboard & Current Budget": egm/tutorial/lessons/0001-breadboard-circuit-and-current-budget.md
+              - "Lesson 0002 — Proportional Math & PWM Scaling": egm/tutorial/lessons/0002-proportional-bargraph-math-and-pwm-scaling.md
+              - "Lesson 0003 — Q4 EMA Filtering & ADC Extraction": egm/tutorial/lessons/0003-q4-ema-filtering-and-adc-extraction.md
+              - "Lesson 0004 — Multi-Channel PWM & Safe Shutdown": egm/tutorial/lessons/0004-multichannel-pwm-routing-and-safe-shutdown.md
+              - "Lesson 0005 — Out-of-Tree BSP & IRQ Gating": egm/tutorial/lessons/0005-out-of-tree-bsp-and-adc-irq-gating.md
+              - "Lesson 0006 — bargraphd Daemon & NSH CLI": egm/tutorial/lessons/0006-bargraphd-daemon-and-nsh-cli.md
+              - "Glossary": egm/tutorial/reference/GLOSSARY.md
+              - "Hardware Pinout & Wiring Sheet": egm/tutorial/reference/hardware-pinout-and-wiring.md
+              - "7 NuttX & RP2350 Driver Traps": egm/tutorial/reference/nuttx-rp2350-driver-traps.md
+              - "Verification & CLI Cheat Sheet": egm/tutorial/reference/verification-and-cli-cheatsheet.md
+          - "EGM Session Traces (01–25)":
+              - "Trace Index": prompts-egm/README.md
+              - "01 — Bootstrap & Drift Report": prompts-egm/01-bd1ae202-egm-bootstrap-create-the-root-readme-md.md
+              - "02 — Brainstorm Parent": prompts-egm/02-55e0ffc7-egm-brainstorm-i-want-to-build-an.md
+              - "03 — Brainstorm Synthesizer": prompts-egm/03-4e2441cd-none.md
+              - "04 — Design Draft (/egm-draft)": prompts-egm/04-46e57b63-egm-draft-concepts-brief-md-target-docs.md
+              - "05 — Review Pass 1 Parent": prompts-egm/05-1d6e0269-egm-review-docs-designs-xiao-rp2350-bargraph.md
+              - "06 — Pass 1 Worker": prompts-egm/06-41a8720d-none.md
+              - "07 — Pass 1 Worker": prompts-egm/07-d804d17e-none.md
+              - "08 — Pass 1 Worker": prompts-egm/08-cb3c670d-none.md
+              - "09 — Pass 1 Worker": prompts-egm/09-f5dcb2e5-none.md
+              - "10 — Pass 1 Worker": prompts-egm/10-63c8ee4f-none.md
+              - "11 — Pass 1 Worker": prompts-egm/11-2318c8b4-none.md
+              - "12 — Pass 1 Worker": prompts-egm/12-3f25f8ad-none.md
+              - "13 — Pass 1 Worker": prompts-egm/13-ddf355f7-none.md
+              - "14 — Pass 1 Worker": prompts-egm/14-3de8074a-none.md
+              - "15 — Pass 1 Worker": prompts-egm/15-8a1959ce-none.md
+              - "16 — Review Pass 2 Parent": prompts-egm/16-d703f3c2-egm-review-docs-designs-xiao-rp2350-bargraph.md
+              - "17 — Pass 2 Worker": prompts-egm/17-e5ea88c2-none.md
+              - "18 — Pass 2 Worker": prompts-egm/18-065b532c-none.md
+              - "19 — Pass 2 Worker": prompts-egm/19-813acbd6-none.md
+              - "20 — Pass 2 Worker": prompts-egm/20-82c6c621-none.md
+              - "21 — Pass 2 Worker": prompts-egm/21-ca2b90ea-none.md
+              - "22 — Pass 2 Worker": prompts-egm/22-6c5a9959-none.md
+              - "23 — Firmware Implementation": prompts-egm/23-78649743-implement-docs-designs-xiao-rp2350-bargraph-md.md
+              - "24 — /teach-code Course Authoring": prompts-egm/24-0cc3a75f-build-a-complete-story-arc-tutorial-teaching.md
+              - "25 — HTML/TeX Fixup": prompts-egm/25-98ffad8f-the-html-in-tutorial-contains-unrendered-tex.md
   - Designs & Specs:
       - "Design Spec: xiao-rp2350-bargraph": designs/xiao-rp2350-bargraph.md
       - "Concepts Brief": designs/concepts_brief.md

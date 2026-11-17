@@ -6,6 +6,23 @@ The workspace builds an out-of-tree custom board and 20 Hz potentiometer-to-6-LE
 
 ## Documentation Map
 
+### Comparative Experiment: Vanilla Vibe Coding vs. Full EGM Flow
+- [Comparative Experiment Runbook](../EXPERIMENT_RUNBOOK.md) — End-to-end operator checklist, trace correlations, and defect scorecard comparing Vanilla Vibe Coding (`nuttxspace-vanilla`) against the full Engineering Guidance Model workflow (`nuttxspace-egm`).
+- [Vanilla vs. EGM Comparison Report](reports/vanilla-vs-egm-comparison.md) — Independent read-only Goldfish audit grading both captured implementations across all 10 hardware/RTOS invariants and reconciling recording/trace telemetry.
+- **Standalone `asciinema` HTML Cast Players**:
+  - Run 1 (Vanilla): [`vanilla-vibe-cast-player.html`](../prototypes/vanilla-vibe-cast-player.html)
+  - Run 2 (EGM Phases 0–6): [`01-bootstrap`](../prototypes/01-bootstrap-cast-player.html) · [`02-brainstorm`](../prototypes/02-brainstorm-cast-player.html) · [`03-draft`](../prototypes/03-draft-cast-player.html) · [`04-review`](../prototypes/04-review-cast-player.html) · [`05-implement`](../prototypes/05-implement-cast-player.html) · [`06-teach-code`](../prototypes/06-teach-code-cast-player.html)
+- **Experiment A (`nuttxspace-vanilla`)**:
+  - [Vanilla Technical Code Review](vanilla/CODE_REVIEW.md) and [Breadboard Wiring Guide](vanilla/BREADBOARD_WIRING.md)
+  - [Captured Vanilla Source Snapshot](vanilla/xiao-rp2350-bargraph/README.md) and [Vanilla Session Trace (`01`)](prompts-vanilla/README.md)
+- **Experiment B (`nuttxspace-egm`)**:
+  - [Phases 0–6 Documentation & Implementation Review](egm/DOCS_REVIEW.md), [Workspace Blueprint](egm/README.md), and [Breadboard Wiring Guide](egm/BREADBOARD_WIRING.md)
+  - Per-Phase Reviews: [01 Bootstrap](egm/reviews/01-bootstrap-review.md) · [02 Brainstorm](egm/reviews/02-brainstorm-review.md) · [03 Draft](egm/reviews/03-draft-review.md) · [04 Review](egm/reviews/04-review-review.md) · [05 Implement](egm/reviews/05-implement-review.md) · [06 `/teach-code`](egm/reviews/06-teach-code-review.md)
+  - Design Evolution: [Concepts Brief](egm/designs/concepts_brief.md) -> [Initial Draft](egm/designs/design_draft.md) -> [v0 Spec](egm/designs/xiao-rp2350-bargraph.v0-draft.md) -> [Hardened Design Spec](egm/designs/xiao-rp2350-bargraph.md)
+  - Drift & Goldfish Audits: [Drift Report (2026-11-16)](egm/reports/2026-11-16_DRIFT_REPORT.md) · [Pass 1 Goldfish Report](egm/reports/pass1/goldfish_review_report.md) · [Pass 2 Goldfish Report](egm/reports/pass2/goldfish_review_report.md)
+  - [Captured EGM Firmware & 9 Contracts](egm/xiao-rp2350-bargraph/README.md) and [EGM Session Traces (`01`–`25`)](prompts-egm/README.md)
+  - 6-Lesson `/teach-code` Interactive Course: [Compiled Interactive Tufte HTML](egm/tutorial/index.html) and [Course Overview (`README`)](egm/tutorial/README.md)
+
 ### Tutorials
 - [From Zero to `xiao-rp2350-bargraph`](tutorials/xiao-rp2350-bargraph.md) — End-to-end guide for software engineers covering breadboard wiring, out-of-tree NuttX board configuration, RP2350 ADC/LED driver traps, host unit testing, and flashing `nuttx.uf2`.
 - [Replicating the NuttX EGM Experiment](tutorials/egm-replication-tutorial.md) — Replay guide and post-mortem analyzing how the Engineering Guidance Model (EGM) workflow (`47` sessions, `4,478` logged steps) navigated `nuttx/` and `apps/` to produce the firmware.
@@ -37,7 +54,7 @@ The workspace builds an out-of-tree custom board and 20 Hz potentiometer-to-6-LE
 - **`apps`** ([`apps/README.md`](https://github.com/domesticmouse/nuttx-apps/blob/egm/README.md)): NuttX user-space application repository containing NuttShell (`nshlib`), built-in system utilities (`system`), networking/graphics/filesystem services, and example/testing applications.
 - **`nuttx`** ([`nuttx/README.md`](https://github.com/domesticmouse/nuttx/blob/egm/README.md)): Apache NuttX RTOS kernel, architecture HALs (`arch`), board support packages (`boards`), drivers (`drivers`), filesystems (`fs`), C/C++/math libraries (`libs`), memory manager (`mm`), and networking stack (`net`).
 - **`xiao-rp2350-bargraph`** ([`xiao-rp2350-bargraph/Makefile`](https://github.com/domesticmouse/nuttxspace/blob/main/xiao-rp2350-bargraph/Makefile)): Out-of-tree XIAO RP2350 potentiometer-to-6-LED bar-graph project containing custom board support (`board/`), the `bargraph` NSH daemon (`external/bargraph/`), and host unit tests (`tests/test_bargraph_logic.c`).
-- **`docs`**: Documentation source tree published to GitHub Pages (`tutorials/`, `designs/`, `reports/`, `prompts/`).
+- **`docs`**: Documentation source tree published to GitHub Pages (`tutorials/`, `designs/`, `reports/`, `prompts/`, `vanilla/`, `prompts-vanilla/`, `egm/`, `prompts-egm/`), paired with [`EXPERIMENT_RUNBOOK.md`](../EXPERIMENT_RUNBOOK.md) and standalone HTML players under `prototypes/`.
 
 ### Global Invariants
 - `nuttx` and `apps` submodule checkouts in [`.gitmodules`](https://github.com/domesticmouse/nuttxspace/blob/main/.gitmodules) stay on matching `egm` branch revisions (`nuttx/Makefile` and `apps/Makefile` resolve `APPDIR=../apps` relative to `nuttx`).
