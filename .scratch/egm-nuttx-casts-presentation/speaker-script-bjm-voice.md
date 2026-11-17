@@ -1,7 +1,7 @@
 # Verbatim Speaker Script & Live Cast Commentary (`bjm-voice`)
 
 > **Asset for Ticket 06**: [Draft the Spoken Script and Narrator Voice in bjm-voice](./issues/06-speaker-script-and-narrative-bjm-voice.md)
-> **Aligned Deck Blueprint**: [Slide Structure, Stage Beats & 30-Minute Timing Budget Prototype](./slide-structure-prototype.md) (`33` slides · `29m 51s`)
+> **Aligned Deck Blueprint**: [Slide Structure, Stage Beats & 30-Minute Timing Budget Prototype](./slide-structure-prototype.md) (`36` slides · `~30m`)
 > **Aligned Cast Curation**: [Cast Curation, Trim & Stop-Point Prototype](./cast-curation-prototype.md) (`7` live recordings · `53` stops · `10m 24s` warped play / `15m 42s` stage time)
 
 ---
@@ -9,10 +9,10 @@
 ## 1. Voice, Pacing & Stage Delivery Rules (`bjm-voice`)
 
 1. **Australian English & Conversational Cadence (`~135–145 wpm`)**:
-   - Uses Australian spelling and idioms throughout (*G'day*, *AU$8*, *memorised*, *realise*, *colour*, *labelled*, *modelled*, *centre*, *fibreglass*, *amongst*).
+   - Uses Australian spelling and idioms throughout (*G'day*, *AU\$10*, *memorised*, *realise*, *colour*, *labelled*, *modelled*, *centre*, *fibreglass*, *amongst*).
    - Paced at `~140 words per minute` (`~2.3 words/second`) so a `30s` concept slide carries `~65–75` words across its `[On Load]` and `[v-click]` beats—leaving breathing room for visual absorption.
 2. **Inline Slide Click Tags (`[On Load]`, `[v-click 1]`, `[v-click 2]`, ...)**:
-   - Every non-cast slide (`26` slides, `14m 09s`) splits its verbatim script across `[On Load]` and each progressive `v-click` beat so your voice triggers the visual reveal rather than reading a wall of text after the fact.
+   - Every non-cast slide (`29` slides) splits its verbatim script across `[On Load]` and each progressive `v-click` beat so your voice triggers the visual reveal rather than reading a wall of text after the fact.
 3. **Dual-Layer Live `.cast` Narration (`7` slides, `53` stops, `15m 42s` stage time)**:
    - **Paused Stop-Point Cues (`[Stop N — Paused]`)**: A punchy 1-sentence cue delivered while the player is paused at a Before-Prompt or After-Prompt marker, right before pressing `p`.
    - **Warped Execution Voiceovers (`[Warp Run — ~25s–30s]`)**: Scripted play-by-play narration spoken *while* the terminal scrolls at `6x–79x` warp speed, eliminating dead air on stage.
@@ -23,17 +23,25 @@
 
 ---
 
-## 2. Act I — The Hook & Real-World Embedded Stress Test (`01-hook-and-setup.md` · `5` Slides · `3m 15s`)
+## 2. Act I — The Hook & Real-World Embedded Stress Test (`01-hook-and-setup.md` · `7` Slides · `4m 20s`)
 
 ### `S01` — Title Slide (`layout: center` · `25s` · `~55 words`)
 - **`[On Load]`**:
   > "G'day everyone, I'm Brett Morgan from Google Cloud. Tonight's talk is about what happens when you drop a coding agent into a massive, unfamiliar C codebase—and how rolling two kinds of living documentation lets both the AI *and* the human sitting at the keyboard actually understand what ships to silicon."
 
-### `S02` — The Hardware Target: XIAO RP2350 & 6-LED Bar Graph (`layout: hardware-callout` · `45s` · `~105 words`)
+### `S02a` — How a Solderless Breadboard Works (`layout: default` · `40s` · `~95 words`)
 - **`[On Load]`**:
-  > "It started with a classic weekend hardware itch: an AU$8 Seeed Studio XIAO RP2350 sitting on a 400-tie-point solderless breadboard beside my laptop. Nothing exotic on the bench—a ten-kilohm potentiometer wired into pin `D0/A0`, and six through-hole LEDs—two green, two yellow, two red—acting as a six-segment bar graph."
+  > "Before we wire up our hardware, let's take a quick X-ray look at a solderless breadboard—because its hidden metal spring clips behave a lot like variable scopes in code. Along the top and bottom, the horizontal power rails act like global scope: every hole in the blue minus rail or red plus rail is wired together. In the middle, each 5-hole vertical column—rows `a` through `e` above the trench, and `f` through `j` below it—is an independent local node. And that centre plastic trench is a hard namespace barrier: you seat a dual-row module like the XIAO RP2350 straddling `e` and `f` so its left and right pins never short together."
+
+### `S02b` — Physical Breadboard Wiring: XIAO RP2350 6-LED Bar Graph (`layout: center` · `30s` · `~70 words`)
+- **`[On Load]`**:
+  > "Here is the full physical wiring layout on a 28-column breadboard. The XIAO RP2350 straddles the centre trench, leaving open tie-points on both sides of every pin. On the left, a ten-kilohm potentiometer feeds `D0/A0` with an optional hundred-nanofarad decoupling capacitor, strictly at `3.3` volts. Across the right, six discrete LEDs—two green, two yellow, two red—each get their own `330`-ohm current-limiting resistor on `D3` through `D5` and `D8` through `D10`, intentionally skipping `D1/D2` and `D6/D7`."
+
+### `S02c` — The Hardware Target: XIAO RP2350 & 6-LED Bar Graph (`layout: default` · `40s` · `~90 words`)
+- **`[On Load]`**:
+  > "So to recap the target we're building: an AU\$10 Seeed Studio XIAO RP2350 sitting on a 400-tie-point solderless breadboard beside my laptop, wired to a ten-kilohm potentiometer on `D0/A0` and six through-hole LEDs—two green, two yellow, two red."
 - **`[v-click 1 — Proportional 6-Segment PWM Display]`**:
-  > "Instead of crude on/off steps, I wanted smooth hardware PWM interpolation across all six channels so the active segment ramps proportionally in brightness as you twist the pot."
+  > "Instead of crude on/off steps, I wanted smooth `16-bit` hardware PWM interpolation across all six channels so the active segment ramps proportionally in brightness as you twist the pot."
 - **`[v-click 2 — Dual Runtime Requirement]`**:
   > "And it needed to run as an autonomous fifty-hertz background daemon called `bargraphd`, while keeping the single USB-C serial console free for interactive shell commands like `status`, `test`, and `set`."
 
@@ -65,7 +73,7 @@
 
 ---
 
-## 3. Act II — The Vanilla Vibe Foil (`02-vanilla-foil.md` · `4` Slides · `3m 21s`)
+## 3. Act II — The Vanilla Vibe Foil (`02-vanilla-foil.md` · `5` Slides · `3m 41s`)
 
 ### `S06` — Act II Setup: Watching Unconstrained Antigravity (`layout: default` · `25s` · `~60 words`)
 - **`[On Load]`**:
@@ -96,6 +104,10 @@
   > *(Voiceover during the 30s warp)*: "It writes a Python generator and renders a gorgeous-looking dark-mode breadboard SVG. Everything looks like an unblemished triumph—until you pick up the actual hardware."
 - **`[Stop 6 — Breadboard Wiring Guide & SVG Complete]`**:
   > "Done. Let's inspect what it actually built."
+
+### `S07a` — Vanilla Vibe Generated Breadboard Wiring SVG (`layout: center` · `20s` · `~45 words`)
+- **`[On Load]`**:
+  > "Here is the full breadboard wiring SVG that Vanilla Vibe just generated. At a glance, it looks clean and well-organised—complete with a dark-mode aesthetic, colour-coded jumper wires, and labelled components. Now let's zoom in on the XIAO RP2350 itself to see what actually happened on the board."
 
 ### `S08` — Debrief: The Lie of "It Compiled!" (`layout: hardware-callout` · `35s` · `~80 words`)
 - **`[On Load]`**:
