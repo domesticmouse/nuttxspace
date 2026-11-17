@@ -7,7 +7,7 @@ lineNumbers: false
 info: |
   ## Roll Your Own Docs: Custom AI Skills for Rapid Tech Ramp-Up
   Taming Apache NuttX & RP2350 Silicon with the Elephant-Goldfish Model and /teach-code
-  Brett Morgan (Google Cloud)
+  Presenter: Brett Morgan (Google Cloud)
 drawings:
   persist: false
 transition: slide-left
