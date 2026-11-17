@@ -434,6 +434,23 @@ Let's hand the hardened v1 spec to Antigravity. Prompting it to implement xiao-r
 -->
 
 ---
+layout: default
+---
+
+<!-- S24a -->
+<div class="flex items-center gap-3 mb-4">
+  <h2 class="text-2xl font-bold m-0">EGM&rsquo;s Generated Breadboard Wiring</h2>
+</div>
+
+<div class="w-full flex items-center justify-center">
+  <img src="/images/breadboard-wiring.svg" alt="EGM Generated Breadboard Wiring SVG" class="w-full max-h-[430px] object-contain rounded-xl border border-gray-800 shadow-lg" />
+</div>
+
+<!--
+Here is the full breadboard wiring SVG that EGM generated in one pass. Notice the clean light-mode schematic layout, the XIAO RP2350 seated across the centre trench, the potentiometer on D0, and the six color-coded LEDs on D1, D2, D4, D5, D8, and D9. Now let's zoom in on the XIAO RP2350 itself to verify the physical footprint and pin routing.
+-->
+
+---
 layout: hardware-callout
 title: "Physical Breadboard Payoff: Vanilla (0.7&quot; Straddle) vs. EGM (Cols E &amp; F)"
 image: /images/breadboard-wiring-crop-ef.svg
