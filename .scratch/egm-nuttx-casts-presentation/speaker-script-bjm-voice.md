@@ -1,7 +1,7 @@
 # Verbatim Speaker Script & Live Cast Commentary (`bjm-voice`)
 
 > **Asset for Ticket 06**: [Draft the Spoken Script and Narrator Voice in bjm-voice](./issues/06-speaker-script-and-narrative-bjm-voice.md)
-> **Aligned Deck Blueprint**: [Slide Structure, Stage Beats & 30-Minute Timing Budget Prototype](./slide-structure-prototype.md) (`36` slides · `~30m`)
+> **Aligned Deck Blueprint**: [Slide Structure, Stage Beats & 30-Minute Timing Budget Prototype](./slide-structure-prototype.md) (`38` slides · `~30m`)
 > **Aligned Cast Curation**: [Cast Curation, Trim & Stop-Point Prototype](./cast-curation-prototype.md) (`7` live recordings · `53` stops · `10m 24s` warped play / `15m 42s` stage time)
 
 ---
@@ -12,22 +12,26 @@
    - Uses Australian spelling and idioms throughout (*G'day*, *AU\$10*, *memorised*, *realise*, *colour*, *labelled*, *modelled*, *centre*, *fibreglass*, *amongst*).
    - Paced at `~140 words per minute` (`~2.3 words/second`) so a `30s` concept slide carries `~65–75` words across its `[On Load]` and `[v-click]` beats—leaving breathing room for visual absorption.
 2. **Inline Slide Click Tags (`[On Load]`, `[v-click 1]`, `[v-click 2]`, ...)**:
-   - Every non-cast slide (`29` slides) splits its verbatim script across `[On Load]` and each progressive `v-click` beat so your voice triggers the visual reveal rather than reading a wall of text after the fact.
+   - Every non-cast slide (`31` slides) splits its verbatim script across `[On Load]` and each progressive `v-click` beat so your voice triggers the visual reveal rather than reading a wall of text after the fact.
 3. **Dual-Layer Live `.cast` Narration (`7` slides, `53` stops, `15m 42s` stage time)**:
    - **Paused Stop-Point Cues (`[Stop N — Paused]`)**: A punchy 1-sentence cue delivered while the player is paused at a Before-Prompt or After-Prompt marker, right before pressing `p`.
    - **Warped Execution Voiceovers (`[Warp Run — ~25s–30s]`)**: Scripted play-by-play narration spoken *while* the terminal scrolls at `6x–79x` warp speed, eliminating dead air on stage.
 4. **Community Credits & Candid Engineering Honesty**:
    - Credits **Dave Rensin (`@drensin`)** for the **Elephant-Goldfish Model (EGM)** (*"Weeds Syndrome"*, *"Design is the new code: design with an Elephant, review with a Goldfish"*, shared-context confirmation bias, and *"Humans Own the Outcomes"*).
    - Credits **Matt Pocock** for the open-source `/teach` skill that inspired `/teach-code` (built via `/agy-customizations`), preserving Zone of Proximal Development learning records, **Edward Tufte** right-margin sidenotes, and equal-word-count (`10 words/option`) retrieval quizzes.
-   - Owns all four candid non-triumph beats: fair credit to Vanilla Vibe before the `0.7"` `Cols C–H` breadboard straddle (`S08`–`S09`), human + Elephant shared blame on `CONFIG_RP23XX_ADC_DIV` (`S16`–`S18`), Pass 1's fix introducing the `CA-01` `25-byte` FIFO deadlock caught only after `/clear` (`S20`–`S22`), and the `6 Pass / 4 Partial` strict post-build audit (`S26`) plus `Lesson 0006` catching two real `bargraph test` bugs (`S31`).
+   - Owns all five candid non-triumph beats: fair credit to Vanilla Vibe before the `0.7"` `Cols C–H` breadboard straddle (`S08`–`S09`), human + Elephant shared blame on `CONFIG_RP23XX_ADC_DIV` (`S16`–`S18`), Pass 1's fix introducing the `CA-01` `25-byte` FIFO deadlock caught only after `/clear` (`S20`–`S22`), the `S25` breadboard footprint honesty check (`0.6"` XIAO header spacing vs. Vanilla's `0.7"` `Cols C–H` and EGM's `0.3"` `Cols E–F` footprint mismatch alongside EGM's verified electrical/pinout wins), and the `6 Pass / 4 Partial` strict post-build audit (`S26`) plus `Lesson 0006` catching two real `bargraph test` bugs (`S31`).
 
 ---
 
-## 2. Act I — The Hook & Real-World Embedded Stress Test (`01-hook-and-setup.md` · `7` Slides · `4m 20s`)
+## 2. Act I — The Hook & Real-World Embedded Stress Test (`01-hook-and-setup.md` · `8` Slides · `4m 40s`)
 
 ### `S01` — Title Slide (`layout: center` · `25s` · `~55 words`)
 - **`[On Load]`**:
   > "G'day everyone, I'm Brett Morgan from Google Cloud. Tonight's talk is about what happens when you drop a coding agent into a massive, unfamiliar C codebase—and how rolling two kinds of living documentation lets both the AI *and* the human sitting at the keyboard actually understand what ships to silicon."
+
+### `S01b` — The Stack: Apache NuttX & Google Antigravity (`layout: default` · `20s` · `~50 words`)
+- **`[On Load]`**:
+  > "Before we touch any hardware, let's call out the two main players in tonight's experiment. On the left is **Apache NuttX**, a mature, POSIX-compliant real-time operating system you can explore at `nuttx.apache.org`. On the right is **Google Antigravity**, the agentic development platform I used to tame it, available at `antigravity.google`."
 
 ### `S02a` — How a Solderless Breadboard Works (`layout: default` · `40s` · `~95 words`)
 - **`[On Load]`**:
@@ -105,7 +109,7 @@
 - **`[Stop 6 — Breadboard Wiring Guide & SVG Complete]`**:
   > "Done. Let's inspect what it actually built."
 
-### `S07a` — Vanilla Vibe Generated Breadboard Wiring SVG (`layout: center` · `20s` · `~45 words`)
+### `S07a` — Vanilla Vibe's Generated Breadboard Wiring (`layout: default` · `20s` · `~45 words`)
 - **`[On Load]`**:
   > "Here is the full breadboard wiring SVG that Vanilla Vibe just generated. At a glance, it looks clean and well-organised—complete with a dark-mode aesthetic, colour-coded jumper wires, and labelled components. Now let's zoom in on the XIAO RP2350 itself to see what actually happened on the board."
 
@@ -127,7 +131,7 @@
 
 ---
 
-## 4. Act III — Rolling Docs for the AI: The Elephant-Goldfish Model (`03-egm-journey.md` · `17` Slides · `17m 07s`)
+## 4. Act III — Rolling Docs for the AI: The Elephant-Goldfish Model (`03-egm-journey.md` · `18` Slides · `17m 37s`)
 
 ### `S10` — Act III Anchor: The Elephant-Goldfish Triad (`layout: default` · `40s` · `~95 words`)
 - **`[On Load]`**:
@@ -328,22 +332,28 @@
   > "Let's hand the hardened `v1` spec to Antigravity." *(Press `p`)*
 - **`[Stop 1 — Prompt: Implement Firmware from Approved Spec (`0.5s @ 2x`)]`**:
   > "Prompting it to implement `xiao-rp2350-bargraph.md` and build `nuttx.uf2`." *(Press `p`)*
-- **`[Warp Run to Stop 2 (`29.8s @ 58x` — 28m 38s raw)]`**:
-  > *(Voiceover during 30s warp)*: "At fifty-eight times speed: it wires the out-of-tree board overlays, writes `bargraph_main.c` and the pure math core, passes `6/6` host unit test suites first go, compiles `nuttx.uf2` (`347K`) with zero retries, and updates `9` directory `README.md` contracts so the Elephant stays in sync."
+- **`[Warp Run to Stop 2 (`29.0s @ 27x` — 13m 04s raw)]`**:
+  > *(Voiceover during 29s warp)*: "At twenty-seven times speed: it wires the out-of-tree board overlays, writes `bargraph_main.c` and the pure math core, passes `6/6` host unit test suites first go, compiles `nuttx.uf2` (`347K`) with zero retries, and updates `9` directory `README.md` contracts so the Elephant stays in sync."
 - **`[Stop 2 — Firmware, Unit Tests & nuttx.uf2 Built — Ready for Wiring Prompt]`**:
   > "First-try firmware build complete! Now let's ask for the breadboard wiring guide and SVG." *(Press `p`)*
 - **`[Stop 3 — Prompt: Breadboard Wiring Guide & SVG (`0.5s @ 2x`)]`**:
   > "Generating `docs/egm/breadboard-wiring.svg` from our verified pin table." *(Press `p`)*
-- **`[Warp Run to Stop 4 (`27.4s @ 9x`)]`**:
-  > *(Voiceover during 27s warp)*: "Because the spec already locked the mechanical footprint and non-ADC pins, it generates a physically buildable breadboard layout in one pass."
+- **`[Warp Run to Stop 4 (`28.2s @ 11x`)]`**:
+  > *(Voiceover during 28s warp)*: "Because the spec already locked the mechanical footprint and non-ADC pins, it generates a physically buildable breadboard layout in one pass."
 - **`[Stop 4 — Breadboard Wiring Guide & SVG Complete]`**:
   > "Let's compare the physical breadboard result."
 
-### `S25` — Physical Breadboard Payoff: Vanilla (`0.7"` Straddle) vs. EGM (`Cols E & F`) (`layout: hardware-callout` · `25s` · `~60 words`)
+### `S24a` — EGM's Generated Breadboard Wiring (`layout: default` · `20s` · `~50 words`)
 - **`[On Load]`**:
-  > "Look at `docs/egm/breadboard-wiring.svg` on the left."
-- **`[v-click 1 — Seated Cleanly Across Cols E & F]`**:
-  > "The XIAO RP2350 sits cleanly across **Columns E and F** over the zero-point-three-inch centre trench, leaving four open tie-points on every row, routing the six LEDs to non-ADC PWM pins (`D1, D2, D4, D5, D8, D9`), and disabling `IE` on `GPIO 26` to defeat Erratum `RP2350-E9`."
+  > "Here is the full breadboard wiring SVG that EGM generated in one pass. Notice the clean light-mode schematic layout, the XIAO RP2350 seated across the centre trench, the potentiometer on `D0`, and the six colour-coded LEDs on `D1`, `D2`, `D4`, `D5`, `D8`, and `D9`. Now let's zoom in on the XIAO RP2350 itself to verify the physical footprint and pin routing."
+
+### `S25` — Breadboard Reality Check: Electrical Wins vs. Physical Footprint (0.6" XIAO) (`layout: hardware-callout` · `35s` · `~115 words`)
+- **`[On Load]`**:
+  > "Zooming in on `docs/egm/breadboard-wiring.svg` gives us a great engineering honesty check."
+- **`[v-click 1 — Verified Electrical & Pinout Wins]`**:
+  > "On the electrical side, EGM nailed it: six non-ADC PWM pins (`D1, D2, D4, D5, D8, D9`), `330`-ohm resistors keeping total draw at `23.6` milliamps, `5V` left unconnected, and `IE` disabled on `GPIO 26` to defeat Erratum `RP2350-E9`."
+- **`[v-click 2 — Physical Footprint Catch (0.3" vs. 0.6" XIAO Width)]`**:
+  > "But look at the physical footprint: a XIAO RP2350's headers are `0.6` inches apart—meaning it needs Columns `C` and `G`, or `D` and `H`. Vanilla stretched it too wide to Columns `C` and `H` (`0.7` inches), while EGM seated it too narrow in Columns `E` and `F` (`0.3` inches) and hid the mismatch by drawing a wider centre trench in the SVG. Contracts caught every silicon and RTOS invariant, but mechanical dimensions still deserve a real-world check."
 
 ### `S26` — Candid Scorecard Callback: `5 / 10` vs. `10 / 10` (And Engineering Honesty) (`layout: default` · `30s` · `~75 words`)
 - **`[On Load]`**:

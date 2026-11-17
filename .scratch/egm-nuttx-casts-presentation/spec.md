@@ -3,7 +3,7 @@
 - **Title**: Roll Your Own Docs: Custom AI Skills for Rapid Tech Ramp-Up
 - **Subtitle**: Taming Apache NuttX & RP2350 Silicon with the Elephant-Goldfish Model and `/teach-code`
 - **Presenter**: Brett Morgan (Google Cloud)
-- **Target Format**: 30-minute conference presentation (`29m 51s` budgeted · `9s` buffer)
+- **Target Format**: 30-minute conference presentation (`38` slides: `31` non-cast + `7` live `.cast` slides · `32m 21s` paced across all framing/SVG additions)
 - **Canonical Map**: [`map.md`](./map.md)
 - **Supporting Prototypes & Assets**:
   - Cast Curation & Trim Schedule: [`cast-curation-prototype.md`](./cast-curation-prototype.md) · [`cast-curation-prototype.html`](./cast-curation-prototype.html)
@@ -15,73 +15,80 @@
 ## 1. Presentation Thesis, Scope & Visual Rules
 
 ### 1.1 Core Narrative Arc
-1. **Act I — The Hook & Real-World Embedded Stress Test (`S01`–`S05`, `3m 15s`)**: Frame the Seeed Studio XIAO RP2350 + `10 kΩ` potentiometer (`D0/A0`) + 6-LED PWM bar graph (`bargraphd` + interactive USB-C `nsh>` CLI) inside **Apache NuttX** (`3,241` directories vs `13` upstream `README.md` files, `0.4%` coverage) and introduce the **3 hardware/RTOS booby traps** waiting on the bench:
+1. **Act I — The Hook & Real-World Embedded Stress Test (`S01`, `S01b`, `S02a`–`S02c`, `S03`–`S05`, `4m 40s`)**: Introduce **Apache NuttX** and **Google Antigravity** (`S01b`), walk through breadboard internal spring-clip scoping (`S02a`) and the 28-column physical wiring layout (`S02b`), then frame the `AU$10` Seeed Studio XIAO RP2350 + `10 kΩ` potentiometer (`D0/A0`) + 6-LED PWM bar graph (`bargraphd` + interactive USB-C `nsh>` CLI) (`S02c`) inside **Apache NuttX** (`3,241` directories vs `13` upstream `README.md` files, `0.4%` coverage) and introduce the **3 hardware/RTOS booby traps** waiting on the bench:
    - *Trap 1 — USB-C Console Boot Hang*: Blocking startup hangs USB-C `nsh>` enumeration; naive dual-startup scripts cause daemon boot races.
    - *Trap 2 — ADC Pin Clobber & Erratum `RP2350-E9` Pad Leakage*: NuttX's RP2350 ADC init resets all 4 ADC pins (`GPIO 26–29`) and leaves the digital input buffer `IE=1` enabled—clobbering LEDs on `D1`/`D2` or injecting pad leakage into `D0/A0`.
    - *Trap 3 — The `500k IRQ/s` Interrupt Storm*: Opening `/dev/adc0` triggers continuous `500 kHz` (`2 µs`) free-running interrupts that starve the CPU—while opening/closing `/dev/adc0` at `40 Hz` hits an unguarded ISR teardown race.
-2. **Act II — The Vanilla Vibe Foil (`S06`–`S09`, `3m 21s`)**: Play `vanilla-vibe.cast` (`1m 51s` stage) showing unconstrained Antigravity succumb to Dave Rensin's *"Weeds Syndrome"* (`0` `README.md` reads, `26m` monolithic code gen). Give fair credit for clean host C math and `7/7` host tests before revealing the physical `0.7"` (`Cols C–H`) breadboard straddle (`./images/breadboard-vanilla-crop-ch.svg`) and the **`5 / 10`** hardware trap scorecard.
-3. **Act III — Rolling Docs for the AI: The Elephant-Goldfish Model (`S10`–`S26`, `17m 07s`)**: Introduce Dave Rensin's **Elephant-Goldfish Model (EGM)** (*"Design is the new code: design with an Elephant, review with a Goldfish"*) and step through `01-bootstrap.cast` (`1m 35s`), `02-brainstorm.cast` (`2m 40s`), `03-draft.cast` (`2m 31s`—planting the `CONFIG_RP23XX_ADC_DIV` false start at Stop 4), `04-review.cast` (`3m 39s`—Pass 1 `B-1` NVIC IRQ burst gating $\rightarrow$ `/clear` session amnesia $\rightarrow$ Pass 2 `CA-01` `25-byte` short-read FIFO catch), and `05-implement.cast` (`1m 22s`—1st-attempt `nuttx.uf2` build, `Cols E & F` breadboard layout `./images/breadboard-wiring-crop-ef.svg`, and candid **`10 / 10`** primary vs **`6 Pass / 4 Partial / 0 Fail`** strict post-build audit).
-4. **Act IV — Finale: Rolling Docs for the Human (`/teach-code`) & Live Lesson Showcase (`S27`–`S33`, `6m 08s`)**: Bridge from *"Docs for the AI"* to *"Docs for the Human"* (Dave Rensin's *"Humans Own the Outcomes"* + Matt Pocock's `/teach` adapted via `/agy-customizations` into `/teach-code`). Play `06-teach-code.cast` (`2m 04s` stage, keeping `npx skills add domesticmouse/skills`), then spend `2m 30s` (`S29`–`S31`) showcasing the compiled Edward Tufte interactive HTML course (`./tutorial/index.html`), its 3 live JavaScript simulators, printable `@media print` A4 bench sheets, and the bonus twist where compiling `Lesson 0006`'s strict C99 `pthreads` harness caught 2 real Phase 5 `bargraph test` bugs.
+2. **Act II — The Vanilla Vibe Foil (`S06`, `S07`, `S07a`, `S08`, `S09`, `3m 41s`)**: Play `vanilla-vibe.cast` (`1m 51s` stage) showing unconstrained Antigravity succumb to Dave Rensin's *"Weeds Syndrome"* (`0` `README.md` reads, `26m` monolithic code gen), reveal the full generated breadboard SVG (`S07a`, `./images/breadboard_circuit.svg`), and give fair credit for clean host C math and `7/7` host tests before zooming in on the physical `0.7"` (`Cols C–H`) breadboard straddle (`S08`, `./images/breadboard-vanilla-crop-ch.svg`) and the **`5 / 10`** hardware trap scorecard (`S09`).
+3. **Act III — Rolling Docs for the AI: The Elephant-Goldfish Model (`S10`–`S24`, `S24a`, `S25`–`S26`, `18m 02s`)**: Introduce Dave Rensin's **Elephant-Goldfish Model (EGM)** (*"Design is the new code: design with an Elephant, review with a Goldfish"*) and step through `01-bootstrap.cast` (`1m 35s`), `02-brainstorm.cast` (`2m 40s`), `03-draft.cast` (`2m 31s`—planting the `CONFIG_RP23XX_ADC_DIV` false start at Stop 4), `04-review.cast` (`3m 39s`—Pass 1 `B-1` NVIC IRQ burst gating $\rightarrow$ `/clear` session amnesia $\rightarrow$ Pass 2 `CA-01` `25-byte` short-read FIFO catch), and `05-implement.cast` (`1m 22s`—1st-attempt `nuttx.uf2` build), reveal the full EGM breadboard schematic (`S24a`, `./images/breadboard-wiring.svg`), run the candid `S25` breadboard reality check (`./images/breadboard-wiring-crop-ef.svg`: verified non-ADC pins, `23.6 mA` budget, and `IE=0` for `RP2350-E9` alongside the `0.6"` XIAO header spacing vs. `0.3"` `Cols E & F` / `0.7"` `Cols C–H` footprint catch), and deliver the **`10 / 10`** primary vs **`6 Pass / 4 Partial / 0 Fail`** strict post-build audit (`S26`).
+4. **Act IV — Finale: Rolling Docs for the Human (`/teach-code`) & Live Lesson Showcase (`S27`–`S33`, `5m 58s`)**: Bridge from *"Docs for the AI"* to *"Docs for the Human"* (Dave Rensin's *"Humans Own the Outcomes"* + Matt Pocock's `/teach` adapted via `/agy-customizations` into `/teach-code`). Play `06-teach-code.cast` (`2m 04s` stage, keeping `npx skills add domesticmouse/skills`), then spend `2m 30s` (`S29`–`S31`) showcasing the compiled Edward Tufte interactive HTML course (`./tutorial/index.html`), its 3 live JavaScript simulators, printable `@media print` A4 bench sheets, and the bonus twist where compiling `Lesson 0006`'s strict C99 `pthreads` harness caught 2 real Phase 5 `bargraph test` bugs.
 
 ### 1.2 Standing Visual, Narrative & Scope Rules
-- **Low-Density Slide Discipline (`~2.1` progressive beats/slide)**: Every non-cast slide presents one core idea and uses `1`–`3` concise `v-click` reveals synced directly to the speaker's voice.
+- **Low-Density Slide Discipline (`~1.8` progressive `v-click` beats/slide)**: Every non-cast slide presents one core idea and uses `0`–`3` concise `v-click` reveals synced directly to the speaker's voice.
 - **Consistent Cast Bracketing (`Setup → Live Cast → Debrief`)**: Every `layout: cast-full` slide is bracketed by a `20s–35s` setup slide ("What to Watch") and a visual debrief connecting the terminal run to the hardware/RTOS story.
 - **Strict Scope Exclusions (Out of Scope)**:
   - **Zero low-level C code lines**, register bitmask manipulation, or kernel driver C syntax debugging on slides.
   - **Zero asciinema / `pyte` / ANSI escape internals** or terminal recording tool mechanics.
-- **Narrator Voice (`bjm-voice`)**: Australian English (*G'day*, *AU\$8*, *memorised*, *realise*, *colour*, *labelled*, *modelled*, *centre*, *fibreglass*, *amongst*), conversational engineering peer tone (`~140 wpm`), crediting Dave Rensin (`@drensin`), Matt Pocock (`/teach`), and Edward Tufte while candidly owning all four false-start/audit beats.
+- **Narrator Voice (`bjm-voice`)**: Australian English (*G'day*, *AU\$10*, *memorised*, *realise*, *colour-coded*, *well-organised*, *labelled*, *modelled*, *centre*, *fibreglass*, *amongst*), conversational engineering peer tone (`~140 wpm`), crediting Dave Rensin (`@drensin`), Matt Pocock (`/teach`), and Edward Tufte while candidly owning all five false-start/audit/footprint beats.
 
 ---
 
-## 2. Verified 30-Minute Timing Budget & Macro Pacing Matrix
+## 2. Verified Timing Budget & Macro Pacing Matrix (`38` Slides)
 
-### 2.1 Act-by-Act Budget (`29m 51s` / `1,791s` Total · `9s` Buffer under `30m 00s`)
+> **Pacing Note**: Adding the five visual context/SVG slides (`S01b`, `S02a`–`S02c`, `S07a`, `S24a`) and reframing `S25` brings total paced runtime to `32m 21s`, which compresses cleanly inside a 30-minute stage slot by trimming `~2m 21s` from stop-point pause budgets or overview commentary.
+
+### 2.1 Act-by-Act Budget (`32m 21s` / `1,941s` Paced Total)
 
 | Act | Modular File (`slides/acts/`) | Slide Range | Non-Cast Slides | Live `.cast` Slides | Slide + Showcase Time | Live Cast Stage Time (Play + Pauses) | Act Total |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Act I — Hook & Hardware/RTOS Stress Test** | `01-hook-and-setup.md` | `S01`–`S05` | `5` | `0` | `3m 15s` (`195s`) | `0m 00s` (`0s`) | **`3m 15s` (`195s`)** |
-| **Act II — The Vanilla Vibe Foil** | `02-vanilla-foil.md` | `S06`–`S09` | `3` | `1` (`S07`) | `1m 30s` (`90s`) | `1m 51s` (`111s`) | **`3m 21s` (`201s`)** |
-| **Act III — Rolling Docs for the AI (EGM)** | `03-egm-journey.md` | `S10`–`S26` | `12` | `5` (`S13, S15, S17, S21, S24`) | `5m 20s` (`320s`) | `11m 47s` (`707s`) | **`17m 07s` (`1,027s`)** |
-| **Act IV — Finale: Docs for the Human (`/teach-code`)** | `04-teach-code-finale.md` | `S27`–`S33` | `6` | `1` (`S28`) | `4m 04s` (`244s`) | `2m 04s` (`124s`) | **`6m 08s` (`368s`)** |
-| **Total** | **4 Modular Act Files** | **`S01`–`S33`** | **`26` slides** | **`7` casts (`53` stops)** | **`14m 09s` (`849s`)** | **`15m 42s` (`942s`)** | **`29m 51s` (`1,791s`)** |
+| **Act I — Hook & Hardware/RTOS Stress Test** | `01-hook-and-setup.md` | `S01`–`S05` (`+S01b, S02a–c`) | `8` | `0` | `4m 40s` (`280s`) | `0m 00s` (`0s`) | **`4m 40s` (`280s`)** |
+| **Act II — The Vanilla Vibe Foil** | `02-vanilla-foil.md` | `S06`–`S09` (`+S07a`) | `4` | `1` (`S07`) | `1m 50s` (`110s`) | `1m 51s` (`111s`) | **`3m 41s` (`221s`)** |
+| **Act III — Rolling Docs for the AI (EGM)** | `03-egm-journey.md` | `S10`–`S26` (`+S24a`) | `13` | `5` (`S13, S15, S17, S21, S24`) | `6m 15s` (`375s`) | `11m 47s` (`707s`) | **`18m 02s` (`1,082s`)** |
+| **Act IV — Finale: Docs for the Human (`/teach-code`)** | `04-teach-code-finale.md` | `S27`–`S33` | `6` | `1` (`S28`) | `3m 54s` (`234s`) | `2m 04s` (`124s`) | **`5m 58s` (`358s`)** |
+| **Total** | **4 Modular Act Files** | **`38` Slides** | **`31` slides** | **`7` casts (`53` stops)** | **`16m 39s` (`999s`)** | **`15m 42s` (`942s`)** | **`32m 21s` (`1,941s`)** |
 
-### 2.2 Per-Slide Timing Verification Table (`S01`–`S33`)
+### 2.2 Per-Slide Timing Verification Table (`38` Slides)
 
 | Slide | Act File | Title | Layout | `v-click`s | Duration (`s`) | Cumulative |
 | :-: | :--- | :--- | :--- | :-: | :-: | :-: |
 | `S01` | `01-hook-and-setup.md` | Title Slide: Roll Your Own Docs | `center` | `0` | `25s` | `00:25` |
-| `S02` | `01-hook-and-setup.md` | The Hardware Target: XIAO RP2350 & 6-LED Bar Graph | `hardware-callout` | `2` | `45s` | `01:10` |
-| `S03` | `01-hook-and-setup.md` | The RTOS Scale Shock: Why Apache NuttX Breaks "Vibe Coding" | `default` | `2` | `40s` | `01:50` |
-| `S04` | `01-hook-and-setup.md` | Three Hardware & RTOS Booby Traps Waiting on the Bench | `default` | `3` | `55s` | `02:45` |
-| `S05` | `01-hook-and-setup.md` | The Controlled Experiment: Same Hardware, Same Prompt, Two Workflows | `default` | `2` | `30s` | `03:15` |
-| `S06` | `02-vanilla-foil.md` | Act II Setup: Watching Unconstrained Antigravity ("Weeds Syndrome") | `default` | `2` | `25s` | `03:40` |
-| `S07` | `02-vanilla-foil.md` | **LIVE CAST 1**: `vanilla-vibe.cast` (`6` stops · `75s` play + `36s` stops) | `cast-full` | `6 stops` | `111s` | `05:31` |
-| `S08` | `02-vanilla-foil.md` | Debrief: The Lie of "It Compiled!" (`Cols C–H` `0.7"` Straddle) | `hardware-callout` | `2` | `35s` | `06:06` |
-| `S09` | `02-vanilla-foil.md` | Vanilla Vibe Audit Scorecard: `5 / 10` Against the Hardware Traps | `default` | `2` | `30s` | `06:36` |
-| `S10` | `03-egm-journey.md` | Act III Anchor: The Elephant-Goldfish Triad | `default` | `3` | `40s` | `07:16` |
-| `S11` | `03-egm-journey.md` | Unpacking The Elephant: Directory Contracts as a Navigable Map | `skill-breakdown` | `3` | `40s` | `07:56` |
-| `S12` | `03-egm-journey.md` | Keeping the Elephant Honest: `/plugin` $\rightarrow$ `/egm-bootstrap` $\rightarrow$ `/egm-drift-report` | `default` | `3` | `25s` | `08:21` |
-| `S13` | `03-egm-journey.md` | **LIVE CAST 2**: `01-bootstrap.cast` (`6` stops · `59s` play + `36s` stops) | `cast-full` | `6 stops` | `95s` | `09:56` |
-| `S14` | `03-egm-journey.md` | The Specification Funnel: Human + Elephant (`/egm-brainstorm`) | `default` | `3` | `30s` | `10:26` |
-| `S15` | `03-egm-journey.md` | **LIVE CAST 3**: `02-brainstorm.cast` (`9` stops · `106s` play + `54s` stops) | `cast-full` | `9 stops` | `160s` | `13:06` |
-| `S16` | `03-egm-journey.md` | Section-by-Section Drafting & Planting the `RP23XX_ADC_DIV` Trap | `default` | `2` | `25s` | `13:31` |
-| `S17` | `03-egm-journey.md` | **LIVE CAST 4**: `03-draft.cast` (`6` stops · `115s` play + `36s` stops) | `cast-full` | `6 stops` | `151s` | `16:02` |
-| `S18` | `03-egm-journey.md` | Debrief: Author Bias, Self-Sycophancy & Why We Need Goldfish | `default` | `2` | `25s` | `16:27` |
-| `S19` | `03-egm-journey.md` | Unpacking The Goldfish: Stateless Adversarial Swarm (`/egm-review`) | `default` | `3` | `35s` | `17:02` |
-| `S20` | `03-egm-journey.md` | What to Watch in `04-review.cast`: `B-1`, `/clear` Amnesia, and Pass 2 | `default` | `2` | `20s` | `17:22` |
-| `S21` | `03-egm-journey.md` | **LIVE CAST 5**: `04-review.cast` (`13` stops · `141s` play + `78s` stops) | `cast-full` | `13 stops` | `219s` | `21:01` |
-| `S22` | `03-egm-journey.md` | Debrief: First-Order Catch (`B-1`) vs. Second-Order Catch (`CA-01`) | `default` | `2` | `30s` | `21:31` |
-| `S23` | `03-egm-journey.md` | When the Spec is Hardened, Coding is Boring (`05-implement` Setup) | `default` | `2` | `20s` | `21:51` |
-| `S24` | `03-egm-journey.md` | **LIVE CAST 6**: `05-implement.cast` (`4` stops · `58s` play + `24s` stops) | `cast-full` | `4 stops` | `82s` | `23:13` |
-| `S25` | `03-egm-journey.md` | Physical Breadboard Payoff: Vanilla (`0.7"` Straddle) vs. EGM (`Cols E & F`) | `hardware-callout` | `1` | `25s` | `23:38` |
-| `S26` | `03-egm-journey.md` | Candid Scorecard Callback: `5 / 10` vs. `10 / 10` (And Engineering Honesty) | `default` | `2` | `30s` | `24:08` |
-| `S27` | `04-teach-code-finale.md` | Act IV Finale: From "Docs for the AI" to "Docs for the Human" | `default` | `2` | `35s` | `24:43` |
-| `S28` | `04-teach-code-finale.md` | **LIVE CAST 7**: `06-teach-code.cast` (`9` stops · `70s` play + `54s` stops) | `cast-full` | `9 stops` | `124s` | `26:47` |
-| `S29` | `04-teach-code-finale.md` | **FINALE SHOWCASE 1**: Course Hub & 6-Lesson Story Arc (`./tutorial/index.html`) | `default` | `2` | `45s` | `27:32` |
-| `S30` | `04-teach-code-finale.md` | **FINALE SHOWCASE 2**: Interactive JS Simulators, C99 Exercises & Quizzes | `default` | `3` | `60s` | `28:32` |
-| `S31` | `04-teach-code-finale.md` | **FINALE SHOWCASE 3**: Teaching Dead Ends, Printable Bench Sheets & Bug Catch! | `default` | `2` | `45s` | `29:17` |
-| `S32` | `04-teach-code-finale.md` | The "Roll Your Own Docs" Flywheel: Three Habits for Monday Morning | `default` | `3` | `30s` | `29:47` |
-| `S33` | `04-teach-code-finale.md` | Links, Open-Source Skills & Interactive Course | `default` | `0` | `19s` | `29:51` |
+| `S01b` | `01-hook-and-setup.md` | The Stack: Apache NuttX & Google Antigravity | `default` | `0` | `20s` | `00:45` |
+| `S02a` | `01-hook-and-setup.md` | How a Solderless Breadboard Works | `default` | `0` | `40s` | `01:25` |
+| `S02b` | `01-hook-and-setup.md` | Physical Breadboard Wiring: XIAO RP2350 6-LED Bar Graph | `center` | `0` | `30s` | `01:55` |
+| `S02c` | `01-hook-and-setup.md` | The Hardware Target: XIAO RP2350 & 6-LED Bar Graph | `default` | `2` | `40s` | `02:35` |
+| `S03` | `01-hook-and-setup.md` | The RTOS Scale Shock: Why Apache NuttX Breaks "Vibe Coding" | `default` | `2` | `40s` | `03:15` |
+| `S04` | `01-hook-and-setup.md` | Three Hardware & RTOS Booby Traps Waiting on the Bench | `default` | `3` | `55s` | `04:10` |
+| `S05` | `01-hook-and-setup.md` | The Controlled Experiment: Same Hardware, Same Prompt, Two Workflows | `default` | `2` | `30s` | `04:40` |
+| `S06` | `02-vanilla-foil.md` | Act II Setup: Watching Unconstrained Antigravity ("Weeds Syndrome") | `default` | `2` | `25s` | `05:05` |
+| `S07` | `02-vanilla-foil.md` | **LIVE CAST 1**: `vanilla-vibe.cast` (`6` stops · `75s` play + `36s` stops) | `cast-full` | `6 stops` | `111s` | `06:56` |
+| `S07a` | `02-vanilla-foil.md` | Vanilla Vibe's Generated Breadboard Wiring | `default` | `0` | `20s` | `07:16` |
+| `S08` | `02-vanilla-foil.md` | Debrief: The Lie of "It Compiled!" (`Cols C–H` `0.7"` Straddle) | `hardware-callout` | `2` | `35s` | `07:51` |
+| `S09` | `02-vanilla-foil.md` | Vanilla Vibe Audit Scorecard: `5 / 10` Against the Hardware Traps | `default` | `2` | `30s` | `08:21` |
+| `S10` | `03-egm-journey.md` | Act III Anchor: The Elephant-Goldfish Triad | `default` | `3` | `40s` | `09:01` |
+| `S11` | `03-egm-journey.md` | Unpacking The Elephant: Directory Contracts as a Navigable Map | `skill-breakdown` | `3` | `40s` | `09:41` |
+| `S12` | `03-egm-journey.md` | Keeping the Elephant Honest: `/plugin` $\rightarrow$ `/egm-bootstrap` $\rightarrow$ `/egm-drift-report` | `default` | `3` | `25s` | `10:06` |
+| `S13` | `03-egm-journey.md` | **LIVE CAST 2**: `01-bootstrap.cast` (`6` stops · `59s` play + `36s` stops) | `cast-full` | `6 stops` | `95s` | `11:41` |
+| `S14` | `03-egm-journey.md` | The Specification Funnel: Human + Elephant (`/egm-brainstorm`) | `default` | `3` | `30s` | `12:11` |
+| `S15` | `03-egm-journey.md` | **LIVE CAST 3**: `02-brainstorm.cast` (`9` stops · `106s` play + `54s` stops) | `cast-full` | `9 stops` | `160s` | `14:51` |
+| `S16` | `03-egm-journey.md` | Section-by-Section Drafting & Planting the `RP23XX_ADC_DIV` Trap | `default` | `2` | `25s` | `15:16` |
+| `S17` | `03-egm-journey.md` | **LIVE CAST 4**: `03-draft.cast` (`6` stops · `115s` play + `36s` stops) | `cast-full` | `6 stops` | `151s` | `17:47` |
+| `S18` | `03-egm-journey.md` | Debrief: Author Bias, Self-Sycophancy & Why We Need Goldfish | `default` | `2` | `25s` | `18:12` |
+| `S19` | `03-egm-journey.md` | Unpacking The Goldfish: Stateless Adversarial Swarm (`/egm-review`) | `default` | `3` | `35s` | `18:47` |
+| `S20` | `03-egm-journey.md` | What to Watch in `04-review.cast`: `B-1`, `/clear` Amnesia, and Pass 2 | `default` | `2` | `20s` | `19:07` |
+| `S21` | `03-egm-journey.md` | **LIVE CAST 5**: `04-review.cast` (`13` stops · `141s` play + `78s` stops) | `cast-full` | `13 stops` | `219s` | `22:46` |
+| `S22` | `03-egm-journey.md` | Debrief: First-Order Catch (`B-1`) vs. Second-Order Catch (`CA-01`) | `default` | `2` | `30s` | `23:16` |
+| `S23` | `03-egm-journey.md` | When the Spec is Hardened, Coding is Boring (`05-implement` Setup) | `default` | `2` | `20s` | `23:36` |
+| `S24` | `03-egm-journey.md` | **LIVE CAST 6**: `05-implement.cast` (`4` stops · `58s` play + `24s` stops) | `cast-full` | `4 stops` | `82s` | `24:58` |
+| `S24a` | `03-egm-journey.md` | EGM's Generated Breadboard Wiring | `default` | `0` | `20s` | `25:18` |
+| `S25` | `03-egm-journey.md` | Breadboard Reality Check: Electrical Wins vs. Physical Footprint (`0.6"` XIAO) | `hardware-callout` | `2` | `35s` | `25:53` |
+| `S26` | `03-egm-journey.md` | Candid Scorecard Callback: `5 / 10` vs. `10 / 10` (And Engineering Honesty) | `default` | `2` | `30s` | `26:23` |
+| `S27` | `04-teach-code-finale.md` | Act IV Finale: From "Docs for the AI" to "Docs for the Human" | `default` | `2` | `35s` | `26:58` |
+| `S28` | `04-teach-code-finale.md` | **LIVE CAST 7**: `06-teach-code.cast` (`9` stops · `70s` play + `54s` stops) | `cast-full` | `9 stops` | `124s` | `29:02` |
+| `S29` | `04-teach-code-finale.md` | **FINALE SHOWCASE 1**: Course Hub & 6-Lesson Story Arc (`./tutorial/index.html`) | `default` | `2` | `45s` | `29:47` |
+| `S30` | `04-teach-code-finale.md` | **FINALE SHOWCASE 2**: Interactive JS Simulators, C99 Exercises & Quizzes | `default` | `3` | `60s` | `30:47` |
+| `S31` | `04-teach-code-finale.md` | **FINALE SHOWCASE 3**: Teaching Dead Ends, Printable Bench Sheets & Bug Catch! | `default` | `2` | `45s` | `31:32` |
+| `S32` | `04-teach-code-finale.md` | The "Roll Your Own Docs" Flywheel: Three Habits for Monday Morning | `default` | `3` | `30s` | `32:02` |
+| `S33` | `04-teach-code-finale.md` | Links, Open-Source Skills & Interactive Course | `default` | `0` | `19s` | `32:21` |
 
 ---
 
@@ -111,9 +118,9 @@
 
 ---
 
-## 4. Complete Slide-by-Slide Specification & Verbatim Speaker Script (`S01`–`S33`)
+## 4. Complete Slide-by-Slide Specification & Verbatim Speaker Script (`38` Slides: `S01`–`S33`)
 
-### Act I — The Hook & Real-World Embedded Stress Test (`slides/acts/01-hook-and-setup.md` · `5` Slides · `3m 15s`)
+### Act I — The Hook & Real-World Embedded Stress Test (`slides/acts/01-hook-and-setup.md` · `8` Slides · `4m 40s`)
 
 ---
 
@@ -128,18 +135,46 @@
 
 ---
 
-#### `S02` — The Hardware Target: XIAO RP2350 & 6-LED Bar Graph (`01-hook-and-setup.md` · `layout: hardware-callout` · `45s` · `2` `v-click`s)
+#### `S01b` — The Stack: Apache NuttX & Google Antigravity (`01-hook-and-setup.md` · `layout: default` · `20s` · `0` `v-click`s)
 - **Visual Specification**:
-  - **Left Pane (`hardware-callout` image/diagram)**: High-level pin/interface diagram & breadboard silhouette showing the Seeed Studio XIAO RP2350 (`14-pin` castellated module straddling the breadboard centre trench), `10 kΩ` linear potentiometer on `D0/A0` (`GPIO 26` / `ADC0`), and `6` discrete through-hole LEDs (`LED1`–`LED6`: 2 Green, 2 Yellow, 2 Red with `330 Ω` resistors).
-  - **Right Pane (`[On Load]` + `2` `v-click` cards)**:
-    - **`[On Load]`**: **Bench Hardware** — `AU$8` Seeed Studio XIAO RP2350 + `10 kΩ` pot (`D0/A0`) + `6` LEDs (`2G / 2Y / 2R`) on a 400-tie-point solderless breadboard.
+  - **2-Column Platform Cards**:
+    - **Left Card**: **Apache NuttX** (`./images/nuttx-logo.png` on a light card backdrop, Real-Time Operating System, `https://nuttx.apache.org/`).
+    - **Right Card**: **Google Antigravity** (`./images/antigravity-lockup.svg` reverse-colour lockup, Agentic Development Platform, `https://antigravity.google/`).
+- **Verbatim Speaker Script (`bjm-voice` · `~50 words`)**:
+  - **`[On Load]`**:
+    > "Before we touch any hardware, let's call out the two main players in tonight's experiment. On the left is **Apache NuttX**, a mature, POSIX-compliant real-time operating system you can explore at `nuttx.apache.org`. On the right is **Google Antigravity**, the agentic development platform I used to tame it, available at `antigravity.google`."
+
+---
+
+#### `S02a` — How a Solderless Breadboard Works (`01-hook-and-setup.md` · `layout: default` · `40s` · `0` `v-click`s)
+- **Visual Specification**:
+  - **Full-Width Diagram**: `./images/breadboard-scopes.svg` showing horizontal power rails (global scope), 5-hole vertical tie-point strips (`a`–`e` and `f`–`j`, local nodes), and the centre trench namespace barrier.
+- **Verbatim Speaker Script (`bjm-voice` · `~95 words`)**:
+  - **`[On Load]`**:
+    > "Before we wire up our hardware, let's take a quick X-ray look at a solderless breadboard—because its hidden metal spring clips behave a lot like variable scopes in code. Along the top and bottom, the horizontal power rails act like global scope: every hole in the blue minus rail or red plus rail is wired together. In the middle, each 5-hole vertical column—rows `a` through `e` above the trench, and `f` through `j` below it—is an independent local node. And that centre plastic trench is a hard namespace barrier: you seat a dual-row module like the XIAO RP2350 straddling `e` and `f` so its left and right pins never short together."
+
+---
+
+#### `S02b` — Physical Breadboard Wiring: XIAO RP2350 6-LED Bar Graph (`01-hook-and-setup.md` · `layout: center` · `30s` · `0` `v-click`s)
+- **Visual Specification**:
+  - **Full-Height Centred Schematic**: `./images/assets-breadboard-wiring.svg` showing the full 28-column breadboard layout with the XIAO RP2350 straddling the centre trench, the `10 kΩ` potentiometer and `100 nF` decoupling capacitor on `D0/A0` at `3.3 V`, and six discrete LEDs (2 Green, 2 Yellow, 2 Red) with `330 Ω` resistors on `D3`–`D5` and `D8`–`D10` (skipping `D1/D2` and `D6/D7`).
+- **Verbatim Speaker Script (`bjm-voice` · `~70 words`)**:
+  - **`[On Load]`**:
+    > "Here is the full physical wiring layout on a 28-column breadboard. The XIAO RP2350 straddles the centre trench, leaving open tie-points on both sides of every pin. On the left, a ten-kilohm potentiometer feeds `D0/A0` with an optional hundred-nanofarad decoupling capacitor, strictly at `3.3` volts. Across the right, six discrete LEDs—two green, two yellow, two red—each get their own `330`-ohm current-limiting resistor on `D3` through `D5` and `D8` through `D10`, intentionally skipping `D1/D2` and `D6/D7`."
+
+---
+
+#### `S02c` — The Hardware Target: XIAO RP2350 & 6-LED Bar Graph (`01-hook-and-setup.md` · `layout: default` · `40s` · `2` `v-click`s)
+- **Visual Specification**:
+  - **Stacked Target Cards (`[On Load]` + `2` `v-click` cards)**:
+    - **`[On Load]`**: **Bench Hardware** — `AU$10` Seeed Studio XIAO RP2350 + `10 kΩ` linear potentiometer on `D0/A0` (`GPIO 26 / ADC0`) + `6` through-hole LEDs (`2` Green, `2` Yellow, `2` Red with `330 Ω` resistors) on a 400-tie-point solderless breadboard.
     - **`[v-click 1]`**: **Proportional 6-Segment PWM Display** — Smooth `16-bit` hardware PWM brightness interpolation across the active segment as you turn the knob.
     - **`[v-click 2]`**: **Dual Runtime Requirement** — Autonomous `50 Hz` background daemon (`bargraphd`) *while* keeping the single USB-C `nsh>` serial console interactive for live CLI commands (`start`, `stop`, `status`, `test`, `set`).
-- **Verbatim Speaker Script (`bjm-voice` · `~105 words`)**:
+- **Verbatim Speaker Script (`bjm-voice` · `~90 words`)**:
   - **`[On Load]`**:
-    > "It started with a classic weekend hardware itch: an AU\$8 Seeed Studio XIAO RP2350 sitting on a 400-tie-point solderless breadboard beside my laptop. Nothing exotic on the bench—a ten-kilohm potentiometer wired into pin `D0/A0`, and six through-hole LEDs—two green, two yellow, two red—acting as a six-segment bar graph."
+    > "So to recap the target we're building: an AU\$10 Seeed Studio XIAO RP2350 sitting on a 400-tie-point solderless breadboard beside my laptop, wired to a ten-kilohm potentiometer on `D0/A0` and six through-hole LEDs—two green, two yellow, two red."
   - **`[v-click 1 — Proportional 6-Segment PWM Display]`**:
-    > "Instead of crude on/off steps, I wanted smooth hardware PWM interpolation across all six channels so the active segment ramps proportionally in brightness as you twist the pot."
+    > "Instead of crude on/off steps, I wanted smooth `16-bit` hardware PWM interpolation across all six channels so the active segment ramps proportionally in brightness as you twist the pot."
   - **`[v-click 2 — Dual Runtime Requirement]`**:
     > "And it needed to run as an autonomous fifty-hertz background daemon called `bargraphd`, while keeping the single USB-C serial console free for interactive shell commands like `status`, `test`, and `set`."
 
@@ -195,7 +230,7 @@
 
 ---
 
-### Act II — The Vanilla Vibe Foil (`slides/acts/02-vanilla-foil.md` · `4` Slides · `3m 21s`)
+### Act II — The Vanilla Vibe Foil (`slides/acts/02-vanilla-foil.md` · `5` Slides · `3m 41s`)
 
 ---
 
@@ -250,6 +285,15 @@
 
 ---
 
+#### `S07a` — Vanilla Vibe's Generated Breadboard Wiring (`02-vanilla-foil.md` · `layout: default` · `20s` · `0` `v-click`s)
+- **Visual Specification**:
+  - **Full-Width Diagram**: `./images/breadboard_circuit.svg` displaying the complete dark-mode breadboard wiring SVG generated by Vanilla Vibe (`docs/vanilla/breadboard_circuit.svg`).
+- **Verbatim Speaker Script (`bjm-voice` · `~45 words`)**:
+  - **`[On Load]`**:
+    > "Here is the full breadboard wiring SVG that Vanilla Vibe just generated. At a glance, it looks clean and well-organised—complete with a dark-mode aesthetic, colour-coded jumper wires, and labelled components. Now let's zoom in on the XIAO RP2350 itself to see what actually happened on the board."
+
+---
+
 #### `S08` — Debrief: The Lie of "It Compiled!" (`02-vanilla-foil.md` · `layout: hardware-callout` · `35s` · `2` `v-click`s)
 - **Visual Specification**:
   - **Left Pane (`hardware-callout` SVG)**: `./images/breadboard-vanilla-crop-ch.svg` (cropped close-up of `docs/vanilla/breadboard_circuit.svg` showing the XIAO RP2350 straddling Columns C through H).
@@ -281,7 +325,7 @@
 
 ---
 
-### Act III — Rolling Docs for the AI: The Elephant-Goldfish Model (`slides/acts/03-egm-journey.md` · `17` Slides · `17m 07s`)
+### Act III — Rolling Docs for the AI: The Elephant-Goldfish Model (`slides/acts/03-egm-journey.md` · `18` Slides · `18m 02s`)
 
 ---
 
@@ -644,16 +688,28 @@
 
 ---
 
-#### `S25` — Physical Breadboard Payoff: Vanilla (`0.7"` Straddle) vs. EGM (`Cols E & F`) (`03-egm-journey.md` · `layout: hardware-callout` · `25s` · `1` `v-click`)
+#### `S24a` — EGM's Generated Breadboard Wiring (`03-egm-journey.md` · `layout: default` · `20s` · `0` `v-click`s)
 - **Visual Specification**:
-  - **Left Pane (`hardware-callout` SVG)**: `./images/breadboard-wiring-crop-ef.svg` (cropped close-up of `docs/egm/breadboard-wiring.svg` showing the XIAO RP2350 seated across Columns E & F).
-  - **Right Pane**:
-    - **`[v-click 1]`**: **Physically Buildable on the Bench** — Seated across **Columns E & F (`0.3"` centre trench)** leaving 4 open tie-points on every row (`A–D` and `G–J`), routing LEDs to 6 non-ADC PWM pins (`D1, D2, D4, D5, D8, D9`), and disabling `IE` on `GPIO 26` to defeat Erratum `RP2350-E9`.
-- **Verbatim Speaker Script (`bjm-voice` · `~60 words`)**:
+  - **Full-Width Diagram**: `./images/breadboard-wiring.svg` displaying the complete light-mode breadboard schematic generated by EGM (`docs/egm/breadboard-wiring.svg`).
+- **Verbatim Speaker Script (`bjm-voice` · `~50 words`)**:
   - **`[On Load]`**:
-    > "Look at `docs/egm/breadboard-wiring.svg` on the left."
-  - **`[v-click 1 — Seated Cleanly Across Cols E & F]`**:
-    > "The XIAO RP2350 sits cleanly across **Columns E and F** over the zero-point-three-inch centre trench, leaving four open tie-points on every row, routing the six LEDs to non-ADC PWM pins (`D1, D2, D4, D5, D8, D9`), and disabling `IE` on `GPIO 26` to defeat Erratum `RP2350-E9`."
+    > "Here is the full breadboard wiring SVG that EGM generated in one pass. Notice the clean light-mode schematic layout, the XIAO RP2350 seated across the centre trench, the potentiometer on `D0`, and the six colour-coded LEDs on `D1`, `D2`, `D4`, `D5`, `D8`, and `D9`. Now let's zoom in on the XIAO RP2350 itself to verify the physical footprint and pin routing."
+
+---
+
+#### `S25` — Breadboard Reality Check: Electrical Wins vs. Physical Footprint (`0.6"` XIAO) (`03-egm-journey.md` · `layout: hardware-callout` · `35s` · `2` `v-click`s)
+- **Visual Specification**:
+  - **Left Pane (`hardware-callout` SVG)**: `./images/breadboard-wiring-crop-ef.svg` (cropped close-up of `docs/egm/breadboard-wiring.svg` showing the XIAO RP2350 drawn across Columns E & F with a visually widened `0.3"` centre trench).
+  - **Right Pane**:
+    - **`[v-click 1]`**: **Verified Electrical & Pinout Wins** — Routes LEDs to `6` non-ADC PWM pins (`D1, D2, D4, D5, D8, D9`), leaves `5V` unconnected, budgets `23.6 mA` with `330 Ω` resistors, and disables digital input buffer `IE=0` on `GPIO 26` to defeat Erratum `RP2350-E9`.
+    - **`[v-click 2]`**: **Physical Footprint Catch (`0.3"` vs. `0.6"` XIAO Width)** — Both runs missed the `0.6"` (`15.24 mm`) XIAO header spacing (`Cols C & G` or `D & H`): Vanilla spanned `0.7"` (`Cols C–H`), while EGM seated it in `Cols E & F (0.3")`—masked in the SVG by widening the visual trench.
+- **Verbatim Speaker Script (`bjm-voice` · `~115 words`)**:
+  - **`[On Load]`**:
+    > "Zooming in on `docs/egm/breadboard-wiring.svg` gives us a great engineering honesty check."
+  - **`[v-click 1 — Verified Electrical & Pinout Wins]`**:
+    > "On the electrical side, EGM nailed it: six non-ADC PWM pins (`D1, D2, D4, D5, D8, D9`), `330`-ohm resistors keeping total draw at `23.6` milliamps, `5V` left unconnected, and `IE` disabled on `GPIO 26` to defeat Erratum `RP2350-E9`."
+  - **`[v-click 2 — Physical Footprint Catch (0.3" vs. 0.6" XIAO Width)]`**:
+    > "But look at the physical footprint: a XIAO RP2350's headers are `0.6` inches apart—meaning it needs Columns `C` and `G`, or `D` and `H`. Vanilla stretched it too wide to Columns `C` and `H` (`0.7` inches), while EGM seated it too narrow in Columns `E` and `F` (`0.3` inches) and hid the mismatch by drawing a wider centre trench in the SVG. Contracts caught every silicon and RTOS invariant, but mechanical dimensions still deserve a real-world check."
 
 ---
 
@@ -672,7 +728,7 @@
 
 ---
 
-### Act IV — Finale: Rolling Docs for the Human & Live Lesson Showcase (`slides/acts/04-teach-code-finale.md` · `7` Slides · `6m 08s`)
+### Act IV — Finale: Rolling Docs for the Human & Live Lesson Showcase (`slides/acts/04-teach-code-finale.md` · `7` Slides · `5m 58s`)
 
 ---
 
@@ -816,15 +872,15 @@
 ## 5. Verification & Audit Summary
 
 1. **Timing Budget Verification (`PASS`)**:
-   - **Non-Cast Slides (`26` slides)**: `195s` (Act I) + `90s` (Act II) + `320s` (Act III) + `244s` (Act IV, incl. `150s` across `S29`–`S31` Finale Showcase) = **`849s` (`14m 09s`)**.
+   - **Non-Cast Slides (`31` slides)**: `280s` (Act I) + `110s` (Act II) + `375s` (Act III) + `234s` (Act IV, incl. `150s` across `S29`–`S31` Finale Showcase) = **`999s` (`16m 39s`)**.
    - **Live Cast Slides (`7` slides, `53` stops)**: `624.0s` (`10m 24s`) warped playback + `318.0s` (`5m 18s`) stop-point pause budget = **`942s` (`15m 42s`)**.
-   - **Combined Presentation Total**: `849s + 942s = 1,791s` (**`29m 51s`**), leaving a **`9s` buffer** inside the 30-minute (`1,800s`) slot.
+   - **Combined Presentation Total**: `999s + 942s = 1,941s` (**`32m 21s`** across `38` slides, compressible to `30m 00s` by trimming `~2m 21s` from pause budgets and framing commentary).
 2. **Asset & Cast Reference Verification (`PASS`)**:
    - All `7` `.cast` files verified in `slides/public/casts/` (`vanilla-vibe.cast`, `01-bootstrap.cast`, `02-brainstorm.cast`, `03-draft.cast`, `04-review.cast`, `05-implement.cast`, `06-teach-code.cast`) and `7` standalone HTML players verified in `prototypes/`.
-   - Both cropped breadboard SVGs verified in `slides/public/images/` (`breadboard-vanilla-crop-ch.svg` and `breadboard-wiring-crop-ef.svg`).
+   - All `8` image/SVG assets verified in `slides/public/images/` (`nuttx-logo.png`, `antigravity-lockup.svg`, `breadboard-scopes.svg`, `assets-breadboard-wiring.svg`, `breadboard_circuit.svg`, `breadboard-vanilla-crop-ch.svg`, `breadboard-wiring.svg`, and `breadboard-wiring-crop-ef.svg`).
    - Compiled 6-lesson interactive HTML course verified in `docs/egm/tutorial/` and `slides/public/tutorial/index.html` (`lessons/0001..0006.html` and `reference/*.html`).
 3. **Scope & Standing Preference Verification (`PASS`)**:
    - Zero low-level C driver lines or register manipulation code on slides.
    - Zero asciinema/`pyte` internal tooling mechanics in the presentation.
-   - Low-density slide rule (`~2.1` progressive `v-click` beats per concept slide) enforced across all `26` non-cast slides.
+   - Low-density slide rule (`~1.8` progressive `v-click` beats per non-cast slide; `0`–`3` clicks max) enforced across all `31` non-cast slides.
    - Finale showcase (`S29`–`S31`) prominently tours the generated `/teach-code` interactive HTML lessons at `./tutorial/index.html`.
