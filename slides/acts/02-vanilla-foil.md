@@ -54,7 +54,7 @@ layout: center
 
 <!-- S07a -->
 <div class="w-full h-full flex items-center justify-center">
-  <img src="./images/breadboard_circuit.svg" alt="Vanilla Vibe Generated Breadboard Wiring SVG" class="w-full max-h-[500px] object-contain rounded-xl border border-gray-800 shadow-lg" />
+  <img src="/images/breadboard_circuit.svg" alt="Vanilla Vibe Generated Breadboard Wiring SVG" class="w-full max-h-[500px] object-contain rounded-xl border border-gray-800 shadow-lg" />
 </div>
 
 <!--
