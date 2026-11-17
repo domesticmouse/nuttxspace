@@ -1,0 +1,19 @@
+{
+  "name": "slidev-presentation-deck",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "sync-casts": "python3 scripts/sync-assets.py",
+    "predev": "npm run sync-casts",
+    "dev": "slidev",
+    "prebuild": "npm run sync-casts",
+    "build": "slidev build --base /nuttxspace/",
+    "export": "slidev export"
+  },
+  "dependencies": {
+    "@slidev/cli": "^53.0.0",
+    "@slidev/theme-default": "^0.25.0",
+    "asciinema-player": "^3.8.0",
+    "vue": "^3.5.0"
+  }
+}

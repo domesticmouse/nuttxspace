@@ -1,2 +1,9 @@
 site/
 __pycache__/
+slides/node_modules/
+slides/dist/
+slides/.slidev.pid
+slides/.slidev.log
+slides/public/casts/
+slides/public/images/
+slides/public/tutorial/
