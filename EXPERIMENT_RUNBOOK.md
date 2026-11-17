@@ -339,7 +339,7 @@ ls -d ~/Documents/GitHub/nuttxspace-egm/.agents/skills/teach-code \
 
 Record **six separate `.cast` files** (`01-bootstrap.cast` through `06-teach-code.cast`, where `01-bootstrap.cast` combines Phase 0 `/plugin` installation of `egm` and Phase 1 `/egm-bootstrap` + `/egm-drift-report` + commit) and keep them **separate** so they can be played individually in a presentation, interspersed with slides covering what each step achieved and reviewing the generated docs and code. Use an **incremental Record -> Capture -> Review loop**—do **not** record the phases back-to-back before inspecting outputs.
 
-After each phase wraps up and commits via an in-session `agy` prompt in `~/Documents/GitHub/nuttxspace-egm`, switch to `~/Documents/GitHub/nuttxspace` and run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0106) **before starting the next recording** so you produce and inspect:
+After each phase wraps up and commits via an in-session `agy` prompt in `~/Documents/GitHub/nuttxspace-egm`, switch to `~/Documents/GitHub/nuttxspace` and run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player-review-prompt-run-after-each-phase-0106) **before starting the next recording** so you produce and inspect:
 1. **The recorded `.cast` and standalone HTML player**: Sanitize, trim, and mark `recordings/raw/0X-<phase>.cast` -> `recordings/final/0X-<phase>.cast` and build `prototypes/0X-<phase>-cast-player.html` (verified with `pyte` `--render` / `node --check` for TUI redraw quirks or stray turns).
 2. **The AGY trace(s)**: Export that phase's parent + Goldfish subagent traces into `docs/prompts-egm/` and audit tool calls / `README.md` contract reads.
 3. **The generated docs, code, and presentation review**: Copy that phase's artifacts into `docs/egm/` and write `docs/egm/reviews/0X-<phase>-review.md` summarizing what the step achieved and reviewing its generated docs/code.
@@ -808,7 +808,7 @@ asciinema rec -i 2.0 --window-size 120x36 --overwrite \
 
 ## 8. Run 2 Per-Phase Capture, Review & Standalone Player Workflow
 
-Instead of waiting until all six recordings are finished—or stitching them into one file—keep all six recordings (`01-bootstrap.cast` through `06-teach-code.cast`) **separate** so each recording can be played individually in a presentation alongside slides on what that step achieved and reviews of the generated docs and code. Run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player--review-prompt-run-after-each-phase-0106) in **`~/Documents/GitHub/nuttxspace`** immediately after **each** phase recording finishes, then run [Section 8.3](#83-full-run-batch-reconciliation--tutorial-capture-check) once all six phases are done.
+Instead of waiting until all six recordings are finished—or stitching them into one file—keep all six recordings (`01-bootstrap.cast` through `06-teach-code.cast`) **separate** so each recording can be played individually in a presentation alongside slides on what that step achieved and reviews of the generated docs and code. Run [Section 8.2](#82-per-phase-capture-trace-export-standalone-player-review-prompt-run-after-each-phase-0106) in **`~/Documents/GitHub/nuttxspace`** immediately after **each** phase recording finishes, then run [Section 8.3](#83-full-run-batch-reconciliation-tutorial-capture-check) once all six phases are done.
 
 ### 8.1 Reference Inventory: Useful Files Generated & Reviewed Across Phases 0–6
 

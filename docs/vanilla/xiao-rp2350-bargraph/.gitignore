@@ -1,6 +1,8 @@
 /build/
 *.o
 *.d
+!init.d/
+!init.d/**
 *.a
 .depend
 Make.dep

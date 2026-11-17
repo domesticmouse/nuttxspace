@@ -1,0 +1,3 @@
+# /etc/init.d/rcS
+# Auto-start the potentiometer bar-graph daemon at boot before USB serial attaches
+bargraph
