@@ -37,7 +37,7 @@ imageCaption: "Seeed Studio XIAO RP2350 (14-pin module) · 10 kΩ pot on D0/A0 (
   <div class="p-4 rounded-xl bg-gray-900/80 border border-gray-800 space-y-1.5">
     <div class="text-xs font-mono text-cyan-400 uppercase tracking-wide">Bench Hardware</div>
     <p class="text-sm text-gray-200 m-0 leading-relaxed">
-      <strong class="text-white">AU$8 Seeed Studio XIAO RP2350</strong> + <code class="text-amber-300">10 k&Omega;</code> linear potentiometer on <code class="text-amber-300">D0/A0</code> (<code class="text-gray-300">GPIO 26 / ADC0</code>) + <strong class="text-white">6 through-hole LEDs</strong> (2 Green, 2 Yellow, 2 Red with <code class="text-gray-300">330 &Omega;</code> resistors) on a 400-tie-point solderless breadboard.
+      <strong class="text-white">AU$10 Seeed Studio XIAO RP2350</strong> + <code class="text-amber-300">10 k&Omega;</code> linear potentiometer on <code class="text-amber-300">D0/A0</code> (<code class="text-gray-300">GPIO 26 / ADC0</code>) + <strong class="text-white">6 through-hole LEDs</strong> (2 Green, 2 Yellow, 2 Red with <code class="text-gray-300">330 &Omega;</code> resistors) on a 400-tie-point solderless breadboard.
     </p>
   </div>
 
@@ -57,7 +57,7 @@ imageCaption: "Seeed Studio XIAO RP2350 (14-pin module) · 10 kΩ pot on D0/A0 (
 </div>
 
 <!--
-It started with a classic weekend hardware itch: an AU$8 Seeed Studio XIAO RP2350 sitting on a 400-tie-point solderless breadboard beside my laptop. Nothing exotic on the bench—a ten-kilohm potentiometer wired into pin D0/A0, and six through-hole LEDs—two green, two yellow, two red—acting as a six-segment bar graph. Instead of crude on/off steps, I wanted smooth hardware PWM interpolation across all six channels so the active segment ramps proportionally in brightness as you twist the pot. And it needed to run as an autonomous fifty-hertz background daemon called bargraphd, while keeping the single USB-C serial console free for interactive shell commands like status, test, and set.
+It started with a classic weekend hardware itch: an AU$10 Seeed Studio XIAO RP2350 sitting on a 400-tie-point solderless breadboard beside my laptop. Nothing exotic on the bench—a ten-kilohm potentiometer wired into pin D0/A0, and six through-hole LEDs—two green, two yellow, two red—acting as a six-segment bar graph. Instead of crude on/off steps, I wanted smooth hardware PWM interpolation across all six channels so the active segment ramps proportionally in brightness as you twist the pot. And it needed to run as an autonomous fifty-hertz background daemon called bargraphd, while keeping the single USB-C serial console free for interactive shell commands like status, test, and set.
 -->
 
 ---
