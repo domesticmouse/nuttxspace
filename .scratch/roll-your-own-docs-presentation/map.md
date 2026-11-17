@@ -29,6 +29,7 @@ A complete, slide-by-slide presentation specification and speaker narrative at `
 <!-- the index: one line per closed ticket, enough to judge relevance, then zoom the link for the detail the ticket holds -->
 
 - [Narrative arc and 30-minute time budget](./issues/01-narrative-arc-and-time-budget.md): 5-act structure (3m Hook, 5m Vanilla Foil, 11m EGM Ramp-Up [2.0/3.0/4.5/1.5m], 6m /teach-code Codelab, 5m Honest Retro & Skill Evolution [3.5/1.5m]); "Roll Your Own Docs" lands for the agent (3,241 README contracts + EGM specs), the human (6-lesson /teach-code codelab), and the skills themselves (Matt Pocock's /teach → /teach-code via /agy-customizations).
+- [Select the hero codebase and hardware traps to feature on stage](./issues/02-hero-technical-traps-selection.md): Primary spine is the 500 kHz `START_ONCE` ADC storm (`40 Hz` `close(fd)` race → `RP23XX_ADC_DIV` false start → Pass 1 NVIC IRQ gating `B-1` & Pass 2 25-byte short-read loop `CA-01`), supported by 3 contrast traps (`CONFIG_ANALOG=y` silent drop, `my_reset()` + `RP2350-E9` `IE=1` leakage, `B-2` 4x Q4 EMA bug) and 4 "nobody is immune" self-corrections (`bargraph test` `MANUAL` clobber, `Makefile` `printf` duplication, shared `0.6"` XIAO breadboard straddle miss, `up_enable_irq` before `close(adc_fd)` shutdown edge case).
 
 ## Not yet specified
 
