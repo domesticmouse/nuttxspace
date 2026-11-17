@@ -26,13 +26,44 @@ G'day everyone, I'm Brett Morgan from Google Cloud. Tonight's talk is about what
 -->
 
 ---
-layout: hardware-callout
-title: "The Hardware Target: XIAO RP2350 & 6-LED Bar Graph"
-image: /images/breadboard-wiring.svg
-imageCaption: "Seeed Studio XIAO RP2350 (14-pin module) · 10 kΩ pot on D0/A0 (GPIO 26) · 6 discrete LEDs (2G / 2Y / 2R)"
+layout: default
 ---
 
-<!-- S02 -->
+<!-- S02a -->
+<div class="flex items-center gap-3 mb-4">
+  <h2 class="text-2xl font-bold m-0">How a Solderless Breadboard Works</h2>
+</div>
+
+<div class="w-full flex items-center justify-center">
+  <img src="/images/breadboard-scopes.svg" alt="Solderless Breadboard Internal Connections" class="w-full max-h-[430px] object-contain rounded-xl border border-gray-800 shadow-lg" />
+</div>
+
+<!--
+Before we wire up our hardware, let's take a quick X-ray look at a solderless breadboard—because its hidden metal spring clips behave a lot like variable scopes in code. Along the top and bottom, the horizontal power rails act like global scope: every hole in the blue minus rail or red plus rail is wired together. In the middle, each 5-hole vertical column—rows a through e above the trench, and f through j below it—is an independent local node. And that centre plastic trench is a hard namespace barrier: you seat a dual-row module like the XIAO RP2350 straddling e and f so its left and right pins never short together.
+-->
+
+---
+layout: center
+---
+
+<!-- S02b -->
+<div class="w-full h-full flex items-center justify-center">
+  <img src="/images/assets-breadboard-wiring.svg" alt="Physical Breadboard Wiring: XIAO RP2350 6-LED Bar Graph" class="w-full max-h-[500px] object-contain rounded-xl border border-gray-800 shadow-lg" />
+</div>
+
+<!--
+Here is the full physical wiring layout on a 28-column breadboard. The XIAO RP2350 straddles the centre trench, leaving open tie-points on both sides of every pin. On the left, a ten-kilohm potentiometer feeds D0/A0 with an optional hundred-nanofarad decoupling capacitor, strictly at 3.3 volts. Across the right, six discrete LEDs—two green, two yellow, two red—each get their own 330-ohm current-limiting resistor on D3 through D5 and D8 through D10, intentionally skipping D1/D2 and D6/D7.
+-->
+
+---
+layout: default
+---
+
+<!-- S02c -->
+<div class="flex items-center gap-3 mb-6">
+  <h2 class="text-2xl font-bold m-0">The Hardware Target: XIAO RP2350 &amp; 6-LED Bar Graph</h2>
+</div>
+
 <div class="space-y-4">
   <div class="p-4 rounded-xl bg-gray-900/80 border border-gray-800 space-y-1.5">
     <div class="text-xs font-mono text-cyan-400 uppercase tracking-wide">Bench Hardware</div>
@@ -57,7 +88,7 @@ imageCaption: "Seeed Studio XIAO RP2350 (14-pin module) · 10 kΩ pot on D0/A0 (
 </div>
 
 <!--
-It started with a classic weekend hardware itch: an AU$10 Seeed Studio XIAO RP2350 sitting on a 400-tie-point solderless breadboard beside my laptop. Nothing exotic on the bench—a ten-kilohm potentiometer wired into pin D0/A0, and six through-hole LEDs—two green, two yellow, two red—acting as a six-segment bar graph. Instead of crude on/off steps, I wanted smooth hardware PWM interpolation across all six channels so the active segment ramps proportionally in brightness as you twist the pot. And it needed to run as an autonomous fifty-hertz background daemon called bargraphd, while keeping the single USB-C serial console free for interactive shell commands like status, test, and set.
+So to recap the target we're building: an AU$10 Seeed Studio XIAO RP2350 sitting on a 400-tie-point solderless breadboard beside my laptop, wired to a ten-kilohm potentiometer on D0/A0 and six through-hole LEDs—two green, two yellow, two red. Instead of crude on/off steps, I wanted smooth 16-bit hardware PWM interpolation across all six channels so the active segment ramps proportionally in brightness as you twist the pot. And it needed to run as an autonomous fifty-hertz background daemon called bargraphd, while keeping the single USB-C serial console free for interactive shell commands like status, test, and set.
 -->
 
 ---
