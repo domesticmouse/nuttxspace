@@ -49,6 +49,19 @@ Here we are on the Antigravity start screen. Let's drop in the bar graph prompt.
 -->
 
 ---
+layout: center
+---
+
+<!-- S07a -->
+<div class="w-full h-full flex items-center justify-center">
+  <img src="./images/breadboard_circuit.svg" alt="Vanilla Vibe Generated Breadboard Wiring SVG" class="w-full max-h-[500px] object-contain rounded-xl border border-gray-800 shadow-lg" />
+</div>
+
+<!--
+Here is the full breadboard wiring SVG that Vanilla Vibe just generated. At a glance, it looks clean and well-organized—complete with a dark-mode aesthetic, color-coded jumper wires, and labeled components. Now let's zoom in on the XIAO RP2350 itself to see what actually happened on the board.
+-->
+
+---
 layout: hardware-callout
 title: "Debrief: The Lie of “It Compiled!” (Cols C–H 0.7&quot; Straddle)"
 image: /images/breadboard-vanilla-crop-ch.svg
