@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROTOTYPE: 7-Cast Trim & Stop-Point Planner (Ticket 03)</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel-alt: #26334d;
+    --border: #334155;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --keep: #22c55e;
+    --fast: #a855f7;
+    --trim: #ef4444;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 32px 64px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  header {
+    max-width: 1200px;
+    margin: 0 auto 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(56, 189, 248, 0.15);
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  h1 { margin: 0 0 8px; font-size: 24px; }
+  header p { margin: 0; color: var(--muted); font-size: 14px; }
+  .container { max-width: 1200px; margin: 0 auto; }
+
+  .state-dashboard {
+    position: sticky;
+    top: 12px;
+    z-index: 20;
+    background: rgba(30, 41, 59, 0.96);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+  }
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .metric-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .metric-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .metric-value { font-size: 20px; font-weight: 700; margin-top: 2px; }
+  .metric-sub { font-size: 12px; color: var(--muted); }
+  .bar-track {
+    height: 14px;
+    background: var(--bg);
+    border-radius: 7px;
+    overflow: hidden;
+    display: flex;
+    border: 1px solid var(--border);
+  }
+  .bar-cast { background: var(--accent); transition: width 0.2s; }
+  .bar-pause { background: #eab308; transition: width 0.2s; }
+  .bar-slides { background: #64748b; transition: width 0.2s; }
+  .bar-legend {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  .scenarios {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .scenario-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  button {
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--panel-alt);
+    color: var(--text);
+    transition: all 0.15s;
+  }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: #0f172a; border-color: var(--accent); }
+  .pause-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .cast-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .cast-header {
+    padding: 14px 20px;
+    background: var(--panel-alt);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .cast-title { font-size: 16px; font-weight: 700; }
+  .cast-meta { font-size: 13px; color: var(--accent); font-weight: 600; }
+  .framing-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 12px 20px;
+    background: rgba(15, 23, 42, 0.5);
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .framing-box strong { color: var(--accent); display: block; margin-bottom: 2px; font-size: 11px; text-transform: uppercase; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 16px;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+  }
+  th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; }
+  tr.mode-trim { opacity: 0.42; text-decoration: line-through; }
+  .pill-fast {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(168, 85, 247, 0.2);
+    color: #d8b4fe;
+    margin-left: 6px;
+  }
+  .mode-btns { display: inline-flex; gap: 4px; }
+  .mode-btn { padding: 4px 10px; font-size: 11px; border-radius: 4px; }
+  .mode-btn.active-keep { background: var(--keep); color: #052e16; border-color: var(--keep); }
+  .mode-btn.active-trim { background: var(--trim); color: #450a0a; border-color: var(--trim); }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">Throwaway Logic Prototype · Ticket 03 (Updated)</span>
+  <h1>7-Cast Trim &amp; Paired Prompt Stop-Point Planner</h1>
+  <p>Rules applied: (1) Every cast starts on the settled AGY Start Page (`0. Start` = Before Prompt 1). (2) Every prompt/reply has a Before-Prompt and After-Prompt stop point. (3) Hand-typed prompts are compressed to ~0.5s–0.8s warped.</p>
+</header>
+
+<div class="container">
+  <div class="state-dashboard">
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">Warped Cast Playback</div>
+        <div class="metric-value" id="val-cast">0m 00s</div>
+        <div class="metric-sub" id="sub-cast">across all 7 live casts</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Stop-Point Commentary</div>
+        <div class="metric-value" id="val-pause">0m 00s</div>
+        <div class="metric-sub" id="sub-stops">0 stop points</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Total Time in Casts</div>
+        <div class="metric-value" id="val-total-cast">0m 00s</div>
+        <div class="metric-sub" id="sub-pct">0% of 30m slot</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Remaining for Slides</div>
+        <div class="metric-value" id="val-slides">0m 00s</div>
+        <div class="metric-sub">Setup, Debrief, Act I &amp; V</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Trimmed Turns</div>
+        <div class="metric-value" id="val-trimmed">0m 00s</div>
+        <div class="metric-sub" id="sub-trimmed">0 turns cut</div>
+      </div>
+    </div>
+    <div class="bar-track">
+      <div class="bar-cast" id="bar-cast" style="width: 35%"></div>
+      <div class="bar-pause" id="bar-pause" style="width: 15%"></div>
+      <div class="bar-slides" id="bar-slides" style="width: 50%"></div>
+    </div>
+    <div class="bar-legend">
+      <span>■ Blue: Warped Terminal Playback (with tightened prompts)</span>
+      <span>■ Gold: Speaker Pause Commentary at Stop Points</span>
+      <span>■ Slate: Setup, Debrief, Hook &amp; Finale Slides (out of 30:00 total)</span>
+    </div>
+  </div>
+
+  <div class="scenarios">
+    <div class="scenario-btns">
+      <button class="primary" onclick="applyPreset('cast-heavy')">Preset 1: Recommended Cast-Heavy (48 stops · 10m 14s play)</button>
+      <button onclick="applyPreset('keep-mid')">Preset 2: Keep Brainstorm Q4–Q6 &amp; Draft Q4–Q5 (58 stops · 11m 50s play)</button>
+      <button onclick="applyPreset('all-turns')">Preset 3: Keep All Prompts incl. Git Commits (81 stops · 15m 47s play)</button>
+    </div>
+    <div class="pause-control">
+      <label for="pause-slider">Avg pause per Stop Point:</label>
+      <input type="range" id="pause-slider" min="3" max="12" value="6" oninput="updatePauseSec(this.value)">
+      <strong id="pause-label">6s</strong>
+    </div>
+  </div>
+
+  <div id="casts-root"></div>
+</div>
+
+<script>
+const CastPlannerModule = (() => {
+  const INITIAL_CASTS = [
+    {
+      id: "vanilla-vibe",
+      title: "1. vanilla-vibe.cast — Act II: The Monolithic Foil (0. Start = AGY Start Page)",
+      setup: "Prompt unconstrained Antigravity on upstream NuttX (13 READMEs in 3,241 dirs) with zero EGM contracts.",
+      debrief: "Built in 26m raw with 0 README reads -> 5/10 scorecard (RP2350-E9 pad leakage, 40Hz close(fd) race, 0.7\" straddle).",
+      turns: [
+        { id: "vv-0", label: "Pre-AGY Shell Launch (#0000..#0022)", stops: 0, warped: 1.8, fastNote: "Strip so 0. Start = AGY Start Page", defaultMode: "trim", midMode: "trim", allMode: "trim" },
+        { id: "vv-1", label: "Turn 1: [Before: 0. Start] -> [After: 1. Initial Prompt (0.5s)] -> [2. Q1: Breadboard Pins (14.1s)]", stops: 2, warped: 14.6, fastNote: "", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "vv-2", label: "Turn 2: [Before: Q1] -> [After: 3. A1: Any Free Pins (0.5s)] -> [4. 26m Build Complete (29.8s)]", stops: 2, warped: 30.3, fastNote: "", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "vv-3", label: "Turn 3: [Before: Ready for Wiring] -> [After: 5. Prompt: Wiring SVG (0.5s)] -> [6. SVG Complete (29.8s)]", stops: 2, warped: 30.3, fastNote: "", defaultMode: "keep", midMode: "keep", allMode: "keep" }
+      ]
+    },
+    {
+      id: "01-bootstrap",
+      title: "2. 01-bootstrap.cast — Act III.a: Grounding the Elephant (0. Start = AGY Start Page)",
+      setup: "Install egm via /plugin and run /egm-bootstrap to index 3,241 directory contracts + drift report.",
+      debrief: "The Elephant now holds system-wide architectural contracts + DRIFT_REPORT.md before touching any C code.",
+      turns: [
+        { id: "b1-0", label: "Pre-AGY Shell Launch (#0000..#0020: 1. Launch agy)", stops: 0, warped: 2.0, fastNote: "Strip so 0. Start = AGY Start Page", defaultMode: "trim", midMode: "trim", allMode: "trim" },
+        { id: "b1-1", label: "Turn 1: [Before: 0. Start] -> [After: 1. Run /plugin (0.7s)] -> [2. Select egm (2.4s)] -> [3. Installed (3.0s)]", stops: 3, warped: 6.2, fastNote: "", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "b1-2", label: "Turn 2: [Before: 3. Ready] -> [After: 4. Prompt: /egm-bootstrap (0.5s)] -> [5. Q1: Run Drift Report? (29.1s)]", stops: 2, warped: 29.6, fastNote: "", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "b1-3", label: "Turn 3: [Before: 5. Q1] -> [After: Confirm Yes] -> [6. Drift Report Complete (25.3s)]", stops: 1, warped: 25.3, fastNote: "", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "b1-4", label: "Turn 4 (Tail): [Before: Ready] -> [After: Prompt: Move Drift Report & Commit (0.8s)] -> [Committed (22.5s)]", stops: 2, warped: 23.3, fastNote: "Hand-typed 27.6s -> 0.8s", defaultMode: "trim", midMode: "trim", allMode: "keep" }
+      ]
+    },
+    {
+      id: "02-brainstorm",
+      title: "3. 02-brainstorm.cast — Act III.b: Socratic Negotiation (0. Start = AGY Start Page)",
+      setup: "Enforce 'No Code Yet': negotiate pins, background daemon vs USB-C NSH console, and PWM bar graph.",
+      debrief: "49 README contract reads + Socratic checkpoints lock concepts_brief.md before any editor opens.",
+      turns: [
+        { id: "b2-0", label: "Pre-AGY Shell Launch (#0000..#0039: 1. Launch agy)", stops: 0, warped: 2.9, fastNote: "Strip so 0. Start = AGY Start Page", defaultMode: "trim", midMode: "trim", allMode: "trim" },
+        { id: "b2-1", label: "Turn 1: [Before: 0. Start] -> [After: 1. Prompt: /egm-brainstorm (0.5s)] -> [2. Q1: Pin Mapping (29.5s)]", stops: 2, warped: 30.0, fastNote: "", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "b2-2", label: "Turn 2: [Before: Q1] -> [After: 3. A1: Layout Connections (0.8s)] -> [4. Q2: Boot vs USB-C NSH (12.3s)]", stops: 2, warped: 13.1, fastNote: "Hand-typed 22.4s -> 0.8s", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "b2-3", label: "Turn 3: [Before: Q2] -> [After: 5. A2: Spawn in Background (0.8s)] -> [6. Q3: LED Mapping (4.3s)]", stops: 2, warped: 5.1, fastNote: "Hand-typed 11.5s -> 0.8s", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "b2-4", label: "Turn 4: [Before: Q3] -> [After: 7. A3: PWM Brightness (0.8s)] -> [Next Question]", stops: 1, warped: 0.8, fastNote: "Hand-typed 9.7s -> 0.8s", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "b2-5", label: "Turns 5–7 (Mid): Q4/A4, Q5/A5, Q6/A6 CLI Subcommands (start/stop/test/set/resume)", stops: 6, warped: 40.7, fastNote: "Hand-typed A4–A6 tightened to 0.8s each", defaultMode: "trim", midMode: "keep", allMode: "keep" },
+        { id: "b2-8", label: "Turn 8: [8. Q7: Readiness Checkpoint (28.2s)] -> [9. Goldfish Synthesis Complete (28.4s)]", stops: 2, warped: 56.6, fastNote: "", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "b2-9", label: "Turn 9 (Tail): [Before: Ready] -> [After: Prompt: Stage & Commit (0.5s)] -> [Committed (26.0s)]", stops: 2, warped: 26.5, fastNote: "", defaultMode: "trim", midMode: "trim", allMode: "keep" }
+      ]
+    },
+    {
+      id: "03-draft",
+      title: "4. 03-draft.cast — Act III.c: Section Approval Gates (0. Start = AGY Start Page)",
+      setup: "Draft docs/designs/xiao-rp2350-bargraph.md section by section — watching where RP23XX_ADC_DIV slips in.",
+      debrief: "Even with human section gates, shared context breeds blind spots — setting up the Goldfish swarm.",
+      turns: [
+        { id: "d3-0", label: "Pre-AGY Shell Launch (#0000..#0019: 1. Launch agy)", stops: 0, warped: 1.3, fastNote: "Strip so 0. Start = AGY Start Page", defaultMode: "trim", midMode: "trim", allMode: "trim" },
+        { id: "d3-1", label: "Turn 1: [Before: 0. Start] -> [After: 1. Prompt: /egm-draft (0.8s)] -> [2. Q1: Confirm Context (28.3s)]", stops: 2, warped: 29.1, fastNote: "Hand-typed 8.7s -> 0.8s", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "d3-2", label: "Turn 2: [Before: Q1] -> [3. Q2: Section Approval — Overview & Goals (27.3s)]", stops: 1, warped: 27.3, fastNote: "", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "d3-3", label: "Turn 3: [Before: Q2] -> [4. Q3: Section Approval — Technical Plan / ADC_DIV False Start (29.1s)]", stops: 1, warped: 29.1, fastNote: "", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "d3-4", label: "Turns 4–5 (Mid): Q4 Alternatives (25.2s) & Q5 Detailed Implementation (28.8s) Gates", stops: 2, warped: 54.0, fastNote: "", defaultMode: "trim", midMode: "keep", allMode: "keep" },
+        { id: "d3-6", label: "Turn 6: [Before: Last Gate] -> [5. Draft Reconciled & Promoted to v0-draft (29.0s)]", stops: 2, warped: 29.5, fastNote: "", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "d3-7", label: "Turn 7 (Tail): [Before: Ready] -> [After: Prompt: Save v0-draft & Commit (0.5s)] -> [Committed (26.6s)]", stops: 2, warped: 27.1, fastNote: "", defaultMode: "trim", midMode: "trim", allMode: "keep" }
+      ]
+    },
+    {
+      id: "04-review",
+      title: "5. 04-review.cast — Act III.d: Stateless Goldfish Swarm & /clear (0. Start = AGY Start Page)",
+      setup: "Spawn stateless Goldfish subagents with zero memory of the brainstorm, then wipe session context with /clear.",
+      debrief: "Pass 1 catches the 500k IRQ/s storm (B-1); /clear + Pass 2 catches the 25-byte short-read loop (CA-01).",
+      turns: [
+        { id: "r4-0", label: "Pre-AGY Shell Launch (#0000..#0036: 1. Launch agy)", stops: 0, warped: 2.8, fastNote: "Strip so 0. Start = AGY Start Page", defaultMode: "trim", midMode: "trim", allMode: "trim" },
+        { id: "r4-1", label: "Turn 1: [Before: 0. Start] -> [After: 1. Prompt: Pass 1 /egm-review (0.6s)] -> [2. Mode (8.0s)] -> [3. Review Done (29.7s)]", stops: 3, warped: 38.3, fastNote: "", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "r4-2", label: "Turn 2: [Before: 3. Ready] -> [After: 4. Prompt: /egm-resolve (0.4s)] -> [5. 12 Findings Compiled (26.8s)]", stops: 2, warped: 27.2, fastNote: "", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "r4-3", label: "Turn 3: [Before: 5. Choose Mode] -> [After: 6. Reply: interactive (0.5s)] -> [7. Item 1/12 B-1 NVIC IRQ (17.1s)]", stops: 2, warped: 17.6, fastNote: "Tightened 2.9s -> 0.5s", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "r4-4", label: "Turn 4: [Before: 7. Item 1/12] -> [After: 8. Reply: accept (0.5s)] -> [9. Ready for /clear (5.0s)]", stops: 2, warped: 5.5, fastNote: "Tightened 3.0s -> 0.5s", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "r4-5", label: "Turns 5–6 (Mid): Walk Through Items 2–12 (29.6s) & Archive Pass 1 Reports (18.8s)", stops: 3, warped: 48.4, fastNote: "", defaultMode: "trim", midMode: "trim", allMode: "keep" },
+        { id: "r4-7", label: "Turn 7: [Before: 9. Ready] -> [After: 10. Run /clear (0.4s)] -> [11. Session Cleared (0.1s)]", stops: 2, warped: 0.5, fastNote: "", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "r4-8", label: "Turn 8: [Before: 11. Cleared] -> [After: 12. Prompt: Pass 2 /egm-review (0.6s)] -> [13. Pass 2 Complete (52.3s)]", stops: 2, warped: 52.3, fastNote: "", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "r4-9", label: "Turns 9–11 (Tail): Pass 2 /egm-resolve, Reply: auto (11 fixes), Archive & Commit", stops: 6, warped: 86.2, fastNote: "", defaultMode: "trim", midMode: "trim", allMode: "keep" }
+      ]
+    },
+    {
+      id: "05-implement",
+      title: "6. 05-implement.cast — Act III.e: First-Shot Execution (0. Start = AGY Start Page)",
+      setup: "Feed the twice-hardened specification into Antigravity to build drivers, daemon, tests, UF2, and wiring SVG.",
+      debrief: "100% host unit tests pass and nuttx.uf2 (347K) builds on attempt #1 -> 10/10 primary trap scorecard.",
+      turns: [
+        { id: "i5-0", label: "Pre-AGY Shell Launch (#0000..#0052: 1. Launch agy)", stops: 0, warped: 3.2, fastNote: "Strip so 0. Start = AGY Start Page", defaultMode: "trim", midMode: "trim", allMode: "trim" },
+        { id: "i5-1", label: "Turn 1: [Before: 0. Start] -> [After: 1. Prompt: Implement Firmware (0.5s)] -> [2. Tests & UF2 Built (29.0s)]", stops: 2, warped: 29.5, fastNote: "", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "i5-2", label: "Turn 2: [Before: 2. Ready] -> [After: 3. Prompt: Breadboard Wiring & SVG (0.5s)] -> [4. SVG Complete (28.2s)]", stops: 2, warped: 28.7, fastNote: "", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "i5-3", label: "Turn 3 (Tail): [Before: Ready] -> [After: Prompt: Verify Submodules & Commit (0.5s)] -> [Committed (26.0s)]", stops: 2, warped: 26.5, fastNote: "", defaultMode: "trim", midMode: "trim", allMode: "keep" }
+      ]
+    },
+    {
+      id: "06-teach-code",
+      title: "7. 06-teach-code.cast — Act IV: Rolling Your Own Docs (Starts with npx skills add -> AGY Start Page)",
+      setup: "Dynamically install teach-code via npx skills add, then run /teach-code to build the 6-lesson interactive HTML/C course.",
+      debrief: "Humans own the outcomes: interactive lessons, runnable C99 companion apps, and build.py verification gates.",
+      turns: [
+        { id: "t6-0", label: "Turn 0 (Skill Install): [0. Start] -> [1. npx skills add] -> [2. Select teach-code] -> [3. Scope] -> [4. Installed] -> [5. AGY Start Page]", stops: 5, warped: 9.7, fastNote: "Important: Keep Skill Install!", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "t6-1", label: "Turn 1: [Before: 5. AGY Start Page] -> [After: 6. Prompt: /teach-code Story Arc (0.5s)] -> [7. 6-Lesson Course Built (29.8s)]", stops: 2, warped: 30.3, fastNote: "", defaultMode: "keep", midMode: "keep", allMode: "keep" },
+        { id: "t6-2", label: "Turn 2: [Before: 7. Ready] -> [After: 8. Prompt: Verify sync_listing & build.py (0.5s)] -> [9. Verified (29.1s)]", stops: 2, warped: 29.6, fastNote: "", defaultMode: "keep", midMode: "keep", allMode: "keep" }
+      ]
+    }
+  ];
+
+  let state = {
+    pausePerStopSec: 6,
+    totalTalkBudgetSec: 1800,
+    casts: JSON.parse(JSON.stringify(INITIAL_CASTS)).map(c => ({
+      ...c,
+      turns: c.turns.map(t => ({ ...t, mode: t.defaultMode }))
+    }))
+  };
+
+  function setTurnMode(castId, turnId, mode) {
+    const cast = state.casts.find(c => c.id === castId);
+    if (!cast) return;
+    const t = cast.turns.find(x => x.id === turnId);
+    if (t) t.mode = mode;
+  }
+
+  function applyPreset(presetName) {
+    state.casts.forEach(c => {
+      c.turns.forEach(t => {
+        if (presetName === "all-turns") t.mode = t.allMode;
+        else if (presetName === "keep-mid") t.mode = t.midMode;
+        else t.mode = t.defaultMode;
+      });
+    });
+  }
+
+  function setPauseSec(sec) {
+    state.pausePerStopSec = Number(sec) || 6;
+  }
+
+  function computeSummary() {
+    let playSec = 0;
+    let stopCount = 0;
+    let trimmedSec = 0;
+    let trimmedCount = 0;
+
+    const perCast = state.casts.map(c => {
+      let cPlay = 0;
+      let cStops = 0;
+      c.turns.forEach(t => {
+        if (t.mode === "keep") {
+          cPlay += t.warped;
+          cStops += t.stops;
+        } else {
+          trimmedSec += t.warped;
+          trimmedCount += 1;
+        }
+      });
+      playSec += cPlay;
+      stopCount += cStops;
+      return { id: c.id, playSec: cPlay, stops: cStops, stageSec: cPlay + cStops * state.pausePerStopSec };
+    });
+
+    const pauseSec = stopCount * state.pausePerStopSec;
+    const totalCastWindowSec = playSec + pauseSec;
+    const remainingSlidesSec = Math.max(0, state.totalTalkBudgetSec - totalCastWindowSec);
+
+    return {
+      playSec,
+      stopCount,
+      pauseSec,
+      totalCastWindowSec,
+      remainingSlidesSec,
+      trimmedSec,
+      trimmedCount,
+      perCast
+    };
+  }
+
+  return { getState: () => state, setTurnMode, applyPreset, setPauseSec, computeSummary };
+})();
+
+function fmtTime(sec) {
+  const s = Math.round(sec);
+  const m = Math.floor(s / 60);
+  const rem = s % 60;
+  return `${m}m ${String(rem).padStart(2, '0')}s`;
+}
+
+function render() {
+  const st = CastPlannerModule.getState();
+  const sum = CastPlannerModule.computeSummary();
+
+  document.getElementById("val-cast").textContent = fmtTime(sum.playSec);
+  document.getElementById("val-pause").textContent = fmtTime(sum.pauseSec);
+  document.getElementById("sub-stops").textContent = `${sum.stopCount} stop points (Before + After each prompt)`;
+  document.getElementById("val-total-cast").textContent = fmtTime(sum.totalCastWindowSec);
+  const pct = Math.round((sum.totalCastWindowSec / st.totalTalkBudgetSec) * 100);
+  document.getElementById("sub-pct").textContent = `${pct}% of 30m slot`;
+  document.getElementById("val-slides").textContent = fmtTime(sum.remainingSlidesSec);
+  document.getElementById("val-trimmed").textContent = fmtTime(sum.trimmedSec);
+  document.getElementById("sub-trimmed").textContent = `${sum.trimmedCount} blocks trimmed`;
+
+  const wCast = Math.min(100, (sum.playSec / st.totalTalkBudgetSec) * 100);
+  const wPause = Math.min(100 - wCast, (sum.pauseSec / st.totalTalkBudgetSec) * 100);
+  const wSlides = Math.max(0, 100 - wCast - wPause);
+  document.getElementById("bar-cast").style.width = `${wCast}%`;
+  document.getElementById("bar-pause").style.width = `${wPause}%`;
+  document.getElementById("bar-slides").style.width = `${wSlides}%`;
+
+  const root = document.getElementById("casts-root");
+  root.innerHTML = st.casts.map(cast => {
+    const cSum = sum.perCast.find(x => x.id === cast.id);
+    const rows = cast.turns.map(t => `
+      <tr class="mode-${t.mode}">
+        <td>
+          <strong>${t.label}</strong>
+          ${t.fastNote ? `<span class="pill-fast">${t.fastNote}</span>` : ""}
+        </td>
+        <td>${t.stops} stops</td>
+        <td>${t.warped.toFixed(1)}s</td>
+        <td>
+          <div class="mode-btns">
+            <button class="mode-btn ${t.mode === 'keep' ? 'active-keep' : ''}"
+              onclick="changeMode('${cast.id}', '${t.id}', 'keep')">Keep Pair</button>
+            <button class="mode-btn ${t.mode === 'trim' ? 'active-trim' : ''}"
+              onclick="changeMode('${cast.id}', '${t.id}', 'trim')">Trim</button>
+          </div>
+        </td>
+      </tr>
+    `).join("");
+
+    return `
+      <div class="cast-card">
+        <div class="cast-header">
+          <div class="cast-title">${cast.title}</div>
+          <div class="cast-meta">${cSum.stops} stops · ${fmtTime(cSum.playSec)} play · ${fmtTime(cSum.stageSec)} on stage</div>
+        </div>
+        <div class="framing-row">
+          <div class="framing-box"><strong>Pre-Cast Setup Slide</strong>${cast.setup}</div>
+          <div class="framing-box"><strong>Post-Cast Debrief Slide</strong>${cast.debrief}</div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Prompt Pair / Turn (Before Stop → Fast Prompt → After Stop → Agent Run)</th>
+              <th>Stops</th>
+              <th>Warped Play</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
+  }).join("");
+}
+
+function changeMode(castId, turnId, mode) {
+  CastPlannerModule.setTurnMode(castId, turnId, mode);
+  render();
+}
+
+function applyPreset(name) {
+  CastPlannerModule.applyPreset(name);
+  render();
+}
+
+function updatePauseSec(val) {
+  document.getElementById("pause-label").textContent = `${val}s`;
+  CastPlannerModule.setPauseSec(val);
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
