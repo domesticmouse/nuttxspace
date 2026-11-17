@@ -141,6 +141,7 @@ def main() -> int:
     assets_wiring_svg = repo_root / "docs" / "assets" / "breadboard-wiring.svg"
     nuttx_logo_png = repo_root / "docs" / "assets" / "nuttx-logo.png"
     antigravity_logo_svg = repo_root / "docs" / "assets" / "antigravity-lockup.svg"
+    antigravity_icon_png = repo_root / "docs" / "assets" / "antigravity-icon__full-color.png"
     if (
         not egm_svg.is_file()
         or not vanilla_svg.is_file()
@@ -148,6 +149,7 @@ def main() -> int:
         or not assets_wiring_svg.is_file()
         or not nuttx_logo_png.is_file()
         or not antigravity_logo_svg.is_file()
+        or not antigravity_icon_png.is_file()
     ):
         raise FileNotFoundError("Missing image asset source files.")
 
@@ -163,6 +165,7 @@ def main() -> int:
     shutil.copy2(assets_wiring_svg, images_dir / "assets-breadboard-wiring.svg")
     shutil.copy2(nuttx_logo_png, images_dir / "nuttx-logo.png")
     shutil.copy2(antigravity_logo_svg, images_dir / "antigravity-lockup.svg")
+    shutil.copy2(antigravity_icon_png, images_dir / "antigravity-icon__full-color.png")
 
     make_cropped_svg(
         egm_svg,

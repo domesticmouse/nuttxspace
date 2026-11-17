@@ -139,7 +139,7 @@
 - **Visual Specification**:
   - **2-Column Platform Cards**:
     - **Left Card**: **Apache NuttX** (`./images/nuttx-logo.png` on a light card backdrop, Real-Time Operating System, `https://nuttx.apache.org/`).
-    - **Right Card**: **Google Antigravity** (`./images/antigravity-lockup.svg` reverse-colour lockup, Agentic Development Platform, `https://antigravity.google/`).
+    - **Right Card**: **Google Antigravity** (`./images/antigravity-icon__full-color.png` on a matching light card backdrop, Agentic Development Platform, `https://antigravity.google/`).
 - **Verbatim Speaker Script (`bjm-voice` · `~50 words`)**:
   - **`[On Load]`**:
     > "Before we touch any hardware, let's call out the two main players in tonight's experiment. On the left is **Apache NuttX**, a mature, POSIX-compliant real-time operating system you can explore at `nuttx.apache.org`. On the right is **Google Antigravity**, the agentic development platform I used to tame it, available at `antigravity.google`."

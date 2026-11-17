@@ -48,8 +48,8 @@ layout: default
   </div>
 
   <div class="p-6 rounded-xl bg-gray-900/80 border border-gray-800 flex flex-col items-center justify-between text-center gap-5">
-    <div class="w-full h-52 rounded-lg bg-[#121317] border border-gray-800/80 flex items-center justify-center p-6">
-      <img src="/images/antigravity-lockup.svg" alt="Google Antigravity Logo" class="max-h-24 w-full object-contain" />
+    <div class="w-full h-52 rounded-lg bg-white/95 flex items-center justify-center p-5">
+      <img src="/images/antigravity-icon__full-color.png" alt="Google Antigravity Logo" class="max-h-full max-w-full object-contain" />
     </div>
     <div class="space-y-1.5">
       <div class="text-sm text-gray-300">Agentic Development Platform</div>
