@@ -8,6 +8,7 @@ import AsciinemaPlayer from '../components/AsciinemaPlayer.vue'
     <div class="flex-1 w-full min-h-0 flex items-center justify-center">
       <AsciinemaPlayer
         v-if="$frontmatter.cast || $frontmatter.castSrc"
+        :key="$frontmatter.cast || $frontmatter.castSrc || $page"
         :src="$frontmatter.cast || $frontmatter.castSrc"
         :title="$frontmatter.title"
         :autoPlay="$frontmatter.autoPlay ?? false"
