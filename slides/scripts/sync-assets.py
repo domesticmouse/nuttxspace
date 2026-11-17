@@ -134,18 +134,22 @@ def main() -> int:
             raise FileNotFoundError(f"Missing canonical cast file: {src}")
         shutil.copy2(src, casts_dir / name)
 
-    # 2. Copy breadboard SVGs and generate zoomed viewBox crops
+    # 2. Copy breadboard SVGs, brand logos, and generate zoomed viewBox crops
     egm_svg = repo_root / "docs" / "egm" / "breadboard-wiring.svg"
     vanilla_svg = repo_root / "docs" / "vanilla" / "breadboard_circuit.svg"
     assets_scopes_svg = repo_root / "docs" / "assets" / "breadboard-scopes.svg"
     assets_wiring_svg = repo_root / "docs" / "assets" / "breadboard-wiring.svg"
+    nuttx_logo_png = repo_root / "docs" / "assets" / "nuttx-logo.png"
+    antigravity_logo_svg = repo_root / "docs" / "assets" / "antigravity-lockup.svg"
     if (
         not egm_svg.is_file()
         or not vanilla_svg.is_file()
         or not assets_scopes_svg.is_file()
         or not assets_wiring_svg.is_file()
+        or not nuttx_logo_png.is_file()
+        or not antigravity_logo_svg.is_file()
     ):
-        raise FileNotFoundError("Missing breadboard SVG source files.")
+        raise FileNotFoundError("Missing image asset source files.")
 
     shutil.copy2(egm_svg, images_dir / "breadboard-wiring.svg")
     make_cropped_svg(
@@ -157,6 +161,8 @@ def main() -> int:
     )
     shutil.copy2(assets_scopes_svg, images_dir / "breadboard-scopes.svg")
     shutil.copy2(assets_wiring_svg, images_dir / "assets-breadboard-wiring.svg")
+    shutil.copy2(nuttx_logo_png, images_dir / "nuttx-logo.png")
+    shutil.copy2(antigravity_logo_svg, images_dir / "antigravity-lockup.svg")
 
     make_cropped_svg(
         egm_svg,
