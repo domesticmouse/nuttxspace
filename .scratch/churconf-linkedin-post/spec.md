@@ -22,7 +22,7 @@ Two comments from the room are still rattling around in my head:
 
 1. From an attendee afterwards:
 "I wish I'd seen your talk a week ago, it would have saved me a lot of time."
-The thing is, I've spent the last week learning EGM myself (https://lnkd.in/p/gmVX-B74), so my talk didn't exist a week ago. We are all learning how to hold these tools in real time.
+The thing is, I've spent the last week learning EGM myself, so my talk didn't exist a week ago. We are all learning how to hold these tools in real time.
 
 2. From the Q&A:
 "EGM helps with creation of the specification, but how does EGM handle the AI generated code bloat? What encourages developers to create abstractions in the codebase to control the complexity explosion?"
@@ -49,11 +49,17 @@ Thanks again, ChurConf—can't wait to compare notes on what we all learn next!
 #ChurConf #EmbeddedSystems #ApacheNuttX #RP2350 #AI #SoftwareEngineering #DeveloperExperience
 ```
 
+### First Comment (Previous Post Link)
+
+```text
+Here is the earlier 1-week EGM learning post I mentioned above: https://lnkd.in/p/gmVX-B74
+```
+
 ---
 
-## Option 2: "Links in First Comment" Variant
+## Option 2: Presentation Deck Link in Main Body + Supporting Links in First Comment
 
-Use this option if you prefer keeping external URLs out of the main LinkedIn post body (except the internal LinkedIn reference link `https://lnkd.in/p/gmVX-B74`) and dropping the repo/deck links into the first comment immediately after posting.
+Use this option if you prefer keeping only the Slidev presentation deck URL in the main LinkedIn post body (so LinkedIn generates the preview card for the deck rather than quoting the earlier LinkedIn post) and dropping the supporting links into the first comment immediately after posting.
 
 ### Main Post Body
 
@@ -66,7 +72,7 @@ Two comments from the room are still rattling around in my head:
 
 1. From an attendee afterwards:
 "I wish I'd seen your talk a week ago, it would have saved me a lot of time."
-The thing is, I've spent the last week learning EGM myself (https://lnkd.in/p/gmVX-B74), so my talk didn't exist a week ago. We are all learning how to hold these tools in real time.
+The thing is, I've spent the last week learning EGM myself, so my talk didn't exist a week ago. We are all learning how to hold these tools in real time.
 
 2. From the Q&A:
 "EGM helps with creation of the specification, but how does EGM handle the AI generated code bloat? What encourages developers to create abstractions in the codebase to control the complexity explosion?"
@@ -81,7 +87,9 @@ If you've found reliable habits—codebase organisation patterns, review prompts
 
 A big hat-tip to Dave Rensin for the Elephant-Goldfish Model (EGM) and to Matt Pocock for the /teach skill that Antigravity helped me turn into /teach-code using the power of /agy-customizations.
 
-Link to the interactive Slidev deck (all 7 terminal casts included), the generated /teach-code course, and the full GitHub repo in the first comment below!
+Interactive Slidev deck (all 7 terminal casts included): https://domesticmouse.github.io/nuttxspace/slides/
+
+Links to the generated /teach-code course, the full experiment hub & GitHub repo, and my earlier 1-week EGM post are in the first comment below!
 
 Thanks again, ChurConf—can't wait to compare notes on what we all learn next!
 
@@ -91,12 +99,12 @@ Thanks again, ChurConf—can't wait to compare notes on what we all learn next!
 ### Ready-to-Paste First Comment
 
 ```text
-Here are all the links from the ChurConf talk ("Roll Your Own Docs: Custom AI Skills for Rapid Tech Ramp-Up"):
+Here are the supporting links from the ChurConf talk ("Roll Your Own Docs: Custom AI Skills for Rapid Tech Ramp-Up"):
 
-- Interactive Slidev deck (with 7 embedded asciinema recordings & 53 stop points): https://domesticmouse.github.io/nuttxspace/slides/
 - Generated 6-lesson /teach-code interactive HTML course (Edward Tufte layout + live JS hardware simulators): https://domesticmouse.github.io/nuttxspace/egm/tutorial/index.html
 - Documentation & comparative experiment hub (Vanilla Vibe vs. EGM Goldfish reports & 47 exported traces): https://domesticmouse.github.io/nuttxspace/
 - Source repository on GitHub: https://github.com/domesticmouse/nuttxspace
+- My earlier 1-week EGM learning post: https://lnkd.in/p/gmVX-B74
 ```
 
 ---
