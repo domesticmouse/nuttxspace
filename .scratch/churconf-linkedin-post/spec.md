@@ -14,15 +14,15 @@
 Copy-paste ready block for LinkedIn:
 
 ```text
-Huge thank you to the ChurConf community and organisers for an attentive, lively room during "Roll Your Own Docs: Custom AI Skills for Rapid Tech Ramp-Up"!
+I'd just like to say a huge thank you to the ChurConf community and organisers for an attentive, lively room during "Roll Your Own Docs: Custom AI Skills for Rapid Tech Ramp-Up".
 
-Putting 30 minutes of live terminal recordings on screen—watching Google Antigravity try (and initially stumble) to tame Apache NuttX's 3,241 directories and wire a Seeed Studio XIAO RP2350 potentiometer and 6-LED bar graph—felt a bit like debugging hardware in public. Your reactions made it completely worth it.
+Showing people how to use the EGM plugin in Google Antigravity to explore large codebases—and build code where humans can intervene well before there's finished code—appears to be useful to more people than just me.
 
 Two comments from the room are still rattling around in my head:
 
 1. From an attendee afterwards:
 "I wish I'd seen your talk a week ago, it would have saved me a lot of time."
-That kind of honest validation makes weeks of fighting breadboards and RTOS configs feel well spent.
+The thing is, I've spent the last week learning EGM myself (https://lnkd.in/p/gmVX-B74), so my talk didn't exist a week ago. We are all learning how to hold these tools in real time.
 
 2. From the Q&A:
 "EGM helps with creation of the specification, but how does EGM handle the AI generated code bloat? What encourages developers to create abstractions in the codebase to control the complexity explosion?"
@@ -31,7 +31,7 @@ And here is my candid answer: I don't have a complete answer for that yet.
 
 Inside the Elephant-Goldfish Model (EGM), the zoom-out Goldfish reviewer pushes back on YAGNI and checks for existing reuse at specification time—and our directory-level README.md contracts help keep module boundaries visible. Once the code starts growing across multiple implementation passes, though, nudging an agent toward clean, deep abstractions instead of linear code bloat and shifting behaviour across files is still a hard problem.
 
-As I wrote in my post from a few days ago (https://lnkd.in/p/gmVX-B74), I've only been learning EGM for a week myself. None of us have the finished playbook yet—we are all learning how to build with these workflows in real time. A conference room full of sharp engineers pressing on the exact gap you haven't solved is the best part of speaking at events like ChurConf.
+A conference room full of sharp engineers pressing on the exact gap you haven't solved is the best part of speaking at events like ChurConf.
 
 If you've found reliable habits—codebase organisation patterns, review prompts, or refactoring loops—that keep AI-assisted codebases compact and well-factored past week one, I'd genuinely love to hear what's working for you in the comments.
 
@@ -40,9 +40,9 @@ For everyone who asked for the slides and the full experiment artefacts:
 - Interactive Slidev deck (including all 7 asciinema recordings & 53 stop points): https://domesticmouse.github.io/nuttxspace/slides/
 - The generated 6-lesson /teach-code interactive HTML course (with JS hardware & EMA simulators): https://domesticmouse.github.io/nuttxspace/egm/tutorial/index.html
 - Full experiment hub, Vanilla vs. EGM Goldfish audit reports & 47 session traces: https://domesticmouse.github.io/nuttxspace/
-- My 1-week EGM learning post: https://lnkd.in/p/gmVX-B74
+- Source repository on GitHub: https://github.com/domesticmouse/nuttxspace
 
-A big hat-tip to Dave Rensin for the Elephant-Goldfish Model (EGM) and to Matt Pocock for the /teach skill inspiration behind /teach-code.
+A big hat-tip to Dave Rensin for the Elephant-Goldfish Model (EGM) and to Matt Pocock for the /teach skill that Antigravity helped me turn into /teach-code using the power of /agy-customizations.
 
 Thanks again, ChurConf—can't wait to compare notes on what we all learn next!
 
@@ -58,29 +58,32 @@ Use this option if you prefer keeping external URLs out of the main LinkedIn pos
 ### Main Post Body
 
 ```text
-Huge thank you to the ChurConf community and organisers for an attentive, lively room during "Roll Your Own Docs: Custom AI Skills for Rapid Tech Ramp-Up"!
+I'd just like to say a huge thank you to the ChurConf community and organisers for an attentive, lively room during "Roll Your Own Docs: Custom AI Skills for Rapid Tech Ramp-Up".
 
-Putting 30 minutes of terminal recordings on screen—watching Google Antigravity try (and initially stumble) to tame Apache NuttX's 3,241 directories and wire a Seeed Studio XIAO RP2350 potentiometer and 6-LED bar graph—felt a bit like debugging hardware in public. Your questions made it completely worth it.
+Showing people how to use the EGM plugin in Google Antigravity to explore large codebases—and build code where humans can intervene well before there's finished code—appears to be useful to more people than just me.
 
-Two reactions from the room have stayed with me:
+Two comments from the room are still rattling around in my head:
 
 1. From an attendee afterwards:
 "I wish I'd seen your talk a week ago, it would have saved me a lot of time."
+The thing is, I've spent the last week learning EGM myself (https://lnkd.in/p/gmVX-B74), so my talk didn't exist a week ago. We are all learning how to hold these tools in real time.
 
 2. From the Q&A:
 "EGM helps with creation of the specification, but how does EGM handle the AI generated code bloat? What encourages developers to create abstractions in the codebase to control the complexity explosion?"
 
-Truthfully, I don't have a complete answer for that yet.
+And here is my candid answer: I don't have a complete answer for that yet.
 
-EGM's zoom-out Goldfish reviewer pushes back on YAGNI and checks for reuse before implementation begins, and directory-level README.md contracts help keep module boundaries visible. Actually stopping an agent from piling up shallow helpers and scattered behaviour as a codebase evolves over days and weeks, though, is still an open challenge.
+Inside the Elephant-Goldfish Model (EGM), the zoom-out Goldfish reviewer pushes back on YAGNI and checks for existing reuse at specification time—and our directory-level README.md contracts help keep module boundaries visible. Once the code starts growing across multiple implementation passes, though, nudging an agent toward clean, deep abstractions instead of linear code bloat and shifting behaviour across files is still a hard problem.
 
-As I shared in my earlier post (https://lnkd.in/p/gmVX-B74), I've only been learning EGM for a week myself. We are all figuring this out in real time—and having a room full of sharp engineers ask the exact architectural question you haven't cracked yet is why conferences like ChurConf matter so much.
+A conference room full of sharp engineers pressing on the exact gap you haven't solved is the best part of speaking at events like ChurConf.
 
-How are you nudging coding agents toward clean abstractions instead of linear code bloat? Would love to compare notes in the comments.
+If you've found reliable habits—codebase organisation patterns, review prompts, or refactoring loops—that keep AI-assisted codebases compact and well-factored past week one, I'd genuinely love to hear what's working for you in the comments.
 
-Massive thanks to Dave Rensin for the Elephant-Goldfish Model and Matt Pocock for the /teach skill inspiration behind /teach-code.
+A big hat-tip to Dave Rensin for the Elephant-Goldfish Model (EGM) and to Matt Pocock for the /teach skill that Antigravity helped me turn into /teach-code using the power of /agy-customizations.
 
 Link to the interactive Slidev deck (all 7 terminal casts included), the generated /teach-code course, and the full GitHub repo in the first comment below!
+
+Thanks again, ChurConf—can't wait to compare notes on what we all learn next!
 
 #ChurConf #EmbeddedSystems #ApacheNuttX #RP2350 #AI #SoftwareEngineering #DeveloperExperience
 ```
@@ -115,7 +118,7 @@ Attach visual context so the post stands out in the feed and gives attendees an 
 
 ## `bjm-voice` Verification Checklist
 
-1. **Australian English**: Uses *organisers*, *behaviour*, *organisation*, and Australian conversational phrasing (*"rattling around in my head"*, *"a bit like debugging hardware in public"*).
+1. **Australian English**: Uses *organisers*, *behaviour*, *organisation*, and conversational phrasing (*"rattling around in my head"*, *"learning how to hold these tools in real time"*).
 2. **No Corporate AI Slop**: Zero instances of *furthermore*, *moreover*, *testament to*, *tapestry*, *game-changer*, *delve*, or *unleash*.
 3. **No Unblemished Triumph Narrative**: Explicitly pairs the *"saved me a lot of time"* compliment with the unanswered code-bloat Q&A challenge and the candid admission of being only one week into learning EGM.
 4. **Grounded in Real Links & Artefacts**: Links directly to the live Slidev deck (`https://domesticmouse.github.io/nuttxspace/slides/`), `/teach-code` course (`https://domesticmouse.github.io/nuttxspace/egm/tutorial/index.html`), documentation hub (`https://domesticmouse.github.io/nuttxspace/`), GitHub repository (`https://github.com/domesticmouse/nuttxspace`), and the earlier LinkedIn post (`https://lnkd.in/p/gmVX-B74`).
