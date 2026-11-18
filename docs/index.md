@@ -6,6 +6,9 @@ The workspace builds an out-of-tree custom board and 20 Hz potentiometer-to-6-LE
 
 ## Documentation Map
 
+### Conference Presentation: "Skills Three Ways"
+- [**Live 41-Slide Slidev Presentation Deck — Skills Three Ways**](../slides-skills-three-ways/slides.md) ([Slide Overview](slides-skills-three-ways/index.html#/overview) · [Presenter Console](slides-skills-three-ways/index.html#/presenter)) — Standalone 40–45 minute dark-mode deck covering the 5-act **Adopt → Orchestrate → Author** arc (`egm` plugin, `mattpocock/skills` + `/wayfinder`, and `/agy-customizations` + `domesticmouse/skills` + `/teach-code`), reusing all 7 terminal casts, clickable `/prototype` HTML planners, and the live 6-lesson course.
+
 ### Conference Presentation: "Roll Your Own Docs: Custom AI Skills for Rapid Tech Ramp-Up"
 - [**Live 33-Slide Slidev Presentation Deck**](../slides/slides.md) ([Slide Overview](slides/index.html#/overview) · [Presenter Console](slides/index.html#/presenter)) — Interactive dark-mode conference deck featuring 7 embedded `asciinema` recordings (`53` stop points), progressive `v-click` reveals, breadboard SVG comparisons, and the live `/teach-code` course showcase.
 - [Authoritative Presentation Specification](../.scratch/egm-nuttx-casts-presentation/spec.md) and [Verbatim Speaker Script (`bjm-voice`)](../.scratch/egm-nuttx-casts-presentation/speaker-script-bjm-voice.md) — Complete 30-minute (`29m 51s`) slide-by-slide stage specification and Australian English narrative.

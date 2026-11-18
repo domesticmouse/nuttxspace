@@ -66,6 +66,7 @@ nav:
   - Home: index.md
   - Presentation:
       - "Live Slidev Deck (HTML)": slides/index.html
+      - "Live Slidev Deck — Skills Three Ways (HTML)": slides-skills-three-ways/index.html
       - "Authoritative Presentation Spec": egm-nuttx-casts-presentation/spec.md
       - "Verbatim Speaker Script (bjm-voice)": egm-nuttx-casts-presentation/speaker-script-bjm-voice.md
       - "Presentation Wayfinder Map": egm-nuttx-casts-presentation/map.md
