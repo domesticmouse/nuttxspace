@@ -43,3 +43,9 @@ Top-level NuttX workspace repository coordinating the Apache NuttX RTOS kernel (
 - **Clean Targets**:
   - Clean compiled objects and test binary: `make -C xiao-rp2350-bargraph clean`
   - Clean out-of-tree build, generated `Kconfig` files, and `apps/external` symlink state: `make -C xiao-rp2350-bargraph distclean`
+
+## License
+
+Licensed under the [Apache License, Version 2.0](./LICENSE).
+
+This is not an official Google product.
