@@ -31,7 +31,7 @@ And here is my candid answer: I don't have a complete answer for that yet.
 
 Inside the Elephant-Goldfish Model (EGM), the zoom-out Goldfish reviewer pushes back on YAGNI and checks for existing reuse at specification time—and our directory-level README.md contracts help keep module boundaries visible. Once the code starts growing across multiple implementation passes, though, nudging an agent toward clean, deep abstractions instead of linear code bloat and shifting behaviour across files is still a hard problem.
 
-As I wrote in my post from a few days ago (https://lnkd.in/p/gmVX-B74), I've only been learning EGM for a week myself. None of us have the finished playbook yet—we are all learning how to build with these workflows in real time. A conference room full of sharp engineers pressing on the exact gap you haven't solved is the best part of speaking at events like ChurConf.
+As I wrote in my post from a few days ago, I've only been learning EGM for a week myself. None of us have the finished playbook yet—we are all learning how to build with these workflows in real time. A conference room full of sharp engineers pressing on the exact gap you haven't solved is the best part of speaking at events like ChurConf.
 
 If you've found reliable habits—codebase organisation patterns, review prompts, or refactoring loops—that keep AI-assisted codebases compact and well-factored past week one, I'd genuinely love to hear what's working for you in the comments.
 
@@ -40,7 +40,6 @@ For everyone who asked for the slides and the full experiment artefacts:
 - Interactive Slidev deck (including all 7 asciinema recordings & 53 stop points): https://domesticmouse.github.io/nuttxspace/slides/
 - The generated 6-lesson /teach-code interactive HTML course (with JS hardware & EMA simulators): https://domesticmouse.github.io/nuttxspace/egm/tutorial/index.html
 - Full experiment hub, Vanilla vs. EGM Goldfish audit reports & 47 session traces: https://domesticmouse.github.io/nuttxspace/
-- My 1-week EGM learning post: https://lnkd.in/p/gmVX-B74
 
 A big hat-tip to Dave Rensin for the Elephant-Goldfish Model (EGM) and to Matt Pocock for the /teach skill inspiration behind /teach-code.
 
@@ -49,18 +48,24 @@ Thanks again, ChurConf—can't wait to compare notes on what we all learn next!
 #ChurConf #EmbeddedSystems #ApacheNuttX #RP2350 #AI #SoftwareEngineering #DeveloperExperience
 ```
 
+### First Comment (Previous Post Link)
+
+```text
+Here is the earlier 1-week EGM learning post I mentioned above: https://lnkd.in/p/gmVX-B74
+```
+
 ---
 
-## Option 2: "Links in First Comment" Variant
+## Option 2: Presentation Deck Link in Main Body + Supporting Links in First Comment
 
-Use this option if you prefer keeping external URLs out of the main LinkedIn post body (except the internal LinkedIn reference link `https://lnkd.in/p/gmVX-B74`) and dropping the repo/deck links into the first comment immediately after posting.
+Use this option if you prefer keeping only the Slidev presentation deck URL in the main LinkedIn post body (so LinkedIn generates the preview card for the deck rather than quoting the earlier LinkedIn post) and dropping the supporting links into the first comment immediately after posting.
 
 ### Main Post Body
 
 ```text
 Huge thank you to the ChurConf community and organisers for an attentive, lively room during "Roll Your Own Docs: Custom AI Skills for Rapid Tech Ramp-Up"!
 
-Putting 30 minutes of terminal recordings on screen—watching Google Antigravity try (and initially stumble) to tame Apache NuttX's 3,241 directories and wire a Seeed Studio XIAO RP2350 potentiometer and 6-LED bar graph—felt a bit like debugging hardware in public. Your questions made it completely worth it.
+Putting 30 minutes of live terminal recordings on screen—watching Google Antigravity try (and initially stumble) to tame Apache NuttX's 3,241 directories and wire a Seeed Studio XIAO RP2350 potentiometer and 6-LED bar graph—felt a bit like debugging hardware in public. Your questions made it completely worth it.
 
 Two reactions from the room have stayed with me:
 
@@ -74,13 +79,15 @@ Truthfully, I don't have a complete answer for that yet.
 
 EGM's zoom-out Goldfish reviewer pushes back on YAGNI and checks for reuse before implementation begins, and directory-level README.md contracts help keep module boundaries visible. Actually stopping an agent from piling up shallow helpers and scattered behaviour as a codebase evolves over days and weeks, though, is still an open challenge.
 
-As I shared in my earlier post (https://lnkd.in/p/gmVX-B74), I've only been learning EGM for a week myself. We are all figuring this out in real time—and having a room full of sharp engineers ask the exact architectural question you haven't cracked yet is why conferences like ChurConf matter so much.
+As I shared in my earlier post, I've only been learning EGM for a week myself. We are all figuring this out in real time—and having a room full of sharp engineers ask the exact architectural question you haven't cracked yet is why conferences like ChurConf matter so much.
 
 How are you nudging coding agents toward clean abstractions instead of linear code bloat? Would love to compare notes in the comments.
 
 Massive thanks to Dave Rensin for the Elephant-Goldfish Model and Matt Pocock for the /teach skill inspiration behind /teach-code.
 
-Link to the interactive Slidev deck (all 7 terminal casts included), the generated /teach-code course, and the full GitHub repo in the first comment below!
+Interactive Slidev deck (all 7 terminal casts included): https://domesticmouse.github.io/nuttxspace/slides/
+
+Links to the generated /teach-code course, the full experiment hub & GitHub repo, and my earlier 1-week EGM post are in the first comment below!
 
 #ChurConf #EmbeddedSystems #ApacheNuttX #RP2350 #AI #SoftwareEngineering #DeveloperExperience
 ```
@@ -88,12 +95,12 @@ Link to the interactive Slidev deck (all 7 terminal casts included), the generat
 ### Ready-to-Paste First Comment
 
 ```text
-Here are all the links from the ChurConf talk ("Roll Your Own Docs: Custom AI Skills for Rapid Tech Ramp-Up"):
+Here are the supporting links from the ChurConf talk ("Roll Your Own Docs: Custom AI Skills for Rapid Tech Ramp-Up"):
 
-- Interactive Slidev deck (with 7 embedded asciinema recordings & 53 stop points): https://domesticmouse.github.io/nuttxspace/slides/
 - Generated 6-lesson /teach-code interactive HTML course (Edward Tufte layout + live JS hardware simulators): https://domesticmouse.github.io/nuttxspace/egm/tutorial/index.html
 - Documentation & comparative experiment hub (Vanilla Vibe vs. EGM Goldfish reports & 47 exported traces): https://domesticmouse.github.io/nuttxspace/
 - Source repository on GitHub: https://github.com/domesticmouse/nuttxspace
+- My earlier 1-week EGM learning post: https://lnkd.in/p/gmVX-B74
 ```
 
 ---
