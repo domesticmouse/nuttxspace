@@ -43,9 +43,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: |
-            slides/package-lock.json
-            slides-skills-three-ways/package-lock.json
+          cache-dependency-path: slides/package-lock.json
 
       - name: Install Slidev dependencies
         working-directory: slides
@@ -53,14 +51,6 @@ jobs:
 
       - name: Build Slidev presentation deck
         working-directory: slides
-        run: npm run build
-
-      - name: Install Skills Three Ways Slidev dependencies
-        working-directory: slides-skills-three-ways
-        run: npm ci
-
-      - name: Build Skills Three Ways Slidev deck
-        working-directory: slides-skills-three-ways
         run: npm run build
 
       - name: Build site

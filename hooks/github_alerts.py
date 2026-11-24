@@ -342,17 +342,16 @@ def on_files(files, config):
                     )
                 )
 
-    # 2c. Register placeholders for compiled Slidev decks (populated in on_post_build)
-    for deck_index in ("slides/index.html", "slides-skills-three-ways/index.html"):
-        if files.get_file_from_path(deck_index) is None:
-            files.append(
-                File.generated(
-                    config,
-                    deck_index,
-                    content="",
-                    inclusion=InclusionLevel.NOT_IN_NAV,
-                )
+    # 2c. Register placeholder for compiled Slidev deck at slides/index.html (populated in on_post_build)
+    if files.get_file_from_path("slides/index.html") is None:
+        files.append(
+            File.generated(
+                config,
+                "slides/index.html",
+                content="",
+                inclusion=InclusionLevel.NOT_IN_NAV,
             )
+        )
 
     # 3. Un-exclude .gitignore files inside docs/ so documentation links resolve
     for f in list(files):
@@ -764,10 +763,6 @@ def _rewrite_relative_links(markdown: str, src_uri: str) -> str:
             rel_to_doc = posixpath.relpath("slides/index.html", doc_dir or ".")
             return f"{prefix}{rel_to_doc}{frag_with_hash}{suffix}"
 
-        if repo_rel in ("slides-skills-three-ways", "slides-skills-three-ways/slides.md"):
-            rel_to_doc = posixpath.relpath("slides-skills-three-ways/index.html", doc_dir or ".")
-            return f"{prefix}{rel_to_doc}{frag_with_hash}{suffix}"
-
         if repo_rel.startswith("docs/"):
             doc_target = repo_rel[len("docs/") :]
             if resolved.is_dir():
@@ -928,13 +923,12 @@ def on_page_markdown(markdown, page, config, files):
 
 
 def on_post_build(config):
-    """Copy compiled Slidev presentation decks (dist/) into site/."""
-    for deck_dir in ("slides", "slides-skills-three-ways"):
-        slides_dist = REPO_ROOT / deck_dir / "dist"
-        if not (slides_dist / "index.html").is_file():
-            continue
-        dest_slides = pathlib.Path(config["site_dir"]) / deck_dir
-        shutil.copytree(slides_dist, dest_slides, dirs_exist_ok=True)
+    """Copy compiled Slidev presentation deck (slides/dist) into site/slides."""
+    slides_dist = REPO_ROOT / "slides" / "dist"
+    if not (slides_dist / "index.html").is_file():
+        return
+    dest_slides = pathlib.Path(config["site_dir"]) / "slides"
+    shutil.copytree(slides_dist, dest_slides, dirs_exist_ok=True)
 
 
 def on_page_content(html, page, config, files):
